@@ -3,7 +3,7 @@ main = "index.js"
 compatibility_date = "2025-01-01"
 
 [vars]
-ALLOWED_ORIGIN = "https://CHANGE-ME.pages.dev"
+ALLOWED_ORIGIN = "https://fiesta26.pages.dev"
 
 # Secrets (run each, paste the value when asked; never commit them):
 #   npx wrangler secret put SUPABASE_URL
