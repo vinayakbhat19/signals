@@ -11,6 +11,7 @@ import {
   Vote,
 } from 'lucide-react';
 import { AddToHomeBar } from '@/components/add-to-home-bar';
+import { CookieSheet } from '@/components/cookie-sheet';
 import { cn } from '@/lib/utils';
 
 const CHROMELESS_PREFIXES = [
@@ -142,6 +143,7 @@ export function AppShell({
 
       {/* Floating Add to Home Screen bar (mobile browser visits only) */}
       <AddToHomeBar />
+      <CookieSheet />
 
       {/* Mobile floating Neon Night bottom bar (< 1024px) */}
       <nav

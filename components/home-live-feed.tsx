@@ -7,6 +7,7 @@ import useSWR from 'swr';
 import {
   Bell,
   ChevronRight,
+  ExternalLink,
   MapPin,
   Megaphone,
   RefreshCw,
@@ -428,8 +429,17 @@ export function HomeLiveFeed({ festName, initialData }: HomeLiveFeedProps) {
       {/* Secondary Quick Access Strip */}
       <section
         aria-label="Explore more"
-        className="grid grid-cols-3 gap-2.5 pt-1"
+        className="grid grid-cols-4 gap-2 pt-1"
       >
+        <a
+          href="https://linktr.ee/sdmcetFiesta26"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="flex min-h-14 flex-col items-center justify-center gap-1 rounded-[18px] border-[1.5px] border-[#FFD60A]/60 bg-[#1F1230] px-2 py-2.5 text-xs font-bold text-[#FFD60A] hover:border-[#FFD60A]"
+        >
+          <ExternalLink className="size-4 text-[#FFD60A]" aria-hidden="true" />
+          Register
+        </a>
         <Link
           href="/venues"
           className="flex min-h-14 flex-col items-center justify-center gap-1 rounded-[18px] border-[1.5px] border-[#3B2758] bg-[#1F1230] px-2 py-2.5 text-xs font-bold text-[#F4F2FA] hover:border-[#FF9F43]"

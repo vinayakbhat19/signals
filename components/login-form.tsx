@@ -202,6 +202,15 @@ export function LoginForm({ nextPath, initialError }: LoginFormProps) {
             </div>
           </div>
 
+          <div className="flex items-center justify-between text-xs pt-1">
+            <Link href="/reset" className="font-bold text-[#FFD60A] hover:underline">
+              Forgot password?
+            </Link>
+            <Link href="/signup" className="font-bold text-[#CFCBDD] hover:text-[#F4F2FA]">
+              Create account →
+            </Link>
+          </div>
+
           <button
             type="submit"
             disabled={loadingEmail || loadingGoogle}

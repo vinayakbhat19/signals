@@ -291,6 +291,115 @@ export type LiveCodeResult = {
   expires_in: number;
 };
 
+export type ResultsVisibility = 'live' | 'after_close' | 'hidden';
+
+/** Public-safe Poll row (intentionally excludes `secret`). */
+export type PollPublic = {
+  id: string;
+  event_id: string;
+  title: string;
+  enabled: boolean;
+  opens_at: string | null;
+  closes_at: string | null;
+  results_visibility: ResultsVisibility;
+  college_only: boolean;
+  require_code: boolean;
+  created_at: string;
+  updated_at: string;
+};
+
+export type Contestant = {
+  id: string;
+  poll_id: string;
+  name: string;
+  subtitle: string | null;
+  photo_url: string | null;
+  sort: number;
+  active: boolean;
+};
+
+export type Vote = {
+  poll_id: string;
+  user_id: string;
+  contestant_id: string;
+  change_count: number;
+  source?: 'online' | 'offline';
+  created_at: string;
+  updated_at: string;
+};
+
+export type PollResultRow = {
+  poll_id: string;
+  event_id: string;
+  contestant_id: string;
+  name: string;
+  subtitle: string | null;
+  photo_url: string | null;
+  sort: number;
+  visible: boolean;
+  votes: number | null;
+  percent: number | null;
+  total_votes: number | null;
+};
+
+export type CastVoteResult =
+  | {
+      ok: true;
+      reason: 'voted' | 'changed' | 'same';
+      contestant?: string;
+      changes_left?: number;
+      message?: string;
+    }
+  | {
+      ok: false;
+      reason:
+        | 'sign_in'
+        | 'closed'
+        | 'unknown'
+        | 'college_only'
+        | 'code'
+        | 'locked'
+        | 'slow_down'
+        | 'invalid'
+        | 'clock'
+        | 'outside'
+        | 'late'
+        | 'already';
+      message: string;
+    };
+
+export type ParticipantStatus =
+  | 'registered'
+  | 'checked_in'
+  | 'on_stage'
+  | 'performed'
+  | 'withdrawn';
+
+export type ParticipantPublic = {
+  id: string;
+  event_id: string;
+  name: string;
+  team: string | null;
+  college: string | null;
+  department: string | null;
+  performance_order: number | null;
+  status: ParticipantStatus;
+};
+
+export type ParticipantPrivate = ParticipantPublic & {
+  email: string | null;
+  phone: string | null;
+  show_public: boolean;
+  created_at: string;
+  updated_at: string;
+};
+
+export type EventHost = {
+  event_id: string;
+  user_id: string;
+  created_at: string;
+};
+
 // ---------------------------------------------------------------- Supabase Database type
 
 export type Database = {
@@ -623,10 +732,118 @@ export type Database = {
           },
         ];
       };
+      polls: {
+        Row: PollPublic;
+        Insert: {
+          id?: string;
+          event_id: string;
+          title?: string;
+          enabled?: boolean;
+          opens_at?: string | null;
+          closes_at?: string | null;
+          results_visibility?: ResultsVisibility;
+          college_only?: boolean;
+          require_code?: boolean;
+        };
+        Update: {
+          title?: string;
+          enabled?: boolean;
+          opens_at?: string | null;
+          closes_at?: string | null;
+          results_visibility?: ResultsVisibility;
+          college_only?: boolean;
+          require_code?: boolean;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'polls_event_id_fkey';
+            columns: ['event_id'];
+            isOneToOne: true;
+            referencedRelation: 'events';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
+      contestants: {
+        Row: Contestant;
+        Insert: {
+          id?: string;
+          poll_id: string;
+          name: string;
+          subtitle?: string | null;
+          photo_url?: string | null;
+          sort?: number;
+          active?: boolean;
+        };
+        Update: {
+          name?: string;
+          subtitle?: string | null;
+          photo_url?: string | null;
+          sort?: number;
+          active?: boolean;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'contestants_poll_id_fkey';
+            columns: ['poll_id'];
+            isOneToOne: false;
+            referencedRelation: 'polls';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
+      votes: {
+        Row: Vote;
+        Insert: Record<string, never>;
+        Update: Record<string, never>;
+        Relationships: [];
+      };
+      event_hosts: {
+        Row: EventHost;
+        Insert: { event_id: string; user_id: string };
+        Update: Record<string, never>;
+        Relationships: [];
+      };
+      participants: {
+        Row: ParticipantPrivate;
+        Insert: {
+          id?: string;
+          event_id: string;
+          name: string;
+          team?: string | null;
+          college?: string | null;
+          department?: string | null;
+          email?: string | null;
+          phone?: string | null;
+          performance_order?: number | null;
+          status?: ParticipantStatus;
+          show_public?: boolean;
+        };
+        Update: {
+          name?: string;
+          team?: string | null;
+          college?: string | null;
+          department?: string | null;
+          email?: string | null;
+          phone?: string | null;
+          performance_order?: number | null;
+          status?: ParticipantStatus;
+          show_public?: boolean;
+        };
+        Relationships: [];
+      };
     };
     Views: {
       stamp_leaderboard: {
         Row: LeaderboardRow;
+        Relationships: [];
+      };
+      poll_results: {
+        Row: PollResultRow;
+        Relationships: [];
+      };
+      participants_public: {
+        Row: ParticipantPublic;
         Relationships: [];
       };
     };
@@ -643,6 +860,10 @@ export type Database = {
         Args: Record<string, never>;
         Returns: boolean;
       };
+      is_event_host: {
+        Args: { p_event: string };
+        Returns: boolean;
+      };
       claim_stamp: {
         Args: { p_point: string; p_code: string };
         Returns: ClaimStampResult;
@@ -654,6 +875,28 @@ export type Database = {
       get_print_code: {
         Args: { p_point: string };
         Returns: string | null;
+      };
+      cast_vote: {
+        Args: { p_poll: string; p_contestant: string; p_code?: string | null };
+        Returns: CastVoteResult;
+      };
+      cast_vote_offline: {
+        Args: {
+          p_poll: string;
+          p_contestant: string;
+          p_code: string;
+          p_cast_at: string;
+          p_client_ref: string;
+        };
+        Returns: CastVoteResult;
+      };
+      get_vote_code: {
+        Args: { p_poll: string };
+        Returns: LiveCodeResult;
+      };
+      get_vote_codes: {
+        Args: { p_poll: string; p_hours?: number };
+        Returns: Array<{ w: number; code: string }>;
       };
     };
     Enums: Record<string, never>;

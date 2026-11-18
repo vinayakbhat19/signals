@@ -30,6 +30,8 @@ import { cn } from '@/lib/utils';
 export const revalidate = 30;
 export const dynamicParams = true;
 
+const OFFICIAL_REGISTRATION_HUB = 'https://linktr.ee/sdmcetFiesta26';
+
 function isSafeHttpUrl(url: string | null | undefined): url is string {
   if (!url) return false;
   try {
@@ -269,27 +271,43 @@ export default async function EventDetailPage({
           />
         </Link>
 
-        {/* Primary Lime CTA: Registration (only before event starts) or Audience Voting */}
-        {isSafeHttpUrl(event.registration_url) && soon && !isCancelled ? (
-          <a
-            href={event.registration_url}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex items-center justify-between gap-3 rounded-[20px] bg-[#FFD60A] px-4 py-3.5 text-[#12091E] shadow-[5px_5px_0_#FF4FD8] active:translate-y-0.5 transition-transform"
-          >
-            <div className="space-y-0.5">
-              <span className="block text-base font-extrabold">
-                Register for {event.title}
+        {/* Primary CTA: Registration (before event starts) or Audience Voting (when live / started) */}
+        {soon && !isCancelled ? (
+          <div className="space-y-2">
+            <a
+              href={
+                isSafeHttpUrl(event.registration_url)
+                  ? event.registration_url
+                  : OFFICIAL_REGISTRATION_HUB
+              }
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center justify-between gap-3 rounded-[20px] bg-[#FFD60A] px-4 py-3.5 text-[#12091E] shadow-[5px_5px_0_#FF4FD8] active:translate-y-0.5 transition-transform"
+            >
+              <div className="space-y-0.5">
+                <span className="block text-base font-extrabold">
+                  Register for {event.title}
+                </span>
+                <span className="block text-[13px] font-semibold">
+                  {isSafeHttpUrl(event.registration_url)
+                    ? "Opens official Fiesta'26 registration form"
+                    : "Opens official Fiesta'26 Linktree registration hub"}
+                </span>
+              </div>
+              <ExternalLink className="size-6 shrink-0" aria-hidden="true" />
+            </a>
+            <a
+              href={OFFICIAL_REGISTRATION_HUB}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center justify-between rounded-[14px] border border-[#3B2758] bg-[#1F1230] px-3.5 py-2.5 text-xs font-semibold text-[#BDB8CF] hover:border-[#FFD60A]/60 hover:text-[#F4F2FA]"
+            >
+              <span>All Fiesta&apos;26 registration forms</span>
+              <span className="inline-flex items-center gap-1 font-bold text-[#FFD60A]">
+                linktr.ee/sdmcetFiesta26
+                <ExternalLink className="size-3" aria-hidden="true" />
               </span>
-              <span className="block text-[13px] font-semibold">
-                Opens official Fiesta&apos;26 registration form
-              </span>
-            </div>
-            <ExternalLink className="size-6 shrink-0" aria-hidden="true" />
-          </a>
-        ) : isSafeHttpUrl(event.registration_url) && !soon ? (
-          <div className="flex items-center justify-between gap-3 rounded-[20px] border-[1.5px] border-[#3B2758] bg-[#1F1230] px-4 py-3 text-sm font-bold text-[#9C97B0]">
-            <span>Registration closed (event already started)</span>
+            </a>
           </div>
         ) : (
           <Link

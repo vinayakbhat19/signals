@@ -1,46 +1,70 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
+import { AccountClient } from '@/components/account-client';
 import { AlienMascot } from '@/components/mascots';
-import { PageHeader } from '@/components/page-header';
+import { getProfile } from '@/lib/auth';
+import { getLeaderboard, getMyStamps, listStampPoints } from '@/lib/data/hunt';
+import { createClient } from '@/lib/supabase/server';
+
+export const dynamic = 'force-dynamic';
 
 export const metadata: Metadata = {
   title: 'My Account',
-  description: 'Your Fiest 2026 profile, badges, and account settings.',
+  description: "Your Fiesta'26 profile, badges, stamps, and account settings.",
 };
 
-export default function AccountPage() {
-  return (
-    <div className="mx-auto max-w-md space-y-5">
-      <PageHeader
-        title="My Account"
-        subtitle="Sign in with your @sdmcet.ac.in email or Google to vote and collect stamps."
-      />
-      <div className="flex flex-col items-center gap-4 rounded-[24px] border-[1.5px] border-[#3B2758] bg-[#1F1230] p-7 text-center">
-        <AlienMascot size={64} />
-        <div className="space-y-1">
-          <h2 className="font-heading text-xl font-extrabold text-[#F4F2FA]">
-            Accounts & Sign-in coming next (Track A)
-          </h2>
-          <p className="text-sm text-[#9C97B0]">
-            Browsing the schedule, venues, and live updates never requires an
-            account.
-          </p>
+export default async function AccountPage() {
+  const profile = await getProfile();
+
+  if (!profile) {
+    return (
+      <div className="mx-auto max-w-md space-y-5 py-4 text-center">
+        <div className="flex justify-center">
+          <AlienMascot size={72} />
         </div>
-        <div className="flex flex-wrap justify-center gap-2">
+        <h1 className="font-display text-3xl text-[#F4F2FA]">MY ACCOUNT</h1>
+        <p className="text-sm text-[#CFCBDD]">
+          Sign in with your <strong>@sdmcet.ac.in</strong> email or Google to
+          collect stamps, cast live votes, and get the Verified Student badge.
+        </p>
+        <div className="space-y-2.5 pt-2">
           <Link
-            href="/install"
-            className="inline-flex min-h-11 items-center rounded-xl bg-[#FFD60A] px-4 text-sm font-extrabold text-[#12091E]"
+            href="/signup"
+            className="flex h-14 w-full items-center justify-center rounded-[18px] bg-[#FFD60A] text-base font-extrabold text-[#12091E] shadow-[5px_5px_0_#FF4FD8]"
           >
-            Add to Home Screen
+            Create account
           </Link>
           <Link
-            href="/about"
-            className="inline-flex min-h-11 items-center rounded-xl border-[1.5px] border-[#3B2758] px-4 text-sm font-bold text-[#F4F2FA]"
+            href="/login?next=/account"
+            className="flex h-12 w-full items-center justify-center rounded-[16px] border-[1.5px] border-[#3B2758] bg-[#1F1230] text-sm font-bold text-[#F4F2FA]"
           >
-            About Fiest 2026
+            Log in
           </Link>
         </div>
       </div>
-    </div>
+    );
+  }
+
+  const supabase = await createClient();
+  const [stamps, leaderboard, points, votesRes] = await Promise.all([
+    getMyStamps(profile.id),
+    getLeaderboard(100),
+    listStampPoints(),
+    supabase
+      .from('votes')
+      .select('poll_id', { count: 'exact', head: true })
+      .eq('user_id', profile.id),
+  ]);
+
+  const myRow = leaderboard.find((r) => r.user_id === profile.id);
+
+  return (
+    <AccountClient
+      profile={profile}
+      stampsCount={stamps.length}
+      totalStamps={points.length}
+      huntRank={myRow?.rank ?? null}
+      votesCount={votesRes.count ?? 0}
+    />
   );
 }

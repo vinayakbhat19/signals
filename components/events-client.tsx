@@ -22,6 +22,7 @@ type StatusTab = 'all' | 'live' | 'soon' | 'done';
 
 const VALID_TABS = new Set<StatusTab>(['all', 'live', 'soon', 'done']);
 const VALID_CATEGORIES = new Set<string>(EVENT_CATEGORIES);
+const OFFICIAL_REGISTRATION_HUB = 'https://linktr.ee/sdmcetFiesta26';
 
 function isSafeHttpUrl(url: string | null | undefined): url is string {
   if (!url) return false;
@@ -275,6 +276,25 @@ export function EventsClient({ events, serverTime }: EventsClientProps) {
             </button>
           )}
         </div>
+
+        {/* Official Fiesta'26 Registration Hub */}
+        <a
+          href={OFFICIAL_REGISTRATION_HUB}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="flex items-center justify-between gap-3 rounded-[16px] border-[1.5px] border-[#FFD60A]/50 bg-[#1F1230] px-3.5 py-2.5 text-xs transition-colors hover:border-[#FFD60A]"
+        >
+          <span className="min-w-0 truncate font-bold text-[#F4F2FA]">
+            Official Fiesta&apos;26 Registration Hub{' '}
+            <span className="font-normal text-[#BDB8CF]">
+              · linktr.ee/sdmcetFiesta26
+            </span>
+          </span>
+          <span className="inline-flex shrink-0 items-center gap-1 rounded-lg bg-[#FFD60A] px-2.5 py-1 text-[11px] font-extrabold uppercase tracking-[0.06em] text-[#12091E]">
+            All Forms
+            <ExternalLink className="size-3" aria-hidden="true" />
+          </span>
+        </a>
       </header>
 
       {/* Event list grouped by day */}
@@ -296,10 +316,10 @@ export function EventsClient({ events, serverTime }: EventsClientProps) {
                     isCancelled ||
                     (!eventLive && !eventSoon);
                   const hostLabel = event.host_name || event.contact_info;
-                  const canRegister =
-                    eventSoon &&
-                    !isCancelled &&
-                    isSafeHttpUrl(event.registration_url);
+                  const registerHref = isSafeHttpUrl(event.registration_url)
+                    ? event.registration_url
+                    : OFFICIAL_REGISTRATION_HUB;
+                  const canRegister = eventSoon && !isCancelled;
 
                   return (
                     <article
@@ -379,9 +399,9 @@ export function EventsClient({ events, serverTime }: EventsClientProps) {
                         </div>
                       </Link>
 
-                      {canRegister && event.registration_url && (
+                      {canRegister && (
                         <a
-                          href={event.registration_url}
+                          href={registerHref}
                           target="_blank"
                           rel="noopener noreferrer"
                           className="flex min-h-11 items-center justify-center gap-1.5 rounded-[14px] bg-[#FFD60A] px-4 text-xs font-extrabold uppercase tracking-[0.06em] text-[#12091E] hover:bg-[#D8FF75]"

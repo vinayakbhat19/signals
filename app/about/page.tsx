@@ -1,12 +1,12 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
-import { Mail, MapPin, Radio } from 'lucide-react';
+import { ExternalLink, Mail, MapPin, Radio } from 'lucide-react';
 import { PageHeader } from '@/components/page-header';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { buttonVariants } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 
-const festName = process.env.NEXT_PUBLIC_FEST_NAME || 'Fiest 2026';
+const festName = process.env.NEXT_PUBLIC_FEST_NAME || "Fiesta'26";
 const collegeName =
   process.env.NEXT_PUBLIC_COLLEGE_NAME ||
   'SDM College of Engineering & Technology, Dharwad';
@@ -28,14 +28,13 @@ export default function AboutPage() {
         <CardContent className="space-y-3 pt-4 text-sm leading-relaxed text-foreground/90">
           <p>
             <strong>{festName} Live</strong> is the official real-time campus
-            guide for {festName}. See what is happening right now, what starts
-            next, where every venue is, and live scores without hunting across
-            posters or WhatsApp groups.
+            guide for {festName} (25–27 Nov 2026). See what is happening right
+            now, what starts next, where every venue is, live updates, and
+            official results without hunting across posters or WhatsApp groups.
           </p>
           <p>
-            Sign in with your Google account to star events into your personal
-            schedule and post <strong>Signals</strong> to find hackathon
-            teammates or connect with builders on campus.
+            Sign in with your email to join the campus <strong>Stamp Hunt</strong>{' '}
+            and cast verified votes during <strong>Live Audience Voting</strong>.
           </p>
           <p className="text-muted-foreground">
             Built by students for {collegeName} — lightweight, mobile-first, and
@@ -48,14 +47,14 @@ export default function AboutPage() {
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-base">
             <Mail className="size-4 text-brand" aria-hidden="true" />
-            Fest Committee Contact
+            Fest Committee & Official Registrations
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-3 text-sm text-muted-foreground">
           <p>
             Spot a schedule change, wrong room, or urgent issue? Reach out to
             the {festName} organising committee at the campus help desk or via
-            your club coordinator.
+            your event coordinator.
           </p>
           <div className="flex flex-col gap-1.5 text-foreground">
             <span className="inline-flex items-center gap-2">
@@ -63,8 +62,20 @@ export default function AboutPage() {
               Help Desk, Main Entrance — {collegeName}
             </span>
             <span className="inline-flex items-center gap-2">
+              <ExternalLink className="size-4 shrink-0 text-muted-foreground" aria-hidden="true" />
+              Registrations:{' '}
+              <a
+                href="https://linktr.ee/sdmcetFiesta26"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="font-medium text-brand underline underline-offset-4"
+              >
+                linktr.ee/sdmcetFiesta26
+              </a>
+            </span>
+            <span className="inline-flex items-center gap-2">
               <Radio className="size-4 shrink-0 text-muted-foreground" aria-hidden="true" />
-              Website:{' '}
+              College:{' '}
               <a
                 href="https://sdmcet.ac.in/"
                 target="_blank"
@@ -77,16 +88,16 @@ export default function AboutPage() {
           </div>
           <div className="pt-2 flex flex-wrap gap-2">
             <Link
-              href="/schedule"
+              href="/events"
               className={cn(buttonVariants({ variant: 'default' }), 'min-h-11 px-4')}
             >
-              Browse schedule
+              Browse events
             </Link>
             <Link
-              href="/announcements"
+              href="/updates"
               className={cn(buttonVariants({ variant: 'outline' }), 'min-h-11 px-4')}
             >
-              Latest announcements
+              Latest updates
             </Link>
           </div>
         </CardContent>
