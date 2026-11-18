@@ -4,7 +4,7 @@ import { readWithFallback } from '@/lib/resilience';
 
 export const revalidate = 30;
 
-const festName = process.env.NEXT_PUBLIC_FEST_NAME || 'Fiest 2026';
+const festName = process.env.NEXT_PUBLIC_FEST_NAME || "Fiesta'26";
 
 export default async function HomePage() {
   const fallback: LiveData = {

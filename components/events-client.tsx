@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
-import { CalendarSearch, QrCode, Search, X } from 'lucide-react';
+import { CalendarSearch, ExternalLink, QrCode, Search, X } from 'lucide-react';
 import { CATEGORY_LABELS, CATEGORY_STYLES } from '@/components/category-chip';
 import { EventCover } from '@/components/event-cover';
 import type { EventWithVenue } from '@/lib/data/events';
@@ -22,6 +22,16 @@ type StatusTab = 'all' | 'live' | 'soon' | 'done';
 
 const VALID_TABS = new Set<StatusTab>(['all', 'live', 'soon', 'done']);
 const VALID_CATEGORIES = new Set<string>(EVENT_CATEGORIES);
+
+function isSafeHttpUrl(url: string | null | undefined): url is string {
+  if (!url) return false;
+  try {
+    const parsed = new URL(url);
+    return parsed.protocol === 'http:' || parsed.protocol === 'https:';
+  } catch {
+    return false;
+  }
+}
 
 function formatShortSoon(startsAt: string, now: Date): string {
   const mins = Math.max(0, minutesUntil(startsAt, now));
@@ -286,13 +296,16 @@ export function EventsClient({ events, serverTime }: EventsClientProps) {
                     isCancelled ||
                     (!eventLive && !eventSoon);
                   const hostLabel = event.host_name || event.contact_info;
+                  const canRegister =
+                    eventSoon &&
+                    !isCancelled &&
+                    isSafeHttpUrl(event.registration_url);
 
                   return (
-                    <Link
+                    <article
                       key={event.id}
-                      href={`/events/${event.id}`}
                       className={cn(
-                        'flex gap-3 rounded-[22px] p-2.5 transition-colors',
+                        'flex flex-col gap-2.5 rounded-[22px] p-2.5 transition-colors',
                         eventLive
                           ? 'border-2 border-[#FF4FA3] bg-[#16141F]'
                           : isDone
@@ -300,67 +313,84 @@ export function EventsClient({ events, serverTime }: EventsClientProps) {
                             : 'border-[1.5px] border-[#2E2A3D] bg-[#16141F] hover:border-[#C6FF3D]/60'
                       )}
                     >
-                      <EventCover
-                        title={event.title}
-                        category={event.category}
-                        coverUrl={event.cover_url}
-                        variant="thumb"
-                      />
+                      <Link
+                        href={`/events/${event.id}`}
+                        className="flex gap-3 rounded-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#C6FF3D]"
+                      >
+                        <EventCover
+                          title={event.title}
+                          category={event.category}
+                          coverUrl={event.cover_url}
+                          variant="thumb"
+                        />
 
-                      <div className="flex min-w-0 flex-1 flex-col justify-center gap-1">
-                        <div className="flex flex-wrap items-center gap-1.5">
-                          {eventLive && (
-                            <span className="inline-flex items-center gap-1.5 rounded-full bg-[#FF4FA3] px-2 py-0.5 text-[10px] font-extrabold uppercase tracking-[0.08em] text-[#0B0A12]">
-                              <span className="live-dot size-1.5 rounded-full bg-[#0B0A12]" />
-                              LIVE
+                        <div className="flex min-w-0 flex-1 flex-col justify-center gap-1">
+                          <div className="flex flex-wrap items-center gap-1.5">
+                            {eventLive && (
+                              <span className="inline-flex items-center gap-1.5 rounded-full bg-[#FF4FA3] px-2 py-0.5 text-[10px] font-extrabold uppercase tracking-[0.08em] text-[#0B0A12]">
+                                <span className="live-dot size-1.5 rounded-full bg-[#0B0A12]" />
+                                LIVE
+                              </span>
+                            )}
+                            {!eventLive && eventSoon && (
+                              <span className="rounded-full bg-[#FFE14D] px-2 py-0.5 text-[10px] font-extrabold uppercase tracking-[0.08em] text-[#0B0A12]">
+                                {formatShortSoon(event.starts_at, new Date(serverTime))}
+                              </span>
+                            )}
+                            {event.status === 'delayed' && (
+                              <span className="rounded-full bg-[#FF9F43] px-2 py-0.5 text-[10px] font-extrabold uppercase tracking-[0.08em] text-[#0B0A12]">
+                                DELAYED
+                              </span>
+                            )}
+                            {isCancelled && (
+                              <span className="rounded-full bg-[#FF4FA3]/25 px-2 py-0.5 text-[10px] font-extrabold uppercase tracking-[0.08em] text-[#FF4FA3]">
+                                CANCELLED
+                              </span>
+                            )}
+                            {!eventLive && !eventSoon && !isCancelled && (
+                              <span className="rounded-full bg-[#3A3549] px-2 py-0.5 text-[10px] font-extrabold uppercase tracking-[0.08em] text-[#F4F2FA]">
+                                DONE
+                              </span>
+                            )}
+                            <span className="rounded-full border border-[#2E2A3D] px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.06em] text-[#CFCBDD]">
+                              {CATEGORY_LABELS[event.category]}
                             </span>
-                          )}
-                          {!eventLive && eventSoon && (
-                            <span className="rounded-full bg-[#FFE14D] px-2 py-0.5 text-[10px] font-extrabold uppercase tracking-[0.08em] text-[#0B0A12]">
-                              {formatShortSoon(event.starts_at, new Date(serverTime))}
-                            </span>
-                          )}
-                          {event.status === 'delayed' && (
-                            <span className="rounded-full bg-[#FF9F43] px-2 py-0.5 text-[10px] font-extrabold uppercase tracking-[0.08em] text-[#0B0A12]">
-                              DELAYED
-                            </span>
-                          )}
-                          {isCancelled && (
-                            <span className="rounded-full bg-[#FF4FA3]/25 px-2 py-0.5 text-[10px] font-extrabold uppercase tracking-[0.08em] text-[#FF4FA3]">
-                              CANCELLED
-                            </span>
-                          )}
-                          {!eventLive && !eventSoon && !isCancelled && (
-                            <span className="rounded-full bg-[#3A3549] px-2 py-0.5 text-[10px] font-extrabold uppercase tracking-[0.08em] text-[#F4F2FA]">
-                              DONE
-                            </span>
-                          )}
-                          <span className="rounded-full border border-[#2E2A3D] px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.06em] text-[#CFCBDD]">
-                            {CATEGORY_LABELS[event.category]}
+                          </div>
+
+                          <span
+                            className={cn(
+                              'truncate text-[16px] font-extrabold leading-snug text-[#F4F2FA]',
+                              isCancelled && 'line-through text-[#9C97B0]'
+                            )}
+                          >
+                            {event.title}
                           </span>
+
+                          <span className="truncate text-xs text-[#CFCBDD]">
+                            {formatRange(event.starts_at, event.ends_at)} ·{' '}
+                            {event.venue_name ?? 'Venue TBA'}
+                          </span>
+
+                          {hostLabel && (
+                            <span className="truncate text-xs text-[#9C97B0]">
+                              Hosted by {hostLabel}
+                            </span>
+                          )}
                         </div>
+                      </Link>
 
-                        <span
-                          className={cn(
-                            'truncate text-[16px] font-extrabold leading-snug text-[#F4F2FA]',
-                            isCancelled && 'line-through text-[#9C97B0]'
-                          )}
+                      {canRegister && event.registration_url && (
+                        <a
+                          href={event.registration_url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="flex min-h-11 items-center justify-center gap-1.5 rounded-[14px] bg-[#C6FF3D] px-4 text-xs font-extrabold uppercase tracking-[0.06em] text-[#0B0A12] hover:bg-[#D8FF75]"
                         >
-                          {event.title}
-                        </span>
-
-                        <span className="truncate text-xs text-[#CFCBDD]">
-                          {formatRange(event.starts_at, event.ends_at)} ·{' '}
-                          {event.venue_name ?? 'Venue TBA'}
-                        </span>
-
-                        {hostLabel && (
-                          <span className="truncate text-xs text-[#9C97B0]">
-                            Hosted by {hostLabel}
-                          </span>
-                        )}
-                      </div>
-                    </Link>
+                          Register
+                          <ExternalLink className="size-3.5" aria-hidden="true" />
+                        </a>
+                      )}
+                    </article>
                   );
                 })}
               </div>

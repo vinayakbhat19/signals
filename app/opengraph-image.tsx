@@ -7,7 +7,7 @@ export const size = {
 
 export const contentType = 'image/png';
 
-const festName = process.env.NEXT_PUBLIC_FEST_NAME || 'Fiest 2026';
+const festName = process.env.NEXT_PUBLIC_FEST_NAME || "Fiesta'26";
 const collegeName =
   process.env.NEXT_PUBLIC_COLLEGE_NAME ||
   'SDM College of Engineering & Technology, Dharwad';

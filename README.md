@@ -23,6 +23,7 @@ Everything needed to build **Fest Live** (the live fest guide plus the Signals "
 | `supabase/storage.sql` | Public buckets for event covers and contestant photos; only organisers can upload | Run after `schema.sql` |
 | `supabase/seed_hunt.sql` | Stamp Hunt test data: opens the hunt for 12 h and creates a stamp point per seeded event (safe to re-run) | After `schema_stamps.sql` and `seed.sql`, development only |
 | `supabase/seed.sql` | Sample venues, events, announcements and a live score | During building; deleted on 24 Nov |
+| `templates/fiesta26_events.csv` | **The real Fiesta'26 competitions** (21) with their Google Form registration links. Fill in venue, start and end, then import | Send to the committee |
 | `templates/schedule_template.csv` | Columns for the committee's schedule sheet | Send to the committee today |
 
 ## Order

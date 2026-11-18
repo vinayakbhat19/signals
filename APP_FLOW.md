@@ -249,4 +249,4 @@ Upload CSV or Excel (`.xlsx`). The first row is the header. Columns (any order, 
 | phone | no | **no** |
 | order | no (performance order) | yes |
 
-Template: `templates/participants_template.csv`. Re-uploading the same sheet updates people with the same email instead of duplicating them. Exports (CSV and Excel) include all columns plus status and check-in time.
+Template: `templates/participants_template.csv`. **Fiesta'26 registrations come from Google Forms:** the host opens the form's responses → Google Sheets → File → Download → CSV or Excel, and uploads that file directly; the importer recognises common Google Forms headers (Full Name, Email Address, Phone Number, College Name, Team Name) and lets the host map anything else. Re-uploading the same sheet updates people with the same email instead of duplicating them. Exports (CSV and Excel) include all columns plus status and check-in time.

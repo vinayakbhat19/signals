@@ -105,7 +105,7 @@ export default async function EventDetailPage({
 
   const dayStr = formatDay(event.starts_at);
   const rangeStr = formatRange(event.starts_at, event.ends_at);
-  const festName = process.env.NEXT_PUBLIC_FEST_NAME || 'Fiest 2026';
+  const festName = process.env.NEXT_PUBLIC_FEST_NAME || "Fiesta'26";
 
   const gcalParams = new URLSearchParams({
     action: 'TEMPLATE',
@@ -269,8 +269,8 @@ export default async function EventDetailPage({
           />
         </Link>
 
-        {/* Primary Lime CTA: Registration or Audience Voting */}
-        {isSafeHttpUrl(event.registration_url) ? (
+        {/* Primary Lime CTA: Registration (only before event starts) or Audience Voting */}
+        {isSafeHttpUrl(event.registration_url) && soon && !isCancelled ? (
           <a
             href={event.registration_url}
             target="_blank"
@@ -279,14 +279,18 @@ export default async function EventDetailPage({
           >
             <div className="space-y-0.5">
               <span className="block text-base font-extrabold">
-                Register for this event
+                Register for {event.title}
               </span>
               <span className="block text-[13px] font-semibold">
-                Opens official fest registration form
+                Opens official Fiesta&apos;26 registration form
               </span>
             </div>
             <ExternalLink className="size-6 shrink-0" aria-hidden="true" />
           </a>
+        ) : isSafeHttpUrl(event.registration_url) && !soon ? (
+          <div className="flex items-center justify-between gap-3 rounded-[20px] border-[1.5px] border-[#2E2A3D] bg-[#16141F] px-4 py-3 text-sm font-bold text-[#9C97B0]">
+            <span>Registration closed (event already started)</span>
+          </div>
         ) : (
           <Link
             href={`/vote/${event.id}`}
