@@ -1,7 +1,7 @@
-code,title,description,category,venue,date,start,end,registration_url,contact_info
-T01,24-hour Hackathon,Build anything. Teams of 2-4.,tech,Computer Lab 3,2026-11-25,09:00,21:00,https://example.com/register,Tech Committee
-C01,Battle of Bands,Inter-college band competition.,cultural,Main Stage,2026-11-25,17:00,19:30,,Cultural Committee
-W01,Intro to Flutter Workshop,Bring a laptop with Flutter installed.,workshop,Seminar Hall 1,2026-11-25,11:00,13:00,https://example.com/flutter,App Dev Club
-S01,Inter-college Cricket Final,"Final match, 15 overs a side.",sports,Sports Ground,2026-11-25,14:00,17:00,,Sports Council
-K01,Startup Talk: Building in College,Alumni founders share their story.,talk,Seminar Hall 1,2026-11-25,15:00,16:00,,E-Cell
-O01,Inauguration,Chief guest and opening ceremony.,official,Main Stage,2026-11-25,09:30,10:15,,Fest Committee
+code,title,description,category,venue,date,start,end,registration_url,contact_info,host_name,host_coordinator
+T01,24-hour Hackathon,Build anything. Teams of 2-4.,tech,Computer Lab 3,2026-11-25,09:00,21:00,https://example.com/register,Tech Committee,Coding Club,[Name]
+C01,Battle of Bands,Inter-college band competition.,cultural,Main Stage,2026-11-25,17:00,19:30,,Cultural Committee,Cultural Committee,[Name]
+W01,Intro to Flutter Workshop,Bring a laptop with Flutter installed.,workshop,Seminar Hall 1,2026-11-25,11:00,13:00,https://example.com/flutter,App Dev Club,App Dev Club,[Name]
+S01,Inter-college Cricket Final,"Final match, 15 overs a side.",sports,Sports Ground,2026-11-25,14:00,17:00,,Sports Council,Sports Council,[Name]
+K01,Startup Talk: Building in College,Alumni founders share their story.,talk,Seminar Hall 1,2026-11-25,15:00,16:00,,E-Cell,E-Cell,[Name]
+O01,Inauguration,Chief guest and opening ceremony.,official,Main Stage,2026-11-25,09:30,10:15,,Fest Committee,Fest Committee,[Name]

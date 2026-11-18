@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Fest Live flow map</title>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500..800&amp;family=Inter:wght@400;600;700&amp;display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0B0A12;--card:#16141F;--line:#2E2A3D;--text:#F4F2FA;--muted:#BDB8CF;--accent:#C6FF3D}
+body{margin:0;background:var(--bg);color:var(--text);font-family:Inter,system-ui,sans-serif;padding:32px 16px}
+h1{font-family:'Bricolage Grotesque',sans-serif;font-size:40px;margin:0 0 6px}
+p.lead{color:var(--muted);margin:0 0 28px;max-width:760px;line-height:1.5}
+section{margin-bottom:40px}
+h2{font-family:'Bricolage Grotesque',sans-serif;font-size:24px;margin:0 0 14px;color:var(--accent)}
+.row{display:flex;align-items:center;gap:14px;overflow-x:auto;padding-bottom:10px}
+.card{margin:0;flex:none}
+.frame{overflow:hidden;border-radius:18px;border:1.5px solid var(--line);background:var(--card)}
+.frame iframe{border:0;transform-origin:0 0;pointer-events:none;display:block}
+figcaption{margin-top:8px;font-size:13px;color:var(--muted)}
+figcaption b{color:var(--accent)}
+.arrow{font-size:28px;color:var(--accent);flex:none}
+a:focus-visible .frame{outline:3px solid var(--accent);outline-offset:3px}
+</style>
+</head>
+<body>
+<h1>Fest Live · screen flow</h1>
+<p class="lead">Every screen of the first launch, in the order people move through them. Click any screen to open it full size; inside, buttons and tabs link to the next screens, so you can tap through the whole app from Welcome to voting. Screens use sample data.</p>
+<section><h2>1 · Start and login</h2><div class="row"><figure class="card"><a href="screens/01-welcome.html" target="_blank" rel="noopener" aria-label="Open Welcome (first open)">
+<div class="frame" style="width:164px;height:437px"><iframe src="screens/01-welcome.html" title="Welcome (first open)" loading="lazy" tabindex="-1" style="width:390px;height:1040px;transform:scale(0.42)"></iframe></div></a>
+<figcaption><b>01</b> Welcome (first open)</figcaption></figure><span class="arrow" aria-hidden="true">→</span><figure class="card"><a href="screens/02-cookies.html" target="_blank" rel="noopener" aria-label="Open Cookie notice">
+<div class="frame" style="width:164px;height:437px"><iframe src="screens/02-cookies.html" title="Cookie notice" loading="lazy" tabindex="-1" style="width:390px;height:1040px;transform:scale(0.42)"></iframe></div></a>
+<figcaption><b>02</b> Cookie notice</figcaption></figure><span class="arrow" aria-hidden="true">→</span><figure class="card"><a href="screens/03-sign-up.html" target="_blank" rel="noopener" aria-label="Open Create account">
+<div class="frame" style="width:164px;height:437px"><iframe src="screens/03-sign-up.html" title="Create account" loading="lazy" tabindex="-1" style="width:390px;height:1040px;transform:scale(0.42)"></iframe></div></a>
+<figcaption><b>03</b> Create account</figcaption></figure><span class="arrow" aria-hidden="true">→</span><figure class="card"><a href="screens/04-check-email.html" target="_blank" rel="noopener" aria-label="Open Check your email">
+<div class="frame" style="width:164px;height:437px"><iframe src="screens/04-check-email.html" title="Check your email" loading="lazy" tabindex="-1" style="width:390px;height:1040px;transform:scale(0.42)"></iframe></div></a>
+<figcaption><b>04</b> Check your email</figcaption></figure><span class="arrow" aria-hidden="true">→</span><figure class="card"><a href="screens/05-verified.html" target="_blank" rel="noopener" aria-label="Open You&#x27;re verified">
+<div class="frame" style="width:164px;height:437px"><iframe src="screens/05-verified.html" title="You&#x27;re verified" loading="lazy" tabindex="-1" style="width:390px;height:1040px;transform:scale(0.42)"></iframe></div></a>
+<figcaption><b>05</b> You&#x27;re verified</figcaption></figure><span class="arrow" aria-hidden="true">→</span><figure class="card"><a href="screens/06-add-to-home-screen.html" target="_blank" rel="noopener" aria-label="Open Add to Home Screen">
+<div class="frame" style="width:164px;height:437px"><iframe src="screens/06-add-to-home-screen.html" title="Add to Home Screen" loading="lazy" tabindex="-1" style="width:390px;height:1040px;transform:scale(0.42)"></iframe></div></a>
+<figcaption><b>06</b> Add to Home Screen</figcaption></figure><span class="arrow" aria-hidden="true">→</span><figure class="card"><a href="screens/07-log-in.html" target="_blank" rel="noopener" aria-label="Open Log in">
+<div class="frame" style="width:164px;height:437px"><iframe src="screens/07-log-in.html" title="Log in" loading="lazy" tabindex="-1" style="width:390px;height:1040px;transform:scale(0.42)"></iframe></div></a>
+<figcaption><b>07</b> Log in</figcaption></figure></div></section><section><h2>2 · Events</h2><div class="row"><figure class="card"><a href="screens/10-home.html" target="_blank" rel="noopener" aria-label="Open Home">
+<div class="frame" style="width:164px;height:437px"><iframe src="screens/10-home.html" title="Home" loading="lazy" tabindex="-1" style="width:390px;height:1040px;transform:scale(0.42)"></iframe></div></a>
+<figcaption><b>10</b> Home</figcaption></figure><span class="arrow" aria-hidden="true">→</span><figure class="card"><a href="screens/11-events.html" target="_blank" rel="noopener" aria-label="Open Events list">
+<div class="frame" style="width:164px;height:437px"><iframe src="screens/11-events.html" title="Events list" loading="lazy" tabindex="-1" style="width:390px;height:1040px;transform:scale(0.42)"></iframe></div></a>
+<figcaption><b>11</b> Events list</figcaption></figure><span class="arrow" aria-hidden="true">→</span><figure class="card"><a href="screens/12-event.html" target="_blank" rel="noopener" aria-label="Open Event page">
+<div class="frame" style="width:164px;height:437px"><iframe src="screens/12-event.html" title="Event page" loading="lazy" tabindex="-1" style="width:390px;height:1040px;transform:scale(0.42)"></iframe></div></a>
+<figcaption><b>12</b> Event page</figcaption></figure><span class="arrow" aria-hidden="true">→</span><figure class="card"><a href="screens/13-line-up.html" target="_blank" rel="noopener" aria-label="Open Line-up (participants)">
+<div class="frame" style="width:164px;height:437px"><iframe src="screens/13-line-up.html" title="Line-up (participants)" loading="lazy" tabindex="-1" style="width:390px;height:1040px;transform:scale(0.42)"></iframe></div></a>
+<figcaption><b>13</b> Line-up (participants)</figcaption></figure><span class="arrow" aria-hidden="true">→</span><figure class="card"><a href="screens/14-account.html" target="_blank" rel="noopener" aria-label="Open My account">
+<div class="frame" style="width:164px;height:437px"><iframe src="screens/14-account.html" title="My account" loading="lazy" tabindex="-1" style="width:390px;height:1040px;transform:scale(0.42)"></iframe></div></a>
+<figcaption><b>14</b> My account</figcaption></figure></div></section><section><h2>3 · Scan and Stamp Hunt</h2><div class="row"><figure class="card"><a href="screens/20-scan.html" target="_blank" rel="noopener" aria-label="Open QR scanner">
+<div class="frame" style="width:164px;height:437px"><iframe src="screens/20-scan.html" title="QR scanner" loading="lazy" tabindex="-1" style="width:390px;height:1040px;transform:scale(0.42)"></iframe></div></a>
+<figcaption><b>20</b> QR scanner</figcaption></figure><span class="arrow" aria-hidden="true">→</span><figure class="card"><a href="screens/21-stamp-collected.html" target="_blank" rel="noopener" aria-label="Open Stamp collected">
+<div class="frame" style="width:164px;height:437px"><iframe src="screens/21-stamp-collected.html" title="Stamp collected" loading="lazy" tabindex="-1" style="width:390px;height:1040px;transform:scale(0.42)"></iframe></div></a>
+<figcaption><b>21</b> Stamp collected</figcaption></figure><span class="arrow" aria-hidden="true">→</span><figure class="card"><a href="screens/22-hunt.html" target="_blank" rel="noopener" aria-label="Open Stamp Hunt passport">
+<div class="frame" style="width:164px;height:437px"><iframe src="screens/22-hunt.html" title="Stamp Hunt passport" loading="lazy" tabindex="-1" style="width:390px;height:1040px;transform:scale(0.42)"></iframe></div></a>
+<figcaption><b>22</b> Stamp Hunt passport</figcaption></figure><span class="arrow" aria-hidden="true">→</span><figure class="card"><a href="screens/23-leaderboard.html" target="_blank" rel="noopener" aria-label="Open Leaderboard">
+<div class="frame" style="width:164px;height:437px"><iframe src="screens/23-leaderboard.html" title="Leaderboard" loading="lazy" tabindex="-1" style="width:390px;height:1040px;transform:scale(0.42)"></iframe></div></a>
+<figcaption><b>23</b> Leaderboard</figcaption></figure></div></section><section><h2>4 · Voting</h2><div class="row"><figure class="card"><a href="screens/30-vote.html" target="_blank" rel="noopener" aria-label="Open Audience vote">
+<div class="frame" style="width:164px;height:437px"><iframe src="screens/30-vote.html" title="Audience vote" loading="lazy" tabindex="-1" style="width:390px;height:1040px;transform:scale(0.42)"></iframe></div></a>
+<figcaption><b>30</b> Audience vote</figcaption></figure><span class="arrow" aria-hidden="true">→</span><figure class="card"><a href="screens/31-stage-screen.html" target="_blank" rel="noopener" aria-label="Open Stage screen (16:9)">
+<div class="frame" style="width:320px;height:180px"><iframe src="screens/31-stage-screen.html" title="Stage screen (16:9)" loading="lazy" tabindex="-1" style="width:1280px;height:720px;transform:scale(0.25)"></iframe></div></a>
+<figcaption><b>31</b> Stage screen (16:9)</figcaption></figure></div></section><section><h2>5 · Organiser and host</h2><div class="row"><figure class="card"><a href="screens/40-control-room.html" target="_blank" rel="noopener" aria-label="Open Control room">
+<div class="frame" style="width:164px;height:437px"><iframe src="screens/40-control-room.html" title="Control room" loading="lazy" tabindex="-1" style="width:390px;height:1040px;transform:scale(0.42)"></iframe></div></a>
+<figcaption><b>40</b> Control room</figcaption></figure><span class="arrow" aria-hidden="true">→</span><figure class="card"><a href="screens/41-event-editor.html" target="_blank" rel="noopener" aria-label="Open Event editor + cover">
+<div class="frame" style="width:164px;height:437px"><iframe src="screens/41-event-editor.html" title="Event editor + cover" loading="lazy" tabindex="-1" style="width:390px;height:1040px;transform:scale(0.42)"></iframe></div></a>
+<figcaption><b>41</b> Event editor + cover</figcaption></figure><span class="arrow" aria-hidden="true">→</span><figure class="card"><a href="screens/42-host-participants.html" target="_blank" rel="noopener" aria-label="Open Host: participants upload/export">
+<div class="frame" style="width:164px;height:437px"><iframe src="screens/42-host-participants.html" title="Host: participants upload/export" loading="lazy" tabindex="-1" style="width:390px;height:1040px;transform:scale(0.42)"></iframe></div></a>
+<figcaption><b>42</b> Host: participants upload/export</figcaption></figure><span class="arrow" aria-hidden="true">→</span><figure class="card"><a href="screens/43-voting-control.html" target="_blank" rel="noopener" aria-label="Open Voting control">
+<div class="frame" style="width:164px;height:437px"><iframe src="screens/43-voting-control.html" title="Voting control" loading="lazy" tabindex="-1" style="width:390px;height:1040px;transform:scale(0.42)"></iframe></div></a>
+<figcaption><b>43</b> Voting control</figcaption></figure><span class="arrow" aria-hidden="true">→</span><figure class="card"><a href="screens/44-qr-generator.html" target="_blank" rel="noopener" aria-label="Open QR generator">
+<div class="frame" style="width:164px;height:437px"><iframe src="screens/44-qr-generator.html" title="QR generator" loading="lazy" tabindex="-1" style="width:390px;height:1040px;transform:scale(0.42)"></iframe></div></a>
+<figcaption><b>44</b> QR generator</figcaption></figure><span class="arrow" aria-hidden="true">→</span><figure class="card"><a href="screens/45-qr-poster.html" target="_blank" rel="noopener" aria-label="Open QR poster (A4)">
+<div class="frame" style="width:238px;height:337px"><iframe src="screens/45-qr-poster.html" title="QR poster (A4)" loading="lazy" tabindex="-1" style="width:794px;height:1123px;transform:scale(0.3)"></iframe></div></a>
+<figcaption><b>45</b> QR poster (A4)</figcaption></figure><span class="arrow" aria-hidden="true">→</span><figure class="card"><a href="screens/46-stamp-station.html" target="_blank" rel="noopener" aria-label="Open Stamp Station">
+<div class="frame" style="width:164px;height:437px"><iframe src="screens/46-stamp-station.html" title="Stamp Station" loading="lazy" tabindex="-1" style="width:390px;height:1040px;transform:scale(0.42)"></iframe></div></a>
+<figcaption><b>46</b> Stamp Station</figcaption></figure></div></section><section><h2>Later (after the fest)</h2><div class="row"><figure class="card"><a href="screens/90-signals.html" target="_blank" rel="noopener" aria-label="Open Signals board">
+<div class="frame" style="width:164px;height:437px"><iframe src="screens/90-signals.html" title="Signals board" loading="lazy" tabindex="-1" style="width:390px;height:1040px;transform:scale(0.42)"></iframe></div></a>
+<figcaption><b>90</b> Signals board</figcaption></figure><span class="arrow" aria-hidden="true">→</span><figure class="card"><a href="screens/91-new-signal.html" target="_blank" rel="noopener" aria-label="Open Raise a Signal">
+<div class="frame" style="width:164px;height:437px"><iframe src="screens/91-new-signal.html" title="Raise a Signal" loading="lazy" tabindex="-1" style="width:390px;height:1040px;transform:scale(0.42)"></iframe></div></a>
+<figcaption><b>91</b> Raise a Signal</figcaption></figure><span class="arrow" aria-hidden="true">→</span><figure class="card"><a href="screens/92-my-schedule.html" target="_blank" rel="noopener" aria-label="Open My schedule">
+<div class="frame" style="width:164px;height:437px"><iframe src="screens/92-my-schedule.html" title="My schedule" loading="lazy" tabindex="-1" style="width:390px;height:1040px;transform:scale(0.42)"></iframe></div></a>
+<figcaption><b>92</b> My schedule</figcaption></figure><span class="arrow" aria-hidden="true">→</span><figure class="card"><a href="screens/93-football.html" target="_blank" rel="noopener" aria-label="Open Football live">
+<div class="frame" style="width:164px;height:437px"><iframe src="screens/93-football.html" title="Football live" loading="lazy" tabindex="-1" style="width:390px;height:1040px;transform:scale(0.42)"></iframe></div></a>
+<figcaption><b>93</b> Football live</figcaption></figure><span class="arrow" aria-hidden="true">→</span><figure class="card"><a href="screens/94-scorer.html" target="_blank" rel="noopener" aria-label="Open Scorer control">
+<div class="frame" style="width:164px;height:437px"><iframe src="screens/94-scorer.html" title="Scorer control" loading="lazy" tabindex="-1" style="width:390px;height:1040px;transform:scale(0.42)"></iframe></div></a>
+<figcaption><b>94</b> Scorer control</figcaption></figure></div></section>
+</body>
+</html>

@@ -1,11 +1,11 @@
 # Project rules for the coding agent (Fest Live)
 
-Read this file and `PRD.md` before every task. If a request conflicts with these rules, stop and ask.
+Read this file and `PRD.md` (especially section 0, the launch scope) before every task. If a request conflicts with these rules, stop and ask.
 
 ## Stack (do not change without asking)
 - Next.js (latest stable) with the **App Router**, **TypeScript strict**, Tailwind CSS, shadcn/ui.
 - Supabase via `@supabase/ssr` and `@supabase/supabase-js`. No other backend, no ORM.
-- Libraries allowed: `swr`, `zod`, `papaparse`, `qrcode`, `date-fns`, `date-fns-tz`, `lucide-react`, `@vercel/analytics`. Ask before adding anything else.
+- Libraries allowed: `swr`, `zod`, `papaparse`, `qrcode`, `date-fns`, `date-fns-tz`, `lucide-react`, `@vercel/analytics`, `@vercel/blob`, `@upstash/ratelimit`, `@upstash/redis`. Ask before adding anything else.
 - Package manager: npm.
 
 ## Folder layout
@@ -29,6 +29,12 @@ supabase/             schema.sql, seed.sql (already written; do not rewrite)
 4. Every organiser write (server action) calls `revalidatePath` for the affected pages and `/api/live`, so changes appear immediately.
 5. Signed-in features (stars, signals, admin) use the cookie client in `lib/supabase/server.ts` and are dynamic.
 
+## Reliability (see SPORTS_AND_RELIABILITY.md)
+- Every public read goes through `readWithFallback` (database → Blob snapshot → bundled file) with a 3 s timeout.
+- Every organiser or scorer write: rate-limited, then refresh caches, then write the Blob snapshot (a snapshot failure never fails the save).
+- Votes are added only through `rpc('cast_vote')`; never select `secret` from `polls`; never show who voted for whom.
+- Clients poll only while the tab is visible and keep the last good data.
+
 ## Security
 - Row Level Security is already defined in `supabase/schema.sql`. Do not disable it and do not rely on the UI alone: every server action checks the user and role again.
 - **Never `select('*')` from `signals`.** List the columns. The `contact` column is not readable; get it with `supabase.rpc('get_signal_contact', { p_signal_id })`.
@@ -36,16 +42,18 @@ supabase/             schema.sql, seed.sql (already written; do not rewrite)
 - `SUPABASE_SERVICE_ROLE_KEY` is used **only** in `lib/supabase/admin.ts`, only in server code (`import 'server-only'`), and only for "delete my account." Never prefix it with `NEXT_PUBLIC_`.
 - Validate every form with zod on the server. Escape nothing by hand: render text as text, never `dangerouslySetInnerHTML`.
 - Do not store or ask for phone numbers, Aadhaar, location or anything not in the PRD.
+- Never select `secret` or `print_code` from `stamp_points`; stamps are added only through `rpc('claim_stamp')`.
+- Students read participants only through `participants_public`; emails and phones are for hosts and organisers only.
 
 ## Time
 - All times are stored as `timestamptz` and shown in **Asia/Kolkata** via helpers in `lib/time.ts` (`formatTime`, `formatDay`, `isLive`, `toIstDate`). Never use the server's local time zone.
 - "Now" on the client comes from `serverTime` in `/api/live` plus elapsed time, so wrong phone clocks don't break "Happening now."
 
 ## UI
+- Follow the attached design screenshots (dark "Neon Night" theme: background #0B0A12, cards #16141F, borders #2E2A3D, text #F4F2FA, accent lime #C6FF3D, pink #FF4FA3, cyan #22D3EE, violet #A78BFA, orange #FF9F43, yellow #FFE14D; headings Bricolage Grotesque 800, body Inter; mascots as inline SVG with CSS animations, disabled under prefers-reduced-motion). Dark mode only.
 - Mobile first: design at 390 px wide, then check 768 px and 1280 px.
-- Bottom tab bar on mobile: Home, Schedule, Signals, My, More.
-- Brand colour `#6D28D9` (placeholder — easily swappable later); category colours: tech blue, cultural pink, sports green, workshop orange, talk purple, fun yellow, official grey.
-- Support light and dark mode (follow the system).
+- Bottom tab bar on mobile: Home, Events, SCAN (raised centre button), Vote, Hunt. My account opens from the avatar on Home. Follow `APP_FLOW.md` for every route and link.
+- Category colours: tech cyan, cultural pink, sports lime, workshop orange, talk violet, fun yellow, official grey.
 - Tap targets ≥ 44 px; text contrast WCAG AA; images use `next/image`.
 - Every list has a loading skeleton and an empty state with a helpful sentence.
 - Keep public pages light: no heavy animation libraries; JS under 200 KB gzip.

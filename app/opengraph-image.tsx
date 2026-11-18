@@ -23,9 +23,8 @@ export default function OpenGraphImage() {
           flexDirection: 'column',
           justifyContent: 'space-between',
           padding: '64px',
-          background:
-            'linear-gradient(135deg, #4C1D95 0%, #6D28D9 55%, #7C3AED 100%)',
-          color: '#FFFFFF',
+          background: '#0B0A12',
+          color: '#F4F2FA',
           fontFamily: 'system-ui, sans-serif',
         }}
       >
@@ -34,27 +33,35 @@ export default function OpenGraphImage() {
             display: 'flex',
             alignItems: 'center',
             gap: '14px',
-            fontSize: 28,
-            fontWeight: 600,
-            opacity: 0.92,
           }}
         >
           <div
             style={{
-              width: 16,
-              height: 16,
+              background: '#C6FF3D',
+              color: '#0B0A12',
+              padding: '10px 22px',
               borderRadius: 9999,
-              background: '#34D399',
+              fontSize: 24,
+              fontWeight: 800,
+              letterSpacing: '0.06em',
             }}
-          />
-          <span>LIVE CAMPUS GUIDE</span>
+          >
+            FEST.LIVE · LIVE CAMPUS GUIDE
+          </div>
         </div>
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-          <div style={{ fontSize: 84, fontWeight: 800, lineHeight: 1.05 }}>
+          <div
+            style={{
+              fontSize: 92,
+              fontWeight: 800,
+              lineHeight: 1.0,
+              color: '#F4F2FA',
+            }}
+          >
             {festName}
           </div>
-          <div style={{ fontSize: 34, opacity: 0.9, maxWidth: '920px' }}>
+          <div style={{ fontSize: 34, color: '#9C97B0', maxWidth: '920px' }}>
             {collegeName}
           </div>
         </div>
@@ -62,18 +69,51 @@ export default function OpenGraphImage() {
         <div
           style={{
             display: 'flex',
-            gap: '24px',
-            fontSize: 24,
-            opacity: 0.85,
+            gap: '16px',
+            fontSize: 22,
+            fontWeight: 700,
           }}
         >
-          <span>Happening Now</span>
-          <span>•</span>
-          <span>Schedule & Venues</span>
-          <span>•</span>
-          <span>Live Results</span>
-          <span>•</span>
-          <span>Signals</span>
+          <span
+            style={{
+              background: '#FF4FA3',
+              color: '#0B0A12',
+              padding: '8px 18px',
+              borderRadius: 9999,
+            }}
+          >
+            Happening Now
+          </span>
+          <span
+            style={{
+              background: '#22D3EE',
+              color: '#0B0A12',
+              padding: '8px 18px',
+              borderRadius: 9999,
+            }}
+          >
+            Events & Venues
+          </span>
+          <span
+            style={{
+              background: '#C6FF3D',
+              color: '#0B0A12',
+              padding: '8px 18px',
+              borderRadius: 9999,
+            }}
+          >
+            Audience Vote
+          </span>
+          <span
+            style={{
+              background: '#A78BFA',
+              color: '#0B0A12',
+              padding: '8px 18px',
+              borderRadius: 9999,
+            }}
+          >
+            Stamp Hunt
+          </span>
         </div>
       </div>
     ),

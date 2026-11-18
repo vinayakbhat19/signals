@@ -1,89 +1,67 @@
 'use client';
 
-import { useEffect, useState, useSyncExternalStore } from 'react';
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import useSWR from 'swr';
 import {
-  AlertTriangle,
-  ArrowRight,
-  CalendarDays,
+  ChevronRight,
   MapPin,
   Megaphone,
-  Radio,
   RefreshCw,
   Trophy,
-  X,
 } from 'lucide-react';
-import { EventCard } from '@/components/event-card';
-import { EmptyState } from '@/components/empty-state';
-import { PageHeader } from '@/components/page-header';
-import { Badge } from '@/components/ui/badge';
-import { Button, buttonVariants } from '@/components/ui/button';
+import { CATEGORY_DOT_COLOR, CATEGORY_LABELS } from '@/components/category-chip';
+import {
+  AlienMascot,
+  HuntMascots,
+  MusicMascot,
+  TechMascot,
+} from '@/components/mascots';
 import type { LiveData } from '@/lib/data/live';
-import { formatCountdown, formatTime, formatTimeAgo } from '@/lib/time';
+import { formatDay, formatTime, minutesUntil } from '@/lib/time';
 import { cn } from '@/lib/utils';
 
-const DISMISSED_URGENT_KEY = 'fest-live:dismissed-urgent-id';
-
-const urgentListeners = new Set<() => void>();
-
-function subscribeUrgentDismissal(callback: () => void) {
-  urgentListeners.add(callback);
-  if (typeof window !== 'undefined') {
-    window.addEventListener('storage', callback);
-  }
-  return () => {
-    urgentListeners.delete(callback);
-    if (typeof window !== 'undefined') {
-      window.removeEventListener('storage', callback);
-    }
-  };
+interface LiveApiResponse extends LiveData {
+  _source?: 'db' | 'cache' | 'fallback';
 }
 
-function getDismissedUrgentSnapshot(): string | null {
-  try {
-    return window.localStorage.getItem(DISMISSED_URGENT_KEY);
-  } catch {
-    return null;
-  }
-}
-
-function getDismissedUrgentServerSnapshot(): string | null {
-  return null;
-}
-
-const QUICK_LINKS = [
-  { href: '/schedule', label: 'Schedule', icon: CalendarDays },
-  { href: '/venues', label: 'Venues', icon: MapPin },
-  { href: '/results', label: 'Results', icon: Trophy },
-  { href: '/signals', label: 'Signals', icon: Radio },
-] as const;
-
-async function fetchLive(url: string): Promise<LiveData> {
+async function fetchLive(url: string): Promise<LiveApiResponse> {
   const res = await fetch(url, { cache: 'no-store' });
   if (!res.ok) {
     throw new Error(`Live API returned ${res.status}`);
   }
-  return res.json() as Promise<LiveData>;
+  return res.json() as Promise<LiveApiResponse>;
+}
+
+function splitCountdownBadge(
+  targetIso: string,
+  now: Date
+): { value: string; unit: string } {
+  const mins = Math.max(0, minutesUntil(targetIso, now));
+  if (mins < 60) {
+    return { value: String(Math.max(1, mins)), unit: 'MIN' };
+  }
+  const hours = Math.floor(mins / 60);
+  if (hours < 24) {
+    return { value: String(hours), unit: hours === 1 ? 'HR' : 'HRS' };
+  }
+  const days = Math.floor(hours / 24);
+  return { value: String(days), unit: days === 1 ? 'DAY' : 'DAYS' };
 }
 
 interface HomeLiveFeedProps {
   festName: string;
-  collegeName: string;
   initialData: LiveData;
 }
 
-export function HomeLiveFeed({
-  festName,
-  collegeName,
-  initialData,
-}: HomeLiveFeedProps) {
-  const { data, error, isValidating, mutate } = useSWR<LiveData>(
+export function HomeLiveFeed({ festName, initialData }: HomeLiveFeedProps) {
+  const { data, error, isValidating, mutate } = useSWR<LiveApiResponse>(
     '/api/live',
     fetchLive,
     {
       fallbackData: initialData,
       refreshInterval: 20_000,
+      refreshWhenHidden: false,
       revalidateOnFocus: true,
       keepPreviousData: true,
       shouldRetryOnError: true,
@@ -91,9 +69,8 @@ export function HomeLiveFeed({
     }
   );
 
-  const liveData = data ?? initialData;
+  const liveData: LiveApiResponse = data ?? initialData;
 
-  // Keep client "now" anchored to serverTime + elapsed ms so wrong phone clocks don't break countdowns
   const [tickState, setTickState] = useState<{
     base: string;
     elapsedMs: number;
@@ -116,258 +93,295 @@ export function HomeLiveFeed({
     tickState.base === liveData.serverTime ? tickState.elapsedMs : 0;
   const syncedNow = new Date(baseMs + elapsedMs);
 
-  // Urgent banner dismissal persisted in localStorage (safe in private mode)
-  const dismissedUrgentId = useSyncExternalStore(
-    subscribeUrgentDismissal,
-    getDismissedUrgentSnapshot,
-    getDismissedUrgentServerSnapshot
-  );
+  const tickerItems = [
+    ...(liveData.urgent ? [liveData.urgent.message] : []),
+    ...liveData.announcements
+      .filter((a) => a.id !== liveData.urgent?.id)
+      .map((a) => a.message),
+  ];
 
-  function dismissUrgent(id: string) {
-    try {
-      window.localStorage.setItem(DISMISSED_URGENT_KEY, id);
-    } catch {
-      // Ignore storage errors (private browsing / restricted webview)
-    }
-    urgentListeners.forEach((listener) => listener());
-  }
-
-  const urgentBanner =
-    liveData.urgent && liveData.urgent.id !== dismissedUrgentId
-      ? liveData.urgent
-      : null;
+  const [featuredLive, ...otherLive] = liveData.now;
   const nextEvent = liveData.next[0] ?? null;
 
   return (
-    <div className="space-y-7">
-      {urgentBanner && (
-        <div
-          role="status"
-          aria-live="polite"
-          className="flex items-start justify-between gap-3 rounded-xl border border-amber-300 bg-amber-50 p-3.5 text-amber-950 shadow-xs dark:border-amber-800 dark:bg-amber-950/60 dark:text-amber-100"
-        >
-          <div className="flex min-w-0 items-start gap-2.5">
-            <AlertTriangle
-              className="mt-0.5 size-4 shrink-0 text-amber-700 dark:text-amber-300"
-              aria-hidden="true"
-            />
-            <div className="min-w-0 space-y-1 text-sm">
-              <div className="flex flex-wrap items-center gap-2">
-                <span className="font-semibold uppercase tracking-wide text-[11px] text-amber-800 dark:text-amber-200">
-                  Urgent update
-                </span>
-                <span className="text-xs text-amber-800/80 dark:text-amber-200/80">
-                  {formatTimeAgo(urgentBanner.created_at, syncedNow)}
-                </span>
-              </div>
-              <p className="leading-snug">{urgentBanner.message}</p>
-              {urgentBanner.event_id && (
-                <Link
-                  href={`/events/${urgentBanner.event_id}`}
-                  className="inline-flex items-center gap-1 text-xs font-semibold underline underline-offset-4"
-                >
-                  {urgentBanner.event_title ?? 'View event'}
-                  <ArrowRight className="size-3" aria-hidden="true" />
-                </Link>
-              )}
-            </div>
+    <div className="space-y-6">
+      {/* Mobile Neon Night Header (desktop uses AppShell top nav) */}
+      <header className="flex items-center justify-between pt-1 lg:hidden">
+        <Link href="/" className="flex items-center gap-2">
+          <AlienMascot size={40} />
+          <div className="flex flex-col">
+            <span className="font-heading text-[24px] font-extrabold leading-none tracking-[-0.03em] text-[#F4F2FA]">
+              fest<span className="text-[#C6FF3D]">.</span>live
+            </span>
+            <span className="mt-0.5 text-xs text-[#9C97B0]">
+              {festName} · {formatDay(syncedNow)}
+            </span>
           </div>
-          <Button
-            type="button"
-            variant="ghost"
-            size="icon"
-            onClick={() => dismissUrgent(urgentBanner.id)}
-            aria-label="Dismiss urgent announcement"
-            className="size-10 shrink-0 text-amber-900 hover:bg-amber-200/60 dark:text-amber-100 dark:hover:bg-amber-900/60"
-          >
-            <X className="size-4" aria-hidden="true" />
-          </Button>
-        </div>
-      )}
+        </Link>
 
-      <PageHeader
-        title={festName}
-        subtitle={collegeName}
-        action={
-          error ? (
+        <div className="flex items-center gap-2">
+          {(error || liveData._source === 'cache') && (
             <button
               type="button"
               onClick={() => void mutate()}
-              className="inline-flex min-h-9 items-center gap-1.5 rounded-full border border-amber-300 bg-amber-50 px-3 text-xs font-medium text-amber-900 dark:border-amber-800 dark:bg-amber-950/60 dark:text-amber-200 cursor-pointer"
+              aria-label="Retry live refresh"
+              className="inline-flex h-9 items-center gap-1 rounded-xl border border-[#2E2A3D] bg-[#16141F] px-2.5 text-[11px] font-bold text-[#FFE14D] cursor-pointer"
             >
               <RefreshCw
-                className={cn('size-3.5', isValidating && 'animate-spin')}
+                className={cn('size-3', isValidating && 'animate-spin')}
                 aria-hidden="true"
               />
-              Updating…
+              Updating
             </button>
-          ) : (
-            <span className="inline-flex items-center gap-1.5 rounded-full border bg-muted/60 px-2.5 py-1 text-xs text-muted-foreground">
-              <span className="size-2 rounded-full bg-emerald-500" />
-              Live · {formatTime(syncedNow)} IST
-            </span>
-          )
-        }
-      />
+          )}
+          <Link
+            href="/account"
+            aria-label="My account"
+            className="flex size-[42px] items-center justify-center rounded-[14px] bg-[#FF4FA3] text-sm font-extrabold text-[#0B0A12] rotate-4 hover:rotate-0 transition-transform"
+          >
+            ME
+          </Link>
+        </div>
+      </header>
 
-      {/* Quick links */}
-      <section aria-label="Quick links" className="grid grid-cols-4 gap-2">
-        {QUICK_LINKS.map((item) => {
-          const Icon = item.icon;
-          return (
-            <Link
-              key={item.href}
-              href={item.href}
-              className={cn(
-                buttonVariants({ variant: 'outline' }),
-                'h-auto min-h-14 flex-col gap-1.5 px-2 py-2.5 text-xs font-medium'
-              )}
-            >
-              <Icon className="size-4 text-brand" aria-hidden="true" />
-              <span>{item.label}</span>
-            </Link>
-          );
-        })}
-      </section>
+      {/* Slanted Neon Lime Announcement Ticker */}
+      {tickerItems.length > 0 && (
+        <Link
+          href="/announcements"
+          aria-label={`Latest update: ${tickerItems[0]}`}
+          className="-mx-5 flex h-9 items-center overflow-hidden bg-[#C6FF3D] text-[#0B0A12] -rotate-[1deg] lg:mx-0 lg:rounded-2xl lg:rotate-0"
+        >
+          <div
+            aria-hidden="true"
+            className="ticker-track flex items-center gap-5 whitespace-nowrap px-4 text-[13px] font-extrabold uppercase tracking-[0.04em]"
+          >
+            {[...tickerItems, ...tickerItems].map((msg, idx) => (
+              <span key={idx} className="inline-flex items-center gap-5">
+                <span>{msg}</span>
+                <span>✦</span>
+              </span>
+            ))}
+          </div>
+        </Link>
+      )}
 
       {/* Happening now */}
       <section aria-labelledby="heading-now" className="space-y-3">
         <div className="flex items-center justify-between">
-          <h2
+          <h1
             id="heading-now"
-            className="flex items-center gap-2 text-lg font-bold tracking-tight"
+            className="flex items-center gap-2.5 font-heading text-[26px] font-extrabold tracking-[-0.02em] text-[#F4F2FA]"
           >
-            <span className="relative flex size-2.5" aria-hidden="true">
-              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-red-500 opacity-75" />
-              <span className="relative inline-flex size-2.5 rounded-full bg-red-600" />
-            </span>
+            <span
+              className="live-dot inline-block size-3 rounded-full bg-[#FF4FA3]"
+              aria-hidden="true"
+            />
             Happening now
-          </h2>
-          <Link
-            href="/schedule"
-            className="text-xs font-medium text-brand hover:underline underline-offset-4 min-h-9 inline-flex items-center"
-          >
-            Full schedule
-          </Link>
+          </h1>
+          <span className="text-xs font-semibold text-[#9C97B0]">
+            {formatTime(syncedNow)} IST
+          </span>
         </div>
 
-        {liveData.now.length > 0 ? (
-          <div className="grid gap-3 md:grid-cols-2">
-            {liveData.now.map((event) => (
-              <EventCard
-                key={event.id}
-                event={event}
-                live
-                timeNote={`ends ${formatTime(event.ends_at)}`}
+        {featuredLive ? (
+          <div className="space-y-3 lg:grid lg:grid-cols-2 lg:gap-4 lg:space-y-0">
+            {/* Primary featured live neon pink card */}
+            <Link
+              href={`/events/${featuredLive.id}`}
+              className="relative flex flex-col gap-2 overflow-hidden rounded-[24px] bg-[#FF4FA3] p-[18px] text-[#0B0A12] shadow-[5px_5px_0_#A78BFA] transition-transform active:translate-y-0.5"
+            >
+              <span className="self-start rounded-full bg-[#0B0A12] px-2.5 py-1 text-[11px] font-extrabold uppercase tracking-[0.1em] text-[#FF4FA3]">
+                LIVE · {CATEGORY_LABELS[featuredLive.category]}
+              </span>
+              <span className="max-w-[240px] font-heading text-[32px] font-extrabold leading-[0.96] tracking-[-0.03em]">
+                {featuredLive.title}
+              </span>
+              <span className="text-sm font-semibold">
+                {featuredLive.venue_name ?? 'Campus'} · ends{' '}
+                {formatTime(featuredLive.ends_at)}
+              </span>
+              <span className="mt-1 self-start rounded-[12px] bg-[#0B0A12] px-3 py-2 text-[13px] font-extrabold text-[#C6FF3D]">
+                OPEN LIVE EVENT →
+              </span>
+              <MusicMascot
+                size={112}
+                className="pointer-events-none absolute -right-1.5 -bottom-2"
               />
-            ))}
+            </Link>
+
+            {/* Secondary live event cards */}
+            <div className="flex flex-col gap-3">
+              {otherLive.map((event) => (
+                <Link
+                  key={event.id}
+                  href={`/events/${event.id}`}
+                  className="flex items-center gap-3 rounded-[22px] border-[1.5px] border-[#2E2A3D] bg-[#16141F] px-4 py-3.5 text-[#F4F2FA] transition-colors hover:border-[#22D3EE]"
+                >
+                  <TechMascot size={50} className="shrink-0" />
+                  <div className="min-w-0 flex-1 space-y-0.5">
+                    <span
+                      className="block text-[11px] font-extrabold uppercase tracking-[0.1em]"
+                      style={{ color: CATEGORY_DOT_COLOR[event.category] }}
+                    >
+                      LIVE · {CATEGORY_LABELS[event.category]} · ends{' '}
+                      {formatTime(event.ends_at)}
+                    </span>
+                    <span className="block truncate text-[17px] font-bold text-[#F4F2FA]">
+                      {event.title}
+                    </span>
+                    <span className="block truncate text-[13px] text-[#9C97B0]">
+                      {event.venue_name ?? 'Venue TBA'}
+                    </span>
+                  </div>
+                  <ChevronRight
+                    className="size-5 shrink-0 text-[#9C97B0]"
+                    aria-hidden="true"
+                  />
+                </Link>
+              ))}
+            </div>
           </div>
         ) : (
-          <EmptyState
-            title="Nothing live right now"
-            description={
-              nextEvent
+          <div className="rounded-[22px] border-[1.5px] border-dashed border-[#2E2A3D] bg-[#16141F]/60 p-5 text-center space-y-2">
+            <p className="font-heading text-lg font-extrabold text-[#F4F2FA]">
+              Nothing live right now
+            </p>
+            <p className="text-sm text-[#9C97B0]">
+              {nextEvent
                 ? `Next up: ${nextEvent.title} at ${formatTime(nextEvent.starts_at)}${nextEvent.venue_name ? ` (${nextEvent.venue_name})` : ''}.`
-                : 'Check the full schedule to plan your day.'
-            }
-            actionLabel={nextEvent ? 'View next event' : 'Browse schedule'}
-            actionHref={nextEvent ? `/events/${nextEvent.id}` : '/schedule'}
-          />
+                : 'Explore the full events list to plan your day.'}
+            </p>
+            <Link
+              href={nextEvent ? `/events/${nextEvent.id}` : '/events'}
+              className="mt-2 inline-flex min-h-11 items-center rounded-xl bg-[#C6FF3D] px-4 text-sm font-extrabold text-[#0B0A12]"
+            >
+              {nextEvent ? 'See next event' : 'Browse events'}
+            </Link>
+          </div>
         )}
       </section>
 
       {/* Up next */}
-      <section aria-labelledby="heading-next" className="space-y-3">
-        <div className="flex items-center justify-between">
-          <h2 id="heading-next" className="text-lg font-bold tracking-tight">
+      <section aria-labelledby="heading-next" className="space-y-2.5">
+        <div className="flex items-baseline justify-between">
+          <h2
+            id="heading-next"
+            className="font-heading text-[26px] font-extrabold tracking-[-0.02em] text-[#F4F2FA]"
+          >
             Up next
           </h2>
           <Link
-            href="/schedule"
-            className="inline-flex min-h-9 items-center gap-1 text-xs font-medium text-brand hover:underline underline-offset-4"
+            href="/events"
+            className="py-2 text-sm font-bold text-[#C6FF3D] hover:text-[#E3FF9A]"
           >
             See all
-            <ArrowRight className="size-3.5" aria-hidden="true" />
           </Link>
         </div>
 
         {liveData.next.length > 0 ? (
-          <div className="grid gap-3 md:grid-cols-2">
-            {liveData.next.map((event) => (
-              <EventCard
-                key={event.id}
-                event={event}
-                timeNote={formatCountdown(event.starts_at, syncedNow)}
-              />
-            ))}
+          <div className="grid gap-2.5 md:grid-cols-2">
+            {liveData.next.map((event, idx) => {
+              const badge = splitCountdownBadge(event.starts_at, syncedNow);
+              const isFirst = idx === 0;
+              return (
+                <Link
+                  key={event.id}
+                  href={`/events/${event.id}`}
+                  className="flex items-center gap-3 rounded-[20px] border-[1.5px] border-[#2E2A3D] bg-[#16141F] px-3.5 py-3 text-[#F4F2FA] transition-colors hover:border-[#C6FF3D]/60"
+                >
+                  <span
+                    className={cn(
+                      'flex h-[52px] w-[62px] shrink-0 flex-col items-center justify-center rounded-[14px] leading-none',
+                      isFirst
+                        ? 'bg-[#C6FF3D] text-[#0B0A12]'
+                        : 'bg-[#24212F] text-[#F4F2FA]'
+                    )}
+                  >
+                    <span className="font-heading text-[22px] font-extrabold">
+                      {badge.value}
+                    </span>
+                    <span className="mt-0.5 text-[10px] font-extrabold tracking-[0.08em]">
+                      {badge.unit}
+                    </span>
+                  </span>
+
+                  <div className="min-w-0 flex-1 space-y-0.5">
+                    <span className="block truncate text-[16px] font-bold text-[#F4F2FA]">
+                      {event.title}
+                    </span>
+                    <span className="block truncate text-[13px] text-[#9C97B0]">
+                      {formatTime(event.starts_at)} ·{' '}
+                      {event.venue_name ?? 'Venue TBA'}
+                    </span>
+                  </div>
+
+                  <span
+                    className="size-2.5 shrink-0 rounded-full"
+                    style={{ backgroundColor: CATEGORY_DOT_COLOR[event.category] }}
+                    aria-label={CATEGORY_LABELS[event.category]}
+                  />
+                </Link>
+              );
+            })}
           </div>
         ) : (
-          <EmptyState
-            title="No more upcoming events"
-            description="All scheduled events have finished or been updated. Check Results for winners and scores."
-            actionLabel="View results"
-            actionHref="/results"
-          />
+          <div className="rounded-[20px] border-[1.5px] border-dashed border-[#2E2A3D] bg-[#16141F]/50 p-5 text-center text-sm text-[#9C97B0]">
+            No more upcoming events today. Check{' '}
+            <Link href="/results" className="font-bold text-[#C6FF3D] underline">
+              Results
+            </Link>{' '}
+            for winners and live scores.
+          </div>
         )}
       </section>
 
-      {/* Latest announcements */}
-      <section aria-labelledby="heading-announcements" className="space-y-3">
-        <div className="flex items-center justify-between">
-          <h2
-            id="heading-announcements"
-            className="flex items-center gap-2 text-lg font-bold tracking-tight"
-          >
-            <Megaphone className="size-4 text-brand" aria-hidden="true" />
-            Latest announcements
-          </h2>
-          <Link
-            href="/announcements"
-            className="inline-flex min-h-9 items-center gap-1 text-xs font-medium text-brand hover:underline underline-offset-4"
-          >
-            See all
-            <ArrowRight className="size-3.5" aria-hidden="true" />
-          </Link>
-        </div>
-
-        {liveData.announcements.length > 0 ? (
-          <div className="space-y-2.5">
-            {liveData.announcements.map((item) => (
-              <article
-                key={item.id}
-                className="rounded-xl border bg-card p-3.5 text-card-foreground shadow-xs"
-              >
-                <div className="mb-1.5 flex flex-wrap items-center justify-between gap-2 text-xs text-muted-foreground">
-                  <div className="flex items-center gap-2">
-                    {item.priority === 'urgent' && (
-                      <Badge variant="destructive" className="text-[11px]">
-                        Urgent
-                      </Badge>
-                    )}
-                    {item.event_id && (
-                      <Link
-                        href={`/events/${item.event_id}`}
-                        className="font-medium text-brand hover:underline underline-offset-4"
-                      >
-                        {item.event_title ?? 'Linked event'}
-                      </Link>
-                    )}
-                  </div>
-                  <span>{formatTimeAgo(item.created_at, syncedNow)}</span>
-                </div>
-                <p className="text-sm leading-relaxed text-foreground">
-                  {item.message}
-                </p>
-              </article>
-            ))}
+      {/* Stamp Hunt Promo Card */}
+      <section aria-label="Stamp Hunt">
+        <Link
+          href="/hunt"
+          className="flex items-center gap-3 rounded-[24px] bg-[#A78BFA] px-[18px] py-4 text-[#0B0A12] shadow-[5px_5px_0_#C6FF3D] transition-transform active:translate-y-0.5"
+        >
+          <div className="min-w-0 flex-1 space-y-1">
+            <span className="block text-[11px] font-extrabold uppercase tracking-[0.1em]">
+              STAMP HUNT · CAMPUS QUEST
+            </span>
+            <span className="block font-heading text-[22px] font-extrabold leading-[1.06] tracking-[-0.02em]">
+              Scan QR stations & climb the leaderboard
+            </span>
+            <span className="block text-sm font-semibold">
+              Tap to view your passport & top hunters →
+            </span>
           </div>
-        ) : (
-          <EmptyState
-            icon={<Megaphone className="size-5" aria-hidden="true" />}
-            title="No announcements yet"
-            description="Live committee updates and room changes will appear here automatically."
-          />
-        )}
+          <HuntMascots />
+        </Link>
+      </section>
+
+      {/* Secondary Quick Access Strip */}
+      <section
+        aria-label="Explore more"
+        className="grid grid-cols-3 gap-2.5 pt-1"
+      >
+        <Link
+          href="/venues"
+          className="flex min-h-14 flex-col items-center justify-center gap-1 rounded-[18px] border-[1.5px] border-[#2E2A3D] bg-[#16141F] px-2 py-2.5 text-xs font-bold text-[#F4F2FA] hover:border-[#FF9F43]"
+        >
+          <MapPin className="size-4 text-[#FF9F43]" aria-hidden="true" />
+          Venues
+        </Link>
+        <Link
+          href="/results"
+          className="flex min-h-14 flex-col items-center justify-center gap-1 rounded-[18px] border-[1.5px] border-[#2E2A3D] bg-[#16141F] px-2 py-2.5 text-xs font-bold text-[#F4F2FA] hover:border-[#FFE14D]"
+        >
+          <Trophy className="size-4 text-[#FFE14D]" aria-hidden="true" />
+          Results
+        </Link>
+        <Link
+          href="/announcements"
+          className="flex min-h-14 flex-col items-center justify-center gap-1 rounded-[18px] border-[1.5px] border-[#2E2A3D] bg-[#16141F] px-2 py-2.5 text-xs font-bold text-[#F4F2FA] hover:border-[#22D3EE]"
+        >
+          <Megaphone className="size-4 text-[#22D3EE]" aria-hidden="true" />
+          Updates
+        </Link>
       </section>
     </div>
   );

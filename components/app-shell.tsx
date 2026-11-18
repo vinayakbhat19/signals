@@ -1,130 +1,97 @@
 'use client';
 
-import { useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import {
   CalendarDays,
   Home,
-  Info,
-  MapPin,
-  Megaphone,
-  Menu,
-  Radio,
-  ShieldCheck,
-  Star,
-  Trophy,
+  QrCode,
+  Stamp,
+  Vote,
 } from 'lucide-react';
-import {
-  Sheet,
-  SheetContent,
-  SheetDescription,
-  SheetHeader,
-  SheetTitle,
-  SheetTrigger,
-} from '@/components/ui/sheet';
+import { AddToHomeBar } from '@/components/add-to-home-bar';
+import { AlienMascot } from '@/components/mascots';
 import { cn } from '@/lib/utils';
 
-const PRIMARY_TABS = [
-  { href: '/', label: 'Home', icon: Home },
-  { href: '/schedule', label: 'Schedule', icon: CalendarDays },
-  { href: '/signals', label: 'Signals', icon: Radio },
-  { href: '/my', label: 'My', icon: Star },
-] as const;
+const CHROMELESS_PREFIXES = [
+  '/welcome',
+  '/login',
+  '/signup',
+  '/reset',
+  '/verified',
+  '/screen/',
+  '/admin/qr/print',
+  '/admin/station/',
+];
 
-const MORE_LINKS = [
-  {
-    href: '/venues',
-    label: 'Venues',
-    description: 'Campus locations & maps',
-    icon: MapPin,
-  },
-  {
-    href: '/announcements',
-    label: 'Announcements',
-    description: 'Live committee updates',
-    icon: Megaphone,
-  },
-  {
-    href: '/results',
-    label: 'Results',
-    description: 'Winners & live scores',
-    icon: Trophy,
-  },
-  {
-    href: '/about',
-    label: 'About',
-    description: 'About this app & committee contact',
-    icon: Info,
-  },
+const DESKTOP_LINKS = [
+  { href: '/', label: 'Home' },
+  { href: '/events', label: 'Events' },
+  { href: '/scan', label: 'Scan' },
+  { href: '/vote', label: 'Vote' },
+  { href: '/hunt', label: 'Hunt' },
+  { href: '/venues', label: 'Venues' },
+  { href: '/results', label: 'Results' },
+  { href: '/announcements', label: 'Updates' },
+  { href: '/admin', label: 'Organiser' },
 ] as const;
 
 interface AppShellProps {
   festName: string;
   collegeName: string;
-  /** Will be gated by user role in Phase 3; defaults to true as a placeholder link for now */
-  showAdminLink?: boolean;
-  /** Optional right-side header slot (avatar menu plugs in during Phase 3) */
-  headerRight?: React.ReactNode;
   children: React.ReactNode;
 }
 
 function isRouteActive(pathname: string, href: string): boolean {
   if (href === '/') return pathname === '/';
+  if (href === '/events') {
+    return (
+      pathname === '/events' ||
+      pathname.startsWith('/events/') ||
+      pathname === '/schedule'
+    );
+  }
   return pathname === href || pathname.startsWith(`${href}/`);
 }
 
 export function AppShell({
   festName,
   collegeName,
-  showAdminLink = true,
-  headerRight,
   children,
 }: AppShellProps) {
   const pathname = usePathname();
-  const [moreOpen, setMoreOpen] = useState(false);
+  const isChromeless = CHROMELESS_PREFIXES.some((prefix) =>
+    pathname.startsWith(prefix)
+  );
 
-  const isMoreActive =
-    MORE_LINKS.some((item) => isRouteActive(pathname, item.href)) ||
-    isRouteActive(pathname, '/admin');
+  if (isChromeless) {
+    return (
+      <div className="min-h-dvh bg-[#0B0A12] text-[#F4F2FA]">{children}</div>
+    );
+  }
+
+  const isEventDetail =
+    pathname.startsWith('/events/') && !pathname.endsWith('/line-up');
 
   return (
-    <div className="flex min-h-dvh flex-col bg-background text-foreground">
-      {/* Sticky top header: compact on mobile, full navigation on desktop (>= 1024px) */}
-      <header className="sticky top-0 z-40 border-b bg-background/95 backdrop-blur-sm supports-backdrop-filter:bg-background/80 print:hidden">
-        <div className="mx-auto flex h-14 max-w-5xl items-center justify-between gap-4 px-4">
-          <Link
-            href="/"
-            className="flex min-h-11 items-center gap-2.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-lg"
-          >
-            <span
-              className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-brand text-sm font-bold text-brand-foreground shadow-xs"
-              aria-hidden="true"
-            >
-              {festName.slice(0, 1).toUpperCase()}
-            </span>
-            <div className="min-w-0">
-              <span className="block truncate text-base font-bold leading-none tracking-tight">
-                {festName}
+    <div className="flex min-h-dvh flex-col bg-[#0B0A12] text-[#F4F2FA]">
+      {/* Desktop top navigation (>= 1024px) */}
+      <header className="sticky top-0 z-40 hidden border-b border-[#2E2A3D] bg-[#0B0A12]/95 backdrop-blur-sm lg:block print:hidden">
+        <div className="mx-auto flex h-16 max-w-5xl items-center justify-between gap-4 px-5">
+          <Link href="/" className="flex items-center gap-2.5">
+            <AlienMascot size={36} />
+            <div className="flex flex-col">
+              <span className="font-heading text-[22px] font-extrabold leading-none tracking-[-0.03em] text-[#F4F2FA]">
+                fest<span className="text-[#C6FF3D]">.</span>live
               </span>
-              <span className="mt-0.5 hidden truncate text-[11px] text-muted-foreground sm:block max-w-[220px]">
-                {collegeName}
+              <span className="mt-0.5 text-[11px] text-[#9C97B0] truncate max-w-[240px]">
+                {festName} · {collegeName}
               </span>
             </div>
           </Link>
 
-          {/* Desktop top navigation (>= 1024px) */}
-          <nav
-            aria-label="Primary navigation"
-            className="hidden lg:flex items-center gap-1"
-          >
-            {[
-              ...PRIMARY_TABS.map(({ href, label }) => ({ href, label })),
-              ...MORE_LINKS.map(({ href, label }) => ({ href, label })),
-              ...(showAdminLink
-                ? [{ href: '/admin', label: 'Organiser' }]
-                : []),
-            ].map((item) => {
+          <nav aria-label="Primary" className="flex items-center gap-1">
+            {DESKTOP_LINKS.map((item) => {
               const active = isRouteActive(pathname, item.href);
               return (
                 <Link
@@ -132,10 +99,10 @@ export function AppShell({
                   href={item.href}
                   aria-current={active ? 'page' : undefined}
                   className={cn(
-                    'inline-flex min-h-10 items-center rounded-lg px-3 text-sm font-medium transition-colors',
+                    'inline-flex min-h-10 items-center rounded-xl px-3 text-sm font-semibold transition-colors',
                     active
-                      ? 'bg-accent text-accent-foreground font-semibold'
-                      : 'text-muted-foreground hover:bg-muted hover:text-foreground'
+                      ? 'bg-[#C6FF3D] text-[#0B0A12] font-extrabold'
+                      : 'text-[#BDB8CF] hover:bg-[#16141F] hover:text-[#F4F2FA]'
                   )}
                 >
                   {item.label}
@@ -144,143 +111,104 @@ export function AppShell({
             })}
           </nav>
 
-          {headerRight && (
-            <div className="flex shrink-0 items-center">{headerRight}</div>
-          )}
+          <Link
+            href="/account"
+            aria-label="My account"
+            className="flex size-10 items-center justify-center rounded-[13px] bg-[#FF4FA3] text-sm font-extrabold text-[#0B0A12] rotate-3 hover:rotate-0 transition-transform"
+          >
+            ME
+          </Link>
         </div>
       </header>
 
-      {/* Main page content — extra bottom padding on mobile for fixed bottom tab bar */}
-      <main className="mx-auto w-full max-w-5xl flex-1 px-4 pt-5 pb-24 lg:pb-10">
+      {/* Main page content */}
+      <main
+        className={cn(
+          'mx-auto w-full flex-1',
+          isEventDetail
+            ? 'max-w-3xl pb-36 lg:pb-12'
+            : 'max-w-5xl px-4 pt-3 pb-44 lg:px-5 lg:pt-6 lg:pb-12'
+        )}
+      >
         {children}
       </main>
 
-      {/* Mobile bottom tab bar (< 1024px) */}
+      {/* Floating Add to Home Screen bar (mobile browser visits only) */}
+      <AddToHomeBar />
+
+      {/* Mobile floating Neon Night bottom bar (< 1024px) */}
       <nav
-        aria-label="Mobile navigation"
-        className="fixed inset-x-0 bottom-0 z-40 border-t bg-background/95 backdrop-blur-sm supports-backdrop-filter:bg-background/85 lg:hidden print:hidden pb-[env(safe-area-inset-bottom)]"
+        aria-label="Main"
+        className="fixed inset-x-3 bottom-3.5 z-40 mx-auto grid h-[68px] max-w-lg grid-cols-5 rounded-[24px] border-[1.5px] border-[#2E2A3D] bg-[#16141F]/95 p-1.5 backdrop-blur-md shadow-[0_12px_32px_rgba(0,0,0,0.65)] lg:hidden print:hidden"
       >
-        <div className="mx-auto grid h-16 max-w-lg grid-cols-5 items-stretch">
-          {PRIMARY_TABS.map((tab) => {
-            const Icon = tab.icon;
-            const active = isRouteActive(pathname, tab.href);
-            return (
-              <Link
-                key={tab.href}
-                href={tab.href}
-                aria-current={active ? 'page' : undefined}
-                className={cn(
-                  'flex min-h-11 flex-col items-center justify-center gap-1 text-[11px] font-medium transition-colors',
-                  active
-                    ? 'text-brand font-semibold'
-                    : 'text-muted-foreground hover:text-foreground'
-                )}
-              >
-                <Icon
-                  className={cn('size-5', active && 'stroke-[2.25]')}
-                  aria-hidden="true"
-                />
-                <span>{tab.label}</span>
-              </Link>
-            );
-          })}
+        <Link
+          href="/"
+          aria-current={isRouteActive(pathname, '/') ? 'page' : undefined}
+          className={cn(
+            'flex flex-col items-center justify-center gap-0.5 rounded-[18px] text-[11px] transition-colors',
+            isRouteActive(pathname, '/')
+              ? 'bg-[#C6FF3D] font-extrabold text-[#0B0A12]'
+              : 'font-semibold text-[#9C97B0] hover:text-[#F4F2FA]'
+          )}
+        >
+          <Home className="size-[21px]" aria-hidden="true" />
+          <span>Home</span>
+        </Link>
 
-          <Sheet open={moreOpen} onOpenChange={setMoreOpen}>
-            <SheetTrigger
-              aria-label="More navigation links"
-              className={cn(
-                'flex min-h-11 flex-col items-center justify-center gap-1 text-[11px] font-medium transition-colors cursor-pointer',
-                isMoreActive || moreOpen
-                  ? 'text-brand font-semibold'
-                  : 'text-muted-foreground hover:text-foreground'
-              )}
-            >
-              <Menu
-                className={cn(
-                  'size-5',
-                  (isMoreActive || moreOpen) && 'stroke-[2.25]'
-                )}
-                aria-hidden="true"
-              />
-              <span>More</span>
-            </SheetTrigger>
-            <SheetContent
-              side="bottom"
-              className="rounded-t-2xl pb-[calc(1rem+env(safe-area-inset-bottom))]"
-            >
-              <SheetHeader className="text-left pb-2">
-                <SheetTitle>{festName}</SheetTitle>
-                <SheetDescription>{collegeName}</SheetDescription>
-              </SheetHeader>
-              <div className="flex flex-col gap-1 px-4 pb-2">
-                {MORE_LINKS.map((item) => {
-                  const Icon = item.icon;
-                  const active = isRouteActive(pathname, item.href);
-                  return (
-                    <Link
-                      key={item.href}
-                      href={item.href}
-                      onClick={() => setMoreOpen(false)}
-                      className={cn(
-                        'flex min-h-12 items-center gap-3 rounded-xl px-3 py-2.5 transition-colors',
-                        active
-                          ? 'bg-accent text-accent-foreground'
-                          : 'hover:bg-muted'
-                      )}
-                    >
-                      <Icon
-                        className={cn(
-                          'size-5 shrink-0',
-                          active ? 'text-brand' : 'text-muted-foreground'
-                        )}
-                        aria-hidden="true"
-                      />
-                      <div className="min-w-0">
-                        <div className="text-sm font-medium leading-tight">
-                          {item.label}
-                        </div>
-                        <div className="text-xs text-muted-foreground">
-                          {item.description}
-                        </div>
-                      </div>
-                    </Link>
-                  );
-                })}
+        <Link
+          href="/events"
+          aria-current={isRouteActive(pathname, '/events') ? 'page' : undefined}
+          className={cn(
+            'flex flex-col items-center justify-center gap-0.5 rounded-[18px] text-[11px] transition-colors',
+            isRouteActive(pathname, '/events')
+              ? 'bg-[#C6FF3D] font-extrabold text-[#0B0A12]'
+              : 'font-semibold text-[#9C97B0] hover:text-[#F4F2FA]'
+          )}
+        >
+          <CalendarDays className="size-[21px]" aria-hidden="true" />
+          <span>Events</span>
+        </Link>
 
-                {showAdminLink && (
-                  <Link
-                    href="/admin"
-                    onClick={() => setMoreOpen(false)}
-                    className={cn(
-                      'mt-1 flex min-h-12 items-center gap-3 rounded-xl border-t pt-3 px-3 py-2.5 transition-colors',
-                      isRouteActive(pathname, '/admin')
-                        ? 'bg-accent text-accent-foreground'
-                        : 'hover:bg-muted'
-                    )}
-                  >
-                    <ShieldCheck
-                      className={cn(
-                        'size-5 shrink-0',
-                        isRouteActive(pathname, '/admin')
-                          ? 'text-brand'
-                          : 'text-muted-foreground'
-                      )}
-                      aria-hidden="true"
-                    />
-                    <div className="min-w-0">
-                      <div className="text-sm font-medium leading-tight">
-                        Organiser panel
-                      </div>
-                      <div className="text-xs text-muted-foreground">
-                        Manage events, updates & QR codes
-                      </div>
-                    </div>
-                  </Link>
-                )}
-              </div>
-            </SheetContent>
-          </Sheet>
-        </div>
+        {/* Raised SCAN center button */}
+        <Link
+          href="/scan"
+          aria-label="Scan a QR"
+          aria-current={isRouteActive(pathname, '/scan') ? 'page' : undefined}
+          className="flex items-center justify-center"
+        >
+          <span className="-mt-7 flex size-[62px] flex-col items-center justify-center gap-0.5 rounded-[22px] border-4 border-[#0B0A12] bg-[#C6FF3D] text-[10px] font-extrabold tracking-[0.06em] text-[#0B0A12] shadow-[4px_4px_0_#FF4FA3] active:translate-y-0.5 transition-transform">
+            <QrCode className="size-6 stroke-[2.4]" aria-hidden="true" />
+            SCAN
+          </span>
+        </Link>
+
+        <Link
+          href="/vote"
+          aria-current={isRouteActive(pathname, '/vote') ? 'page' : undefined}
+          className={cn(
+            'flex flex-col items-center justify-center gap-0.5 rounded-[18px] text-[11px] transition-colors',
+            isRouteActive(pathname, '/vote')
+              ? 'bg-[#C6FF3D] font-extrabold text-[#0B0A12]'
+              : 'font-semibold text-[#9C97B0] hover:text-[#F4F2FA]'
+          )}
+        >
+          <Vote className="size-[21px]" aria-hidden="true" />
+          <span>Vote</span>
+        </Link>
+
+        <Link
+          href="/hunt"
+          aria-current={isRouteActive(pathname, '/hunt') ? 'page' : undefined}
+          className={cn(
+            'flex flex-col items-center justify-center gap-0.5 rounded-[18px] text-[11px] transition-colors',
+            isRouteActive(pathname, '/hunt')
+              ? 'bg-[#C6FF3D] font-extrabold text-[#0B0A12]'
+              : 'font-semibold text-[#9C97B0] hover:text-[#F4F2FA]'
+          )}
+        >
+          <Stamp className="size-[21px]" aria-hidden="true" />
+          <span>Hunt</span>
+        </Link>
       </nav>
     </div>
   );

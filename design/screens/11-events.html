@@ -1,0 +1,102 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Events list · Fest Live design</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500..800&amp;family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#0B0A12}
+a{color:#C6FF3D}a:hover{color:#E3FF9A}
+@keyframes pulse{0%{box-shadow:0 0 0 0 rgba(255,79,163,.75)}100%{box-shadow:0 0 0 8px rgba(255,79,163,0)}}
+.live-dot{animation:pulse 1.4s ease-out infinite}
+@media (prefers-reduced-motion: reduce){*{animation:none!important}}
+</style>
+<style>body{display:flex;justify-content:center;min-height:100vh}</style>
+</head>
+<body>
+<div style="width: 390px; height: 1040px; position: relative; box-sizing: border-box; background: #0B0A12; font-family: Inter, system-ui, sans-serif; color: #F4F2FA; overflow: hidden">
+
+  <header style="padding: 18px 16px 0; display: flex; flex-direction: column; gap: 12px">
+    <div style="display: flex; justify-content: space-between; align-items: center">
+      <h1 style="margin: 0 2px; font-family: 'Bricolage Grotesque', sans-serif; font-size: 40px; font-weight: 800; letter-spacing: -0.03em; line-height: 1">Events</h1>
+      <a href="20-scan.html" aria-label="Scan a QR" style="width: 46px; height: 46px; border-radius: 14px; background: #C6FF3D; display: flex; align-items: center; justify-content: center"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#0B0A12" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M4 8V5a1 1 0 0 1 1-1h3M16 4h3a1 1 0 0 1 1 1v3M20 16v3a1 1 0 0 1-1 1h-3M8 20H5a1 1 0 0 1-1-1v-3M8 12h8"></path></svg></a>
+    </div>
+    <label style="display: flex; align-items: center; gap: 10px; background: #16141F; border: 1.5px solid #2E2A3D; border-radius: 16px; height: 46px; padding: 0 14px">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#9C97B0" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"></circle><path d="M20 20l-3.5-3.5"></path></svg>
+      <span style="position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0)">Search events, venues or hosts</span>
+      <input type="search" placeholder="Search events, venues, hosts…" style="border: 0; outline: none; flex: 1; font: inherit; font-size: 15px; background: transparent; color: #F4F2FA">
+    </label>
+    <div role="tablist" aria-label="Show" style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 4px; background: #16141F; border: 1.5px solid #2E2A3D; border-radius: 14px; padding: 4px">
+      <button role="tab" aria-selected="true" style="height: 38px; border-radius: 10px; border: 0; background: #C6FF3D; color: #0B0A12; font: inherit; font-size: 13px; font-weight: 800">All</button>
+      <button role="tab" aria-selected="false" style="height: 38px; border-radius: 10px; border: 0; background: transparent; color: #BDB8CF; font: inherit; font-size: 13px; font-weight: 600">Live (2)</button>
+      <button role="tab" aria-selected="false" style="height: 38px; border-radius: 10px; border: 0; background: transparent; color: #BDB8CF; font: inherit; font-size: 13px; font-weight: 600">Soon</button>
+      <button role="tab" aria-selected="false" style="height: 38px; border-radius: 10px; border: 0; background: transparent; color: #BDB8CF; font: inherit; font-size: 13px; font-weight: 600">Done</button>
+    </div>
+  </header>
+
+  <main style="padding: 14px 16px 0; display: flex; flex-direction: column; gap: 10px">
+    <span style="font-size: 12px; font-weight: 800; letter-spacing: 0.1em; color: #9C97B0; padding: 0 4px">WED 25 NOV · FEST DAY</span>
+
+    <a href="30-vote.html" style="text-decoration: none; color: inherit; background: #16141F; border: 2px solid #FF4FA3; border-radius: 22px; padding: 10px; display: flex; gap: 12px">
+      <svg width="82" height="82" viewBox="0 0 82 82" role="img" aria-label="Cover photo: Battle of Bands" style="flex: none; border-radius: 16px"><rect width="82" height="82" rx="16" fill="#FF4FA3"></rect><path d="M20 0L8 70h24z" fill="#FFE14D" opacity="0.55"></path><path d="M62 0L50 70h24z" fill="#FFE14D" opacity="0.55"></path><rect x="0" y="66" width="82" height="16" fill="#0B0A12"></rect><path d="M30 64l8-30 4 1-6 29z" fill="#0B0A12"></path><circle cx="36" cy="30" r="6" fill="#0B0A12"></circle><circle cx="14" cy="72" r="5" fill="#2E2A3D"></circle><circle cx="28" cy="74" r="5" fill="#2E2A3D"></circle><circle cx="56" cy="72" r="5" fill="#2E2A3D"></circle><circle cx="70" cy="74" r="5" fill="#2E2A3D"></circle></svg>
+      <div style="flex: 1; display: flex; flex-direction: column; gap: 4px; min-width: 0">
+        <div style="display: flex; gap: 6px; flex-wrap: wrap"><span style="display: flex; align-items: center; gap: 5px; font-size: 10px; font-weight: 800; letter-spacing: 0.08em; color: #0B0A12; background: #FF4FA3; padding: 3px 8px; border-radius: 999px"><span class="live-dot" style="width: 6px; height: 6px; border-radius: 3px; background: #0B0A12"></span>LIVE</span><span style="font-size: 10px; font-weight: 800; letter-spacing: 0.08em; color: #0B0A12; background: #C6FF3D; padding: 3px 8px; border-radius: 999px">VOTE OPEN</span></div>
+        <span style="font-size: 16px; font-weight: 800">Battle of Bands</span>
+        <span style="font-size: 12px; color: #CFCBDD">5:00 – 7:30 PM · Main Stage</span>
+        <span style="font-size: 12px; color: #9C97B0">Hosted by Cultural Committee</span>
+      </div>
+    </a>
+
+    <a href="12-event.html" style="text-decoration: none; color: inherit; background: #16141F; border: 1.5px solid #2E2A3D; border-radius: 22px; padding: 10px; display: flex; gap: 12px">
+      <svg width="82" height="82" viewBox="0 0 82 82" role="img" aria-label="Cover photo: 24-hour Hackathon" style="flex: none; border-radius: 16px"><rect width="82" height="82" rx="16" fill="#22D3EE"></rect><rect x="16" y="22" width="50" height="32" rx="4" fill="#0B0A12"></rect><rect x="10" y="56" width="62" height="6" rx="3" fill="#0B0A12"></rect><path d="M30 32l-5 6 5 6M52 32l5 6-5 6M44 30l-6 16" stroke="#C6FF3D" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+      <div style="flex: 1; display: flex; flex-direction: column; gap: 4px; min-width: 0">
+        <div style="display: flex; gap: 6px; flex-wrap: wrap"><span style="font-size: 10px; font-weight: 800; letter-spacing: 0.08em; color: #0B0A12; background: #FF4FA3; padding: 3px 8px; border-radius: 999px">LIVE · HOUR 9</span><span style="font-size: 10px; font-weight: 800; letter-spacing: 0.08em; color: #0B0A12; background: #A78BFA; padding: 3px 8px; border-radius: 999px">STAMP</span></div>
+        <span style="font-size: 16px; font-weight: 800">24-hour Hackathon</span>
+        <span style="font-size: 12px; color: #CFCBDD">9:00 AM – 9:00 AM · Computer Lab 3</span>
+        <span style="font-size: 12px; color: #9C97B0">Hosted by Coding Club</span>
+      </div>
+    </a>
+
+    <a href="12-event.html" style="text-decoration: none; color: inherit; background: #16141F; border: 1.5px solid #2E2A3D; border-radius: 22px; padding: 10px; display: flex; gap: 12px">
+      <svg width="82" height="82" viewBox="0 0 82 82" role="img" aria-label="Cover photo: Intro to Flutter Workshop" style="flex: none; border-radius: 16px"><rect width="82" height="82" rx="16" fill="#FF9F43"></rect><path d="M48 16L26 38l8 8 22-22z" fill="#0B0A12"></path><path d="M34 46l14 14 8-8-14-14z" fill="#22D3EE"></path><circle cx="58" cy="58" r="6" fill="#0B0A12"></circle></svg>
+      <div style="flex: 1; display: flex; flex-direction: column; gap: 4px; min-width: 0">
+        <div style="display: flex; gap: 6px; flex-wrap: wrap"><span style="font-size: 10px; font-weight: 800; letter-spacing: 0.08em; color: #0B0A12; background: #FFE14D; padding: 3px 8px; border-radius: 999px">COMING SOON · 25 MIN</span></div>
+        <span style="font-size: 16px; font-weight: 800">Intro to Flutter Workshop</span>
+        <span style="font-size: 12px; color: #CFCBDD">6:15 – 8:15 PM · Seminar Hall 1</span>
+        <span style="font-size: 12px; color: #9C97B0">Hosted by App Dev Club</span>
+      </div>
+    </a>
+
+    <a href="12-event.html" style="text-decoration: none; color: inherit; background: #16141F; border: 1.5px solid #2E2A3D; border-radius: 22px; padding: 10px; display: flex; gap: 12px">
+      <svg width="82" height="82" viewBox="0 0 82 82" role="img" aria-label="Cover photo: Solo Singing" style="flex: none; border-radius: 16px"><rect width="82" height="82" rx="16" fill="#A78BFA"></rect><circle cx="41" cy="26" r="11" fill="#0B0A12"></circle><path d="M34 26h14M34 22h14M34 30h14" stroke="#A78BFA" stroke-width="1.5"></path><rect x="38" y="36" width="6" height="16" rx="2" fill="#0B0A12"></rect><path d="M30 50c0 8 22 8 22 0" stroke="#0B0A12" stroke-width="3" fill="none"></path><path d="M41 58v10M32 68h18" stroke="#0B0A12" stroke-width="3" stroke-linecap="round"></path></svg>
+      <div style="flex: 1; display: flex; flex-direction: column; gap: 4px; min-width: 0">
+        <div style="display: flex; gap: 6px; flex-wrap: wrap"><span style="font-size: 10px; font-weight: 800; letter-spacing: 0.08em; color: #0B0A12; background: #FFE14D; padding: 3px 8px; border-radius: 999px">COMING SOON · 1 H 20 M</span><span style="font-size: 10px; font-weight: 800; letter-spacing: 0.08em; color: #C6FF3D; border: 1.5px solid #C6FF3D; padding: 2px 7px; border-radius: 999px">VOTING</span></div>
+        <span style="font-size: 16px; font-weight: 800">Solo Singing</span>
+        <span style="font-size: 12px; color: #CFCBDD">8:00 – 10:00 PM · Open Air Theatre</span>
+        <span style="font-size: 12px; color: #9C97B0">Hosted by Music Club</span>
+      </div>
+    </a>
+
+    <a href="12-event.html" style="text-decoration: none; color: inherit; background: transparent; border: 1.5px dashed #3A3549; border-radius: 22px; padding: 10px; display: flex; gap: 12px; opacity: 0.8">
+      <svg width="82" height="82" viewBox="0 0 82 82" role="img" aria-label="Cover photo: Inauguration" style="flex: none; border-radius: 16px"><rect width="82" height="82" rx="16" fill="#3A3549"></rect><path d="M16 60h50M22 60V34M60 60V34M41 20l26 14H15z" stroke="#BDB8CF" stroke-width="4" fill="none" stroke-linejoin="round"></path><path d="M34 60V42h14v18" stroke="#BDB8CF" stroke-width="4" fill="none"></path></svg>
+      <div style="flex: 1; display: flex; flex-direction: column; gap: 4px; min-width: 0">
+        <div style="display: flex; gap: 6px"><span style="font-size: 10px; font-weight: 800; letter-spacing: 0.08em; color: #F4F2FA; background: #3A3549; padding: 3px 8px; border-radius: 999px">DONE · RESULTS</span></div>
+        <span style="font-size: 16px; font-weight: 800">Inauguration</span>
+        <span style="font-size: 12px; color: #CFCBDD">9:30 – 10:15 AM · Main Stage</span>
+        <span style="font-size: 12px; color: #9C97B0">Hosted by Fest Committee</span>
+      </div>
+    </a>
+  </main>
+
+  <nav aria-label="Main" style="position: absolute; left: 12px; right: 12px; bottom: 14px; height: 68px; background: #16141F; border: 1.5px solid #2E2A3D; border-radius: 24px; display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); padding: 6px; box-sizing: border-box">
+    <a href="10-home.html" style="text-decoration: none; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; color: #9C97B0; font-size: 11px; font-weight: 600"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6h-6v6H4a1 1 0 0 1-1-1z"></path></svg>Home</a>
+    <a href="11-events.html" aria-current="page" style="text-decoration: none; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; background: #C6FF3D; border-radius: 18px; color: #0B0A12; font-size: 11px; font-weight: 800"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"></rect><path d="M3 10h18M8 3v4M16 3v4"></path></svg>Events</a>
+    <a href="20-scan.html" aria-label="Scan a QR" style="display: flex; align-items: center; justify-content: center; text-decoration: none"><span style="width: 62px; height: 62px; margin-top: -30px; border-radius: 22px; background: #C6FF3D; border: 4px solid #0B0A12; box-shadow: 4px 4px 0 #FF4FA3; color: #0B0A12; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1px; font-size: 10px; font-weight: 800; letter-spacing: 0.06em"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M4 8V5a1 1 0 0 1 1-1h3M16 4h3a1 1 0 0 1 1 1v3M20 16v3a1 1 0 0 1-1 1h-3M8 20H5a1 1 0 0 1-1-1v-3M8 12h8"></path></svg>SCAN</span></a>
+    <a href="30-vote.html" style="text-decoration: none; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; color: #9C97B0; font-size: 11px; font-weight: 600"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="11" width="18" height="10" rx="2"></rect><path d="M8 11V4h8v7"></path><path d="M10 7.5l1.5 1.5L14 6"></path></svg>Vote</a>
+    <a href="22-hunt.html" style="text-decoration: none; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; color: #9C97B0; font-size: 11px; font-weight: 600"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 3h6v5l3 3v3H6v-3l3-3z"></path><path d="M5 18h14v3H5z"></path></svg>Hunt</a>
+  </nav>
+</div>
+</body>
+</html>

@@ -27,6 +27,12 @@
   - Site URL: `http://localhost:3000` for now (change to the Vercel URL on 24 Nov)
   - Redirect URLs: `http://localhost:3000/**` and later `https://<your-app>.vercel.app/**`
 
+### 0.4b Email sign-up (email + password accounts)
+- [ ] Supabase → Authentication → Providers → **Email**: enabled, **Confirm email: ON**, minimum password length 8.
+- [ ] **Custom SMTP** (Authentication → Emails → SMTP settings): Supabase's built-in sender is for testing only and allows very few emails per hour. A transactional email service with a free tier (e.g. Resend or Brevo) is enough; verify a sender address or domain first. Check current free limits.
+- [ ] Edit the confirmation and reset-password email templates: fest name, one line, the button.
+- [ ] Storage: run `supabase/storage.sql` (or create public buckets `event-covers` and `contestants` in the dashboard).
+
 ### 0.5 Your computer
 - [ ] Node.js LTS installed (`node -v` shows 20 or newer), Git installed, Antigravity installed and signed in.
 - [ ] Create a folder `fest-live`, copy in `PRD.md`, `PROJECT_RULES.md`, `PROMPTS.md`, `supabase/`, `templates/`.

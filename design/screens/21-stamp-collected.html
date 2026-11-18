@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Stamp collected · Fest Live design</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500..800&amp;family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#0B0A12}
+a{color:#C6FF3D}a:hover{color:#E3FF9A}
+@keyframes jump{0%,100%{transform:translateY(0) scale(1,1)}30%{transform:translateY(-34px) scale(.95,1.05)}55%{transform:translateY(0) scale(1.08,.92)}70%{transform:translateY(0) scale(1,1)}}
+@keyframes blink{0%,90%,100%{transform:scaleY(1)}94%{transform:scaleY(.1)}}
+@keyframes fall{0%{transform:translateY(-60px) rotate(0)}100%{transform:translateY(560px) rotate(540deg)}}
+@keyframes popin{0%{transform:scale(.6) rotate(-6deg);opacity:0}60%{transform:scale(1.12) rotate(-6deg);opacity:1}100%{transform:scale(1) rotate(-6deg)}}
+@keyframes wave{0%,100%{transform:rotate(0)}50%{transform:rotate(-30deg)}}
+.jump{animation:jump 1.3s ease-in-out infinite}
+.m-blink{transform-box:fill-box;transform-origin:center;animation:blink 4s infinite}
+.m-wave{transform-box:fill-box;transform-origin:0% 100%;animation:wave .7s ease-in-out infinite}
+.confetti{animation:fall 3.2s linear infinite}
+.popin{animation:popin .8s ease-out both}
+@media (prefers-reduced-motion: reduce){*{animation:none!important}}
+</style>
+<style>body{display:flex;justify-content:center;min-height:100vh}</style>
+</head>
+<body>
+<div style="width: 390px; height: 1040px; position: relative; box-sizing: border-box; background: #0B0A12; font-family: Inter, system-ui, sans-serif; color: #F4F2FA; overflow: hidden; display: flex; flex-direction: column; align-items: center; padding: 70px 22px 0">
+
+  <div aria-hidden="true" style="position: absolute; inset: 0; pointer-events: none">
+    <span class="confetti" style="position: absolute; left: 30px; top: 0; width: 10px; height: 16px; background: #C6FF3D; border-radius: 2px; animation-delay: 0s"></span>
+    <span class="confetti" style="position: absolute; left: 90px; top: 0; width: 12px; height: 12px; background: #FF4FA3; border-radius: 6px; animation-delay: .6s"></span>
+    <span class="confetti" style="position: absolute; left: 150px; top: 0; width: 8px; height: 18px; background: #22D3EE; border-radius: 2px; animation-delay: 1.4s"></span>
+    <span class="confetti" style="position: absolute; left: 220px; top: 0; width: 12px; height: 12px; background: #FFE14D; border-radius: 2px; animation-delay: .3s"></span>
+    <span class="confetti" style="position: absolute; left: 280px; top: 0; width: 10px; height: 16px; background: #A78BFA; border-radius: 2px; animation-delay: 1s"></span>
+    <span class="confetti" style="position: absolute; left: 340px; top: 0; width: 12px; height: 12px; background: #FF9F43; border-radius: 6px; animation-delay: 1.8s"></span>
+    <span class="confetti" style="position: absolute; left: 60px; top: 0; width: 8px; height: 14px; background: #22D3EE; border-radius: 2px; animation-delay: 2.2s"></span>
+    <span class="confetti" style="position: absolute; left: 310px; top: 0; width: 8px; height: 14px; background: #C6FF3D; border-radius: 2px; animation-delay: 2.6s"></span>
+  </div>
+
+  <span class="popin" style="font-family: 'Bricolage Grotesque', sans-serif; font-size: 96px; font-weight: 800; letter-spacing: -0.04em; line-height: 1; color: #C6FF3D; text-shadow: 6px 6px 0 #FF4FA3">+15!</span>
+  <span style="margin-top: 10px; font-size: 13px; font-weight: 800; letter-spacing: 0.1em; color: #0B0A12; background: #FFE14D; padding: 5px 10px; border-radius: 999px">+10 STAMP · +5 FINAL BONUS</span>
+
+  <div style="margin-top: 26px; width: 200px; height: 190px; display: flex; align-items: flex-end; justify-content: center; position: relative">
+    <div style="position: absolute; bottom: 0; width: 150px; height: 18px; border-radius: 50%; background: #16141F"></div>
+    <svg class="jump" width="170" height="170" viewBox="0 0 72 72" aria-hidden="true" style="position: relative"><path class="m-wave" d="M57 40c7-3 10-10 8-17" stroke="#22D3EE" stroke-width="6" stroke-linecap="round" fill="none"></path><path d="M15 40c-7-3-10-10-8-17" stroke="#22D3EE" stroke-width="6" stroke-linecap="round" fill="none"></path><path d="M18 26l5-6 5 6 5-6 5 6 5-6 5 6 5-6" stroke="#22D3EE" stroke-width="3" fill="none" stroke-linejoin="round"></path><path d="M13 48c0-15 10-24 23-24s23 9 23 24c0 9-7 12-23 12S13 57 13 48z" fill="#22D3EE"></path><g class="m-blink"><path d="M24 41q4-6 8 0M40 41q4-6 8 0" stroke="#0B0A12" stroke-width="3" fill="none" stroke-linecap="round"></path></g><path d="M29 48c3 5 11 5 14 0z" fill="#0B0A12"></path></svg>
+  </div>
+
+  <h1 style="margin: 22px 0 0; font-family: 'Bricolage Grotesque', sans-serif; font-size: 32px; font-weight: 800; letter-spacing: -0.02em; text-align: center; line-height: 1.05">Coding Contest<br>stamp collected</h1>
+
+  <section style="margin-top: 22px; width: 100%; background: #16141F; border: 1.5px solid #2E2A3D; border-radius: 22px; padding: 16px; box-sizing: border-box; display: flex; flex-direction: column; gap: 12px">
+    <div style="display: flex; justify-content: space-between; font-size: 14px; font-weight: 700"><span>5 of 10 stamps</span><span style="color: #C6FF3D">60 points</span></div>
+    <div style="height: 12px; border-radius: 6px; background: #2E2A3D; overflow: hidden"><div style="width: 50%; height: 12px; border-radius: 6px; background: #C6FF3D"></div></div>
+    <div style="display: flex; justify-content: space-between; align-items: center">
+      <span style="font-size: 15px; font-weight: 700">You're now <span style="color: #C6FF3D">#5</span></span>
+      <span style="font-size: 12px; font-weight: 800; color: #0B0A12; background: #C6FF3D; padding: 4px 10px; border-radius: 999px">UP 2 PLACES</span>
+    </div>
+    <span style="font-size: 13px; color: #BDB8CF">Next stamp nearby: <strong style="color: #F4F2FA">Hackathon</strong>, Computer Lab 3, live now</span>
+  </section>
+
+  <div style="position: absolute; left: 22px; right: 22px; bottom: 28px; display: flex; flex-direction: column; gap: 10px">
+    <a href="22-hunt.html" style="height: 56px; border-radius: 18px; background: #C6FF3D; color: #0B0A12; text-decoration: none; display: flex; align-items: center; justify-content: center; font-size: 17px; font-weight: 800; box-shadow: 5px 5px 0 #FF4FA3">See my passport</a>
+    <a href="10-home.html" style="height: 50px; border-radius: 18px; border: 2px solid #2E2A3D; color: #F4F2FA; text-decoration: none; display: flex; align-items: center; justify-content: center; font-size: 15px; font-weight: 600">What's on now</a>
+  </div>
+</div>
+</body>
+</html>

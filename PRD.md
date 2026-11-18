@@ -15,9 +15,32 @@ Configured values:
 | Fest name | Fiest 2026 |
 | College name | SDM College of Engineering & Technology, Dharwad |
 | College domain | sdmcet.ac.in |
-| Brand color | #6D28D9 (placeholder — update later) |
+| Brand theme | Neon Night (`#0B0A12` bg / `#C6FF3D` lime accent) |
 
 ---
+
+## 0. Scope for the first launch (updated: overrides the rest of this PRD)
+
+The first launch is the **campus fest on 25 Nov** only.
+
+| In | Later (after the fest) |
+| --- | --- |
+| Home (live now, up next, ticker), fest schedule, event pages, venues, announcements, results | **Football** live scores (`schema_sports.sql`, Track S) |
+| **Audience voting** for selected competitions (`VOTING.md`) | **Signals** (F11, F14) and **My schedule / stars** (F10) |
+| Organiser panel, CSV import, **event editor with cover photos and hosts**, **QR generator**, PWA with an **install bar** | Nearby, personal QR connect, communities, workshops |
+| **Accounts:** Google or email + password (email confirmed, check-email and verified screens), cookie notice, My account page, **in-app QR scanner** (raised SCAN button in the bottom bar) | |
+| **Hosts and line-ups:** event hosts upload registrations (CSV/Excel), check people in, export; students see the public line-up | |
+| **Add to Home Screen** (PWA, never an app store) with a bar on every browser visit | |
+| Reliability: caching, fallbacks, emergency mode, rate limits, monitoring (`SPORTS_AND_RELIABILITY.md` part B) | "Here Now" opt-in presence |
+| **Bonus if tested by 23 Nov:** Stamp Hunt (`STAMP_HUNT.md`) | |
+
+Consequences:
+- **Students never need to sign in to browse.** Accounts (Google, or email + password with a confirmation email) are only needed to vote and play the Stamp Hunt, and for organisers and volunteers. The Verified badge needs a **confirmed** college email.
+- "Schedule" is called **Events** in the app.
+- The full screen list, routes, flows and app structure are in `APP_FLOW.md`; designs are in `design/`.
+- No star buttons, no Signal buttons, no football pages. Bottom bar: **Home · Events · SCAN · Vote · Hunt** (account from the avatar) (show "Results" instead of "Hunt" if the hunt isn't built).
+- The Signals, stars and sports tables can wait; nothing needs rewriting later.
+- Success metrics for Signals and stars in section 3 don't apply. Add: votes cast, voters, and stage-screen uptime.
 
 ## 1. Problem
 
@@ -145,7 +168,7 @@ Native apps, push notifications, chat, nearby/location matching, personal QR con
 - QR targets use the production URL plus `?src=qr-<type>-<id>` for analytics.
 
 ### F13 PWA
-- `manifest.webmanifest` with name, short name, icons 192/512, theme colour `#6D28D9`, `display: standalone`.
+- `manifest.webmanifest` with name, short name, icons 192/512, theme colour `#0B0A12`, `display: standalone`.
 - "Add to home screen" hint on the second visit (dismissible).
 
 ### F15 Analytics

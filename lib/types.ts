@@ -1,4 +1,4 @@
-export type UserRole = 'student' | 'organiser' | 'admin';
+export type UserRole = 'student' | 'volunteer' | 'organiser' | 'admin';
 
 export const EVENT_CATEGORIES = [
   'tech',
@@ -102,6 +102,9 @@ export interface Event {
   poster_url: string | null;
   registration_url: string | null;
   contact_info: string | null;
+  cover_url?: string | null;
+  host_name?: string | null;
+  host_coordinator?: string | null;
   is_published: boolean;
   created_at: string;
   updated_at: string;
@@ -240,6 +243,9 @@ export interface Database {
           poster_url?: string | null;
           registration_url?: string | null;
           contact_info?: string | null;
+          cover_url?: string | null;
+          host_name?: string | null;
+          host_coordinator?: string | null;
           is_published?: boolean;
           created_at?: string;
           updated_at?: string;
@@ -256,6 +262,9 @@ export interface Database {
           poster_url?: string | null;
           registration_url?: string | null;
           contact_info?: string | null;
+          cover_url?: string | null;
+          host_name?: string | null;
+          host_coordinator?: string | null;
           is_published?: boolean;
           updated_at?: string;
         };

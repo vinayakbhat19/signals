@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Add to Home Screen · Fest Live design</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500..800&amp;family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#0B0A12}
+a{color:#C6FF3D}a:hover{color:#E3FF9A}
+@keyframes hop{0%,100%{transform:translateY(0) rotate(-6deg)}50%{transform:translateY(-10px) rotate(6deg)}}
+@keyframes tap{0%,100%{transform:scale(1)}50%{transform:scale(1.15)}}
+.hop{animation:hop 1.4s ease-in-out infinite}
+.tap{animation:tap 1.2s ease-in-out infinite}
+@media (prefers-reduced-motion: reduce){*{animation:none!important}}
+</style>
+<style>body{display:flex;justify-content:center;min-height:100vh}</style>
+</head>
+<body>
+<div style="width: 390px; height: 1040px; position: relative; box-sizing: border-box; background: #0B0A12; font-family: Inter, system-ui, sans-serif; color: #F4F2FA; overflow: hidden; padding: 0 20px">
+
+  <header style="padding-top: 12px; display: flex; justify-content: space-between; align-items: center">
+    <a href="10-home.html" aria-label="Close" style="width: 44px; height: 44px; border-radius: 14px; border: 1.5px solid #2E2A3D; display: flex; align-items: center; justify-content: center; box-sizing: border-box"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#F4F2FA" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"></path></svg></a>
+    <span style="font-size: 12px; font-weight: 800; letter-spacing: 0.12em; color: #9C97B0">NO APP STORE NEEDED</span>
+  </header>
+
+  <div style="display: flex; align-items: center; gap: 16px; margin-top: 18px">
+    <div class="hop" aria-hidden="true" style="width: 84px; height: 84px; border-radius: 24px; background: #0B0A12; border: 2px solid #C6FF3D; display: flex; align-items: center; justify-content: center; flex: none; box-shadow: 5px 5px 0 #FF4FA3">
+      <svg width="62" height="62" viewBox="0 0 72 72"><path d="M36 17V9" stroke="#A78BFA" stroke-width="4" stroke-linecap="round"></path><circle cx="36" cy="8" r="4.5" fill="#C6FF3D"></circle><path d="M13 47c0-17 10-30 23-30s23 13 23 30c0 9-7 13-23 13S13 56 13 47z" fill="#A78BFA"></path><ellipse cx="29" cy="40" rx="4.2" ry="5.2" fill="#0B0A12"></ellipse><ellipse cx="43" cy="40" rx="4.2" ry="5.2" fill="#0B0A12"></ellipse><path d="M31 49c3 3.5 7 3.5 10 0" stroke="#0B0A12" stroke-width="2.6" fill="none" stroke-linecap="round"></path></svg>
+    </div>
+    <h1 style="margin: 0; font-family: 'Bricolage Grotesque', sans-serif; font-size: 34px; font-weight: 800; letter-spacing: -0.03em; line-height: 1">Add Fest Live to your Home Screen</h1>
+  </div>
+  <p style="margin: 14px 0 0; font-size: 15px; line-height: 22px; color: #CFCBDD">It gets its own icon and opens full screen like an app. Free, under 1 MB, and it works on weak campus signal.</p>
+
+  <div role="tablist" aria-label="Your phone" style="margin-top: 18px; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 4px; background: #16141F; border: 1.5px solid #2E2A3D; border-radius: 14px; padding: 4px">
+    <button role="tab" aria-selected="true" style="height: 40px; border-radius: 10px; border: 0; background: #C6FF3D; color: #0B0A12; font: inherit; font-size: 14px; font-weight: 800">iPhone (Safari)</button>
+    <button role="tab" aria-selected="false" style="height: 40px; border-radius: 10px; border: 0; background: transparent; color: #BDB8CF; font: inherit; font-size: 14px; font-weight: 600">Android (Chrome)</button>
+  </div>
+
+  <ol style="list-style: none; margin: 16px 0 0; padding: 0; display: flex; flex-direction: column; gap: 10px">
+    <li style="display: flex; align-items: center; gap: 14px; background: #16141F; border: 1.5px solid #2E2A3D; border-radius: 18px; padding: 14px">
+      <span style="width: 32px; height: 32px; border-radius: 10px; background: #C6FF3D; color: #0B0A12; display: flex; align-items: center; justify-content: center; font-weight: 800; flex: none">1</span>
+      <span style="flex: 1; font-size: 15px; line-height: 21px">Tap the <strong>Share</strong> button at the bottom of Safari</span>
+      <svg class="tap" width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="#22D3EE" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12v7a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-7M12 3v12M7 8l5-5 5 5"></path></svg>
+    </li>
+    <li style="display: flex; align-items: center; gap: 14px; background: #16141F; border: 1.5px solid #2E2A3D; border-radius: 18px; padding: 14px">
+      <span style="width: 32px; height: 32px; border-radius: 10px; background: #C6FF3D; color: #0B0A12; display: flex; align-items: center; justify-content: center; font-weight: 800; flex: none">2</span>
+      <span style="flex: 1; font-size: 15px; line-height: 21px">Scroll down and tap <strong>Add to Home Screen</strong></span>
+      <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="#C6FF3D" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="4" width="16" height="16" rx="4"></rect><path d="M12 8v8M8 12h8"></path></svg>
+    </li>
+    <li style="display: flex; align-items: center; gap: 14px; background: #16141F; border: 1.5px solid #2E2A3D; border-radius: 18px; padding: 14px">
+      <span style="width: 32px; height: 32px; border-radius: 10px; background: #C6FF3D; color: #0B0A12; display: flex; align-items: center; justify-content: center; font-weight: 800; flex: none">3</span>
+      <span style="flex: 1; font-size: 15px; line-height: 21px">Tap <strong>Add</strong>, then open Fest Live from your Home Screen</span>
+      <svg width="34" height="34" viewBox="0 0 72 72" aria-hidden="true"><rect x="6" y="6" width="60" height="60" rx="16" fill="#16141F" stroke="#A78BFA" stroke-width="3"></rect><path d="M20 48c0-12 7-21 16-21s16 9 16 21c0 6-5 9-16 9s-16-3-16-9z" fill="#A78BFA"></path></svg>
+    </li>
+  </ol>
+
+  <div style="margin-top: 14px; background: #0B0A12; border: 1.5px dashed #3A3549; border-radius: 16px; padding: 12px 14px; font-size: 13px; line-height: 19px; color: #BDB8CF">
+    <strong style="color: #F4F2FA">Android:</strong> tap the <strong style="color: #F4F2FA">Add to Home Screen</strong> button below, or Chrome menu <strong style="color: #F4F2FA">⋮</strong> → <strong style="color: #F4F2FA">Add to Home screen</strong>.
+  </div>
+
+  <div style="position: absolute; left: 20px; right: 20px; bottom: 26px; display: flex; flex-direction: column; gap: 10px">
+    <button style="height: 56px; border-radius: 18px; border: 0; background: #C6FF3D; color: #0B0A12; font: inherit; font-size: 17px; font-weight: 800; box-shadow: 5px 5px 0 #FF4FA3; display: flex; align-items: center; justify-content: center; gap: 10px"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="4" width="16" height="16" rx="4"></rect><path d="M12 8v8M8 12h8"></path></svg>Add to Home Screen</button>
+    <a href="10-home.html" style="height: 46px; display: flex; align-items: center; justify-content: center; color: #BDB8CF; font-size: 15px; font-weight: 600; text-decoration: none">Maybe later</a>
+  </div>
+</div>
+</body>
+</html>

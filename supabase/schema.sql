@@ -1,6 +1,6 @@
 -- Fest Live: database schema for Supabase (Postgres).
 -- Run once in Supabase: SQL Editor -> New query -> paste -> Run.
--- Before running, verify the college_domain below (sdmcet.ac.in).
+-- Before running, verify college_domain below (sdmcet.ac.in).
 --
 -- Security model
 --   * Row Level Security (RLS) is on for every table.
@@ -56,7 +56,10 @@ begin
     coalesce(new.raw_user_meta_data ->> 'full_name', new.raw_user_meta_data ->> 'name'),
     new.raw_user_meta_data ->> 'avatar_url',
     new.email,
-    lower(split_part(coalesce(new.email, ''), '@', 2)) = lower(coalesce(domain, ''))
+    -- Verified only once the email is confirmed (Google sign-ins arrive confirmed;
+    -- email/password sign-ups are confirmed by the link Supabase emails them).
+    new.email_confirmed_at is not null
+      and lower(split_part(coalesce(new.email, ''), '@', 2)) = lower(coalesce(domain, ''))
   );
   return new;
 end;
@@ -65,6 +68,28 @@ $$;
 create trigger on_auth_user_created
   after insert on auth.users
   for each row execute function public.handle_new_user();
+
+-- When an email/password user clicks the confirmation link, grant the badge.
+create or replace function public.handle_user_confirmed()
+returns trigger
+language plpgsql security definer set search_path = public
+as $$
+declare
+  domain text;
+begin
+  select value into domain from public.app_settings where key = 'college_domain';
+  update public.profiles
+     set college_verified = lower(split_part(coalesce(new.email, ''), '@', 2)) = lower(coalesce(domain, ''))
+   where id = new.id;
+  return new;
+end;
+$$;
+
+create trigger on_auth_user_confirmed
+  after update of email_confirmed_at on auth.users
+  for each row
+  when (old.email_confirmed_at is null and new.email_confirmed_at is not null)
+  execute function public.handle_user_confirmed();
 
 -- ---------------------------------------------------------------- fest data
 create table public.venues (
@@ -88,6 +113,9 @@ create table public.events (
   poster_url       text,
   registration_url text,
   contact_info     text,                              -- shown publicly; only what the committee agrees to publish
+  cover_url        text,                              -- public URL in the event-covers storage bucket
+  host_name        text check (char_length(host_name) <= 80),   -- club or committee running it
+  host_coordinator text check (char_length(host_coordinator) <= 80),
   is_published     boolean not null default true,
   created_at       timestamptz not null default now(),
   updated_at       timestamptz not null default now(),

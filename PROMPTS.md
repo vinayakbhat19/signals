@@ -11,6 +11,12 @@ Replace `{{FEST_NAME}}`, `{{COLLEGE_NAME}}`, `{{COLLEGE_DOMAIN}}`, `{{BRAND_COLO
 
 ---
 
+> **Build order for the first launch (fest only):**
+> Phase 0 → Phase 1 → **Track R** (reliability) → Phase 2 → Phase 3 → **Track A** (accounts, install, scanner, QR generator, event covers) → **Track V** (voting) → Prompt 4.3 → Phase 5 → Phase 6, then **Track H** (Stamp Hunt) only if everything else is tested by 23 Nov.
+> **Skip** Prompts 4.1 (My schedule), 4.2 (Signals) and **Track S** (football) for now. Read PRD section 0 first, and paste this line at the top of every prompt: *"Scope: follow PRD section 0. Fest only: no football, no Signals, no stars; sign-in only for organisers, volunteers, voters and hunt players."*
+> Database order: `schema.sql` → `storage.sql` → `schema_participants.sql` → `schema_voting.sql` → `schema_stamps.sql` (if you build the hunt). `seed.sql` any time during building.
+> **Design:** read `APP_FLOW.md` first. Attach the matching PNGs from `design/png/` to every prompt (IDs 01–46), and tell the agent: *"Match the attached screens exactly; the standalone HTML for each is in design/screens/."*
+
 ## Phase 1: Foundation (19 Nov)
 
 ### Prompt 1.1: Project setup
@@ -20,7 +26,7 @@ Read PROJECT_RULES.md and PRD.md fully before doing anything.
 Set up the project "fest-live" in this folder:
 1. Create a Next.js app (latest stable, App Router, TypeScript, Tailwind, ESLint, src dir NO, import alias @/*). Initialise shadcn/ui and add: button, card, badge, input, textarea, select, tabs, dialog, sheet, sonner (toast), skeleton, switch, label, dropdown-menu.
 2. Install: @supabase/supabase-js @supabase/ssr swr zod papaparse qrcode date-fns date-fns-tz lucide-react @vercel/analytics server-only, and dev types for papaparse and qrcode.
-3. Create .env.local.example with NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY, NEXT_PUBLIC_SITE_URL, NEXT_PUBLIC_FEST_NAME="Fiest 2026", NEXT_PUBLIC_COLLEGE_NAME="SDM College of Engineering & Technology, Dharwad". Make sure .env.local is in .gitignore. (I will fill .env.local myself.)
+3. Create .env.local.example with NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY, NEXT_PUBLIC_SITE_URL, NEXT_PUBLIC_FEST_NAME="{{FEST_NAME}}", NEXT_PUBLIC_COLLEGE_NAME="{{COLLEGE_NAME}}". Make sure .env.local is in .gitignore. (I will fill .env.local myself.)
 4. Create the Supabase clients exactly as PROJECT_RULES.md describes:
    - lib/supabase/public.ts: cookie-less anon client for cached public reads.
    - lib/supabase/server.ts: cookie-based client for signed-in server code, following the current Supabase SSR guide for the App Router.
@@ -38,7 +44,7 @@ Then show me the folder tree, run npm run lint, npm run build and npx vitest run
 ### Prompt 1.2: App shell and design system
 ```
 Read PROJECT_RULES.md. Build the app shell:
-1. Root layout: fest name from env, metadata (title, description, Open Graph with a default image), theme colour #6D28D9, light/dark following the system, Vercel Analytics.
+1. Root layout: fest name from env, metadata (title, description, Open Graph with a default image), theme colour {{BRAND_COLOR}}, light/dark following the system, Vercel Analytics.
 2. Mobile bottom tab bar (Home, Schedule, Signals, My, More) with lucide icons and the active tab highlighted; on screens ≥ 1024 px show a top nav instead. "More" opens a sheet with: Venues, Announcements, Results, About, and "Organiser panel" (only if the user is an organiser; for now just a link).
 3. Shared components: CategoryChip (colours from PROJECT_RULES.md), StatusBadge (scheduled/delayed/cancelled/done), EventCard (time range, title, venue, category, status, live dot, star button placeholder), EmptyState, ErrorState with retry, PageHeader, and list skeletons.
 4. A simple /about page explaining the app in 3 lines, with a contact for the fest committee.
@@ -146,7 +152,7 @@ Run lint and build; report.
 
 ## Phase 4: My schedule, Signals, QR, PWA (22 Nov)
 
-### Prompt 4.1: My schedule
+### Prompt 4.1: My schedule (LATER: skip for the first launch)
 ```
 Read PROJECT_RULES.md and PRD F10.
 1. Star button on EventCard and the event page: if signed out, go to /login?next=<current page>; if signed in, toggle a row in stars (cookie client, RLS) with optimistic UI and rollback on error.
@@ -155,7 +161,7 @@ Read PROJECT_RULES.md and PRD F10.
 Run lint and build; report.
 ```
 
-### Prompt 4.2: Signals
+### Prompt 4.2: Signals (LATER: skip for the first launch)
 ```
 Read PROJECT_RULES.md (especially the Security section) and PRD F11 and F14. Build Signals:
 1. /signals: board of open, unexpired signals (columns listed explicitly, never select *), newest first; filters for type and tag; each card: type icon and label, body, up to 3 tags, linked event title, author display_name with "Verified student" badge if verified, "time ago", expires in. Public read; revalidate 30.
@@ -236,6 +242,176 @@ Write scripts/fest-report.ts that prints, from the database: total users, verifi
 ```
 
 ---
+
+## Track S: Football live scores (LATER: not part of the first launch)
+
+Before starting: run `supabase/schema_sports.sql` in the Supabase SQL editor (after `schema.sql`).
+
+### Prompt S.1: Football data and public pages
+```
+Read PROJECT_RULES.md, SPORTS_AND_RELIABILITY.md (Part A and B1) and supabase/schema_sports.sql.
+1. lib/data/football.ts (PUBLIC cookie-less client): listTournaments(), getTournament(id), listTeams(tournamentId), listMatches(tournamentId) with team names/colours and venue, getMatch(id) with events ordered newest first, getStandings(tournamentId) ordered by points desc, goal_diff desc, goals_for desc, name, grouped by group_name, getLiveFootball() returning { live matches with last 5 events, next 3 matches, serverTime }.
+2. app/api/football/live/route.ts: GET returns getLiveFootball(); revalidate 5; Cache-Control "public, s-maxage=5, stale-while-revalidate=300, stale-if-error=86400"; tag the fetches with "football".
+3. /football page with tabs Live / Fixtures / Table (tab in the URL query), matching the design screenshot I attach: big score, minute computed from clock_started_at + clock_offset_min using serverTime (not the phone clock), half label, goal/card timeline, "Updated N s ago", points table with P W D L GD PTS, top 2 highlighted, rule line.
+4. /football/match/[id]: full match page with timeline; generateMetadata with the score in the title so WhatsApp previews show it.
+5. Live data on the client: SWR polling of /api/football/live every 10 s ONLY while document.visibilityState is "visible", keep last good data in localStorage (try/catch), exponential backoff on errors up to 60 s, show an "Offline · last updated …" badge when a fetch fails.
+6. Home page: show a "Football live" card when any match is live.
+Seed: give me SQL to insert one tournament, 4 teams in group A and 2 matches so I can test.
+Run lint and build; test with two browser windows (one scorer later, one viewer). Report.
+```
+**You check:** insert a goal row in Supabase's table editor and watch the score change on your phone within about 10 s.
+
+### Prompt S.2: Scorer screen
+```
+Read PROJECT_RULES.md, SPORTS_AND_RELIABILITY.md (Part A "What scorers do", B2) and supabase/schema_sports.sql. Build /admin/score (list of today's matches) and /admin/score/[matchId], allowed for role scorer, organiser or admin (check on the server in every action):
+1. Layout from the attached design: score, clock, big "+ GOAL" buttons per team (≥ 72 px tall), Yellow, Red, Note, optional player input, Half time / Start 2nd half / Full time, match log with "by <name>", "Undo last".
+2. Every tap creates an event object with client_ref = crypto.randomUUID() and minute from the match clock, adds it to a queue in localStorage, and a sender posts queued items one by one to a server action. On success remove it from the queue; on network failure keep it and retry with backoff; on a unique-violation error for client_ref treat it as already saved. Show "Saved" or "N waiting to send".
+3. Server actions: insertEvent (insert with client_ref; never send scores), undoLast (delete the newest event of that match), setStatus (status/period/clock fields only). After each success: revalidateTag("football") and revalidatePath for /football and the match page, then write the backup snapshot (Prompt R.2 adds this; leave a TODO hook now).
+4. Optimistic UI: the score updates instantly on the scorer's screen from local events, then reconciles with the server.
+5. Organiser-only /admin/football: create tournament, teams (name, short name, group, colour) and fixtures; CSV import for fixtures (columns: stage, group, home, away, date, time, venue).
+Test: airplane mode on, tap +GOAL three times, airplane mode off, confirm exactly 3 goals arrive. Tap the same goal twice fast; confirm one goal. Undo; confirm the score drops. Run lint and build; report.
+```
+**You check:** run a 10-minute practice match with a friend scoring on one phone and you watching on another.
+
+---
+
+## Track R: Reliability (do right after Phase 1)
+
+### Prompt R.1: Caching, timeouts and fallbacks for reads
+```
+Read SPORTS_AND_RELIABILITY.md part B1 carefully and implement it exactly:
+1. lib/resilience.ts: withTimeout(promise, ms=3000); readWithFallback(primaryFn, snapshotKey) that tries Supabase with the timeout, then the Vercel Blob snapshot (live.json or votes-<eventId>.json), then public/schedule.json, and returns { data, source: "db" | "snapshot" | "bundled", fetchedAt }.
+2. Use it in /api/live, /api/vote/[eventId] and the public pages' data functions. Add the "source" to the JSON; when source is not "db", the UI shows a small banner "Running in backup mode, updates may be delayed".
+3. Cache headers on all public API routes: s-maxage as in the table, stale-while-revalidate=300, stale-if-error=86400.
+4. Build step: a script that writes public/schedule.json from the database (or the CSV if the database is unreachable) during next build.
+5. Service worker (next-pwa or a small custom sw.js): cache-first for static assets and the app shell, network-first with cache fallback for /api/live and /api/vote/*.
+6. Client: last-good data in localStorage, offline badge, polling paused when the tab is hidden.
+Then do the kill test: run a production build locally with a wrong NEXT_PUBLIC_SUPABASE_URL and show me that pages and APIs still return data from the snapshot or bundled file. Report.
+```
+
+### Prompt R.2: Snapshots, rate limits and Emergency mode
+```
+Read SPORTS_AND_RELIABILITY.md parts B2 and B3.
+1. lib/snapshot.ts (server-only): writeSnapshots() builds live.json (now, next, announcements, urgent) and votes-<eventId>.json for each competition with voting on (results only if visibility allows) and uploads them to Vercel Blob (@vercel/blob put with addRandomSuffix false, allowOverwrite true, cacheControlMaxAge 5). Call it after every successful organiser write, and at most every 10 s after votes (debounced). Never let a snapshot failure fail the user's save; log it.
+2. Rate limiting with @upstash/ratelimit + @upstash/redis (env UPSTASH_REDIS_REST_URL / TOKEN): limits from B2, keyed by user id (or IP when signed out). Return a friendly "Slow down, try again in N s" message.
+3. Emergency mode: /admin/emergency with an EMERGENCY_PIN check (compare against EMERGENCY_PIN_HASH, a bcrypt or scrypt hash in env; rate-limited 5 per 15 min per IP; httpOnly cookie for 2 hours). It can post an announcement, mark an event delayed/cancelled, and switch voting off for a competition, writing ONLY to the Blob snapshots (no Supabase). Every emergency change is appended to emergency-log.json in Blob.
+4. "Sync backup to database" (organiser, Supabase up): shows differences between the snapshot and the database and applies selected ones after confirmation. Votes are never written in emergency mode; voting simply pauses while the database is down.
+5. /api/health: { db: ok|down, snapshot: age in seconds, version }, no caching.
+Test: the kill test from R.1 plus posting an announcement through Emergency mode and seeing it on a phone. Report.
+```
+
+### Prompt R.3: Load test, monitoring and backups
+```
+1. Write loadtest/k6-live.js: 2,000 virtual users, each loads "/" once then polls /api/live every 20 s and /api/vote/<eventId> every 5 s for 10 minutes (ramp up over 2 minutes). Add a second scenario: 500 signed-in test users each casting one vote within 60 seconds (use test accounts and a test competition). Thresholds: p95 < 300 ms, errors < 0.5%. Give me the exact command to run it against the Vercel preview URL (k6 cloud is not needed; local k6 is fine).
+2. During the test I will watch Supabase → Reports. Tell me what number proves caching works (API requests should stay under about 1 per second).
+3. .github/workflows/nightly-backup.yml: nightly pg_dump using the SUPABASE_DB_URL secret, upload as a workflow artifact kept 14 days. Explain how to restore it.
+4. Admin CSV export buttons for events, announcements, results and vote totals.
+5. Write MONITORING.md: how to set up a free 1-minute uptime check on /api/health with phone alerts, what to watch on fest day, and how to switch on Vercel Attack Challenge Mode and add a firewall rate-limit rule for /api/*.
+Report what you created and the commands.
+```
+**You check:** run the load test once on the preview, and do the kill test yourself before any live match.
+
+## Track A: Accounts, install, scanner, QR generator, event covers (after Phase 3)
+
+Before starting: run `supabase/storage.sql`. In Supabase → Authentication → Providers → Email: enable email sign-in and **"Confirm email"**. Set up custom SMTP (see LAUNCH_CHECKLIST.md 0.4b): Supabase's built-in email sender is only for testing and sends very few emails per hour.
+
+### Prompt A.1: Start flow and accounts
+```
+Scope: follow PRD section 0. Read PROJECT_RULES.md. Match the attached designs "1 Welcome", "2 Cookie notice", "3 Create account", "4 Log in", "My account".
+1. /welcome: shown on the first visit only (localStorage flag in try/catch); buttons Create account, Log in, Just look around, and "Scan a QR" (opens /scan).
+2. Cookie notice: a bottom sheet on the first visit. Only essential cookies (Supabase session) and an optional "Preferences" switch that controls whether we use localStorage for dismissed banners and last tab. Store the choice in localStorage; re-open it from My account. Vercel Analytics is cookie-free, so no analytics consent is needed; say so in the privacy page.
+3. /signup: full name, email, password (min 8 chars with a number; strength meter; show/hide), terms checkbox, "Continue with Google". supabase.auth.signUp with options.data.full_name and emailRedirectTo NEXT_PUBLIC_SITE_URL/auth/callback?next=/account. After submit show "Check your email" with a resend button (rate-limited 1 per 60 s). Show a hint when the email domain matches NEXT_PUBLIC_COLLEGE_DOMAIN: "You'll get the Verified badge after confirming".
+4. /login: email + password, Google, "Keep me signed in" (default on), clear error messages, "Forgot password?" → /reset (resetPasswordForEmail) → /reset/new (updateUser password).
+5. /account (requireUser): profile card (initials or photo, name, email, Verified badge from profiles.college_verified, role), stats (stamps, hunt rank, votes cast; hide the hunt parts if the hunt isn't built), edit name/department (zod), change password, "Hide me from the leaderboard", Cookies and privacy, Install the app, Help, Sign out, Delete my account (service role, server-only).
+6. The avatar on Home and the "More" tab open /account (or /welcome when signed out).
+7. Validate every form with zod on the server; rate-limit signup, login and reset with Upstash (5 per 10 min per IP).
+Test: sign up with a college email (no badge until you click the link, then badge), a Gmail address (never a badge), wrong password, password reset. Run lint and build; report.
+```
+
+### Prompt A.2: Install banner, scanner and QR generator
+```
+Read PROJECT_RULES.md. Match the attached designs "Home" (install bar), "5 Install the web app", "QR scanner" and "Organiser: QR generator".
+1. Install bar: shown at the bottom (above the tab bar) on every visit while the site runs in a browser tab (not when window.matchMedia('(display-mode: standalone)') matches or navigator.standalone is true). "Install" uses the saved beforeinstallprompt event on Android/desktop Chrome; on iOS Safari it opens the sheet with the Share → Add to Home Screen steps. "×" hides it for the current session only.
+2. /scan: camera QR scanner. Use the native BarcodeDetector when available, otherwise the "qr-scanner" npm package (ask before adding it). Rear camera, torch toggle if supported, a sweeping scan line, and a result sheet that recognises our own URLs: /stamp/... → "Collect stamp", /vote/... → "Open vote", /events/... → "Open event"; any other URL shows the address and asks before opening. "Enter a code instead" (for stamp and vote codes) and a clear message when camera permission is denied, with steps to allow it.
+3. /admin/qr generator (replaces the simple QR page): type (App home, Event, Venue, Vote page, Stamp standee, Custom link), pick the item, live preview card with title/time/venue and optional cover, mascot logo in the middle (use error-correction level H so the logo doesn't break scanning), size presets (sticker, A5 standee, A4 poster) with print CSS, PNG download, copy link, "All events" batch print, and a scan count per code from the ?src= parameter (count page views with that src in a small qr_scans table or from Vercel Analytics; your choice, write it in DECISIONS.md).
+Test: install on an Android phone and an iPhone, scan printed codes of each type, and deny camera permission once to see the message. Run lint and build; report.
+```
+
+### Prompt A.3: Events list with covers and hosts, and the event editor
+```
+Read PROJECT_RULES.md. Match the attached designs "Events", "Event page (coming soon)" and "Organiser: event editor with cover photo". The events table now has cover_url, host_name and host_coordinator.
+1. Rename Schedule to Events everywhere (route /events, tab label "Events"). List cards: cover thumbnail (82 px, next/image, blur placeholder; category-coloured illustration when there is no cover), status label (LIVE, COMING SOON · in N min/h, DONE · RESULTS, CANCELLED, DELAYED +N), title, time, venue, "Hosted by …", and VOTE/STAMP badges. Tabs All / Live / Soon / Done, search across title, venue and host.
+2. Event page: full-width cover (16:9) with back/share over it, status chips, title, time and venue link, countdown when coming soon (from serverTime), host card (name, coordinator, Contact = contact_info), description, voting card (opens at / vote now), add to calendar, directions, stamp hint.
+3. Organiser event editor: cover upload (accept images, resize client-side to max 1600 px WebP at quality 0.8 with a canvas, then upload to the event-covers bucket at <eventId>/<timestamp>.webp; save the public URL to cover_url; replace and remove; simple 16:9 crop), title, date/start/end (IST), venue, category, host, coordinator, description, registration link, switches for audience voting (creates/enables the poll), stamp station (creates/activates the stamp point if the hunt is built) and published; Preview and "Save and publish" (revalidate the public paths).
+4. CSV import: add optional columns host_name and host_coordinator (update templates/schedule_template.csv).
+Test: upload a large phone photo (it must end up under 400 KB), check the list and event page on a slow 3G throttle, and an event without a cover. Run lint and build; report.
+```
+
+### Prompt A.4: Navigation, verification screens, line-up and host participants
+```
+Read APP_FLOW.md (sections 1, 2, 5 and 7) and PROJECT_RULES.md. Match design PNGs 04, 05, 10, 13, 22, 23 and 42.
+1. BottomNav component: Home · Events · SCAN (raised 62 px button in the middle, opens /scan) · Vote · Hunt, active state as designed, safe-area padding for phones with a home indicator. The avatar on Home opens /account.
+2. AddToHomeBar above the nav (design 10): shown on every visit while not running standalone; "Add" opens /install (design 06) with iPhone steps and the Android prompt; "×" hides it for this session only.
+3. Sign-up follow-up: /signup/check-email (design 04: email shown, resend countdown 60 s, change email) and /verified (design 05) as the redirect target of the confirmation link.
+4. /hunt/leaderboard (design 23): podium for the top 3 with mascots, table from rank 4, my row highlighted, "N points to pass …" hint, Scan button. Link it from /hunt.
+5. Line-up (design 13): /events/[id]/line-up from participants_public ordered by performance_order nulls last, name; "On stage now" card for status on_stage, "Next" tag for the next checked-in performer; refresh every 15 s while visible; linked from the event page ("See the line-up · N performers").
+6. Host participants (design 42): /host/events/[id]/participants for event hosts and organisers (check is_event_host on the server). Upload CSV with papaparse and Excel with SheetJS (install the official SheetJS package from cdn.sheetjs.com as its docs describe, not the old npm "xlsx" release; ask me before adding it). Map columns case-insensitively (name, team, college, department, email, phone, order), validate with zod, show "N new · N updated · N errors" with row-level errors before importing. Import in a server action: for rows with an email, update the existing participant with the same lower(email) in that event, otherwise insert. Check-in / On stage / Performed / Withdrawn buttons, drag or number to reorder, "Show line-up to students" switch (show_public for all), + Add manually, Export CSV and Excel with all columns.
+7. Organiser: on the event editor, "Hosts" field to add hosts by email (inserts event_hosts for an existing profile; shows "ask them to sign up first" otherwise).
+Test: upload templates/participants_template.csv, then re-upload with one changed name (must update, not duplicate), upload an .xlsx copy, check a student account sees the line-up but no emails (check the network response), and a non-host gets 404 on the host page. Run lint and build; report.
+```
+
+## Track V: Audience voting (after Phase 3)
+
+Before starting: run `supabase/schema_voting.sql` (after `schema.sql`). Read `VOTING.md`.
+
+### Prompt V.1: Voting for students and the stage screen
+```
+Scope: follow PRD section 0. Read PROJECT_RULES.md, VOTING.md and supabase/schema_voting.sql. Match the attached designs ("Vote", "Stage screen").
+1. lib/data/voting.ts (PUBLIC cookie-less client for public parts): listOpenPolls() (enabled, with event title/venue/time and closes_at; select only the public columns of polls, never secret), getPollByEvent(eventId), getResults(pollId) from poll_results ordered by votes desc nulls last, sort, name. getMyVote(pollId) uses the cookie client.
+2. app/api/vote/[eventId]/route.ts: GET returns { poll, contestants/results, serverTime }; revalidate 5; Cache-Control "public, s-maxage=5, stale-while-revalidate=60, stale-if-error=86400"; tag "votes:<eventId>".
+3. /vote (hub): competitions currently voting, each with leader (if visible), total votes and closing countdown. Home shows a "Vote now" card while any poll is open; the event page shows a "Vote now" banner for its poll.
+4. /vote/[eventId]: contestant cards (photo or initials, name, subtitle), "Vote" button, "Your vote" tag, live percentage bars when results are visible, otherwise "Results after voting closes" or "Results announced on stage". If require_code, a 6-character code box with "Enter the code on the stage screen". Signed out: the Vote button goes to /login?next=<this page>. Call rpc('cast_vote', { p_poll, p_contestant, p_code }) and show a friendly message for each reason (voted, same, changed with changes left, locked, college_only, code, closed, slow_down, sign_in). Optimistic UI for my own vote; results refresh via SWR every 5 s while visible.
+5. /screen/vote/[eventId] (16:9 stage screen, no nav): huge animated bars (CSS transitions only), leader highlighted, total votes, QR to /vote/[eventId], and if require_code the current code from rpc('get_vote_code') with a 30 s countdown (requires a volunteer/organiser signed in on that device). Polls every 3 s; Screen Wake Lock.
+6. Rate limit cast_vote calls with Upstash (10 per minute per user) on top of the database rules. After a successful vote, revalidateTag("votes:<eventId>") at most once every 5 s (debounce).
+Test with three accounts (two college, one gmail) on a test competition: vote, same vote, change, lock after 3 changes, gmail refused when college-only, code required when on, results hidden until close when set. Run lint and build; report.
+```
+
+### Prompt V.2: Organiser voting controls
+```
+Read VOTING.md. Build /admin/voting (organiser only, checked on the server):
+1. List of competitions (events) with a big on/off switch each, status (Off / Open / Scheduled / Closed), total votes and leader (organisers always see counts).
+2. Settings sheet per competition: title, opens/closes (IST date-time pickers or "when switched on/off"), Show results (Live / After close / Hidden), College email only, Must be at the venue. Validate with zod; save; revalidateTag("votes:<eventId>").
+3. Contestants editor: add/edit/reorder/deactivate, optional photo upload to Supabase Storage (public bucket "contestants", max 1 MB, resized client-side).
+4. "Close voting now" (sets closes_at = now()), "Reopen", "Open stage screen" link, "Export results CSV" (contestant, votes, percent), and fraud review: list of votes changed 3 times or cast within the same second as many others, with "Remove vote".
+5. Add "Voting" to the control room.
+Test: switch voting on, vote from a phone, change visibility to Hidden and confirm students no longer see counts within 5 s, close voting and confirm votes are refused. Run lint and build; report.
+```
+**You check:** a full rehearsal with 10 friends voting for a test competition while the stage screen runs on a laptop connected to a projector or TV.
+
+## Track H: Stamp Hunt (bonus: only after everything else is tested)
+
+Before starting: run `supabase/schema_stamps.sql` (after `schema.sql` and `schema_sports.sql`). Read `STAMP_HUNT.md`.
+
+### Prompt H.1: Hunt pages and claiming
+```
+Scope: follow PRD section 0. Read PROJECT_RULES.md, STAMP_HUNT.md and supabase/schema_stamps.sql. Match the attached designs ("Stamp Hunt", "Stamp collected").
+1. lib/data/hunt.ts: getHunt(), listStampPoints() (only the public columns: never select secret or print_code), getLeaderboard(limit) ordered by score desc, last_scan asc, getMyStamps() (cookie client).
+2. /hunt: passport grid (one mascot tile per stamp point: collected in colour with time, missing greyed with competition name and time), my points and rank, top 10 leaderboard with my row highlighted, rules, closing countdown, "Hide me from the leaderboard" switch (updates profiles.leaderboard_hidden). Signed-out users see the leaderboard and a "Join the hunt" sign-in button. Public parts cached (revalidate 15, tag "hunt").
+3. /stamp/[pointId] (the URL inside the QR, with ?c=<code>): if signed out, send to /login?next=<this URL> and come back automatically. If signed in, call supabase.rpc('claim_stamp', { p_point, p_code }) ONCE (guard against React double-invoke), then show: success (mascot animation, "+N!", stamps x of y, new rank) or the friendly message for already / expired / not_live / closed / slow_down. After success revalidateTag('hunt').
+4. /hunt/board: fullscreen leaderboard for a TV (big type, auto-refresh 15 s, top 15, QR to /hunt in the corner).
+5. Rate limit /stamp claims with Upstash (10 per minute per user) in addition to the database limit.
+Test with two accounts: claim, claim again, wrong code, scan a stamp whose competition isn't on. Run lint and build; report.
+```
+
+### Prompt H.2: Stamp Station and organiser tools
+```
+Read STAMP_HUNT.md. Build:
+1. /admin/station/[pointId] (scorer/organiser): fullscreen, dark, huge QR encoding NEXT_PUBLIC_SITE_URL/stamp/<pointId>?c=<code>. Get the code from rpc('get_live_code') and refresh it when expires_in reaches 0 (plus every 30 s as a safety net); show a countdown ring, the competition name and time, "Stamps collected here: N" (refresh 15 s), and a warning banner if the page has been offline for more than 20 s. Ask for a Screen Wake Lock (navigator.wakeLock) so the screen stays on; show "Keep this screen on" if it is not supported.
+2. /admin/hunt (organiser): set hunt name, open/close time and point values; create/edit stamp points (name, competition, venue, mascot, bonus window, active); "Print backup standees" page (A5 standee with the printed-code QR NEXT_PUBLIC_SITE_URL/stamp/<pointId>?c=<print_code> from rpc('get_print_code'), competition name, "Use only if the station screen is down"); stamps list per point with "Remove" (delete) for suspicious ones; "Export winners" CSV (rank, name, email, stamps, score, last scan).
+3. Add "Stamp Hunt" to the organiser control room.
+Test the full loop on two phones: station shows the QR, the other phone scans, the stamp appears, the leaderboard updates within 15 s. Wait 90 s and scan a screenshot of the old QR: it must be refused. Run lint and build; report.
+```
+**You check:** the screenshot test, and a printed standee scanned during and outside its competition time.
 
 ## Utility prompts (use any time)
 

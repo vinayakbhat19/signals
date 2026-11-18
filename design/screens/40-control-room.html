@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Control room · Fest Live design</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500..800&amp;family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#0B0A12}
+a{color:#C6FF3D}a:hover{color:#E3FF9A}
+@keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
+@keyframes blink{0%,90%,100%{transform:scaleY(1)}94%{transform:scaleY(.1)}}
+@keyframes pulse{0%{box-shadow:0 0 0 0 rgba(255,79,163,.75)}100%{box-shadow:0 0 0 10px rgba(255,79,163,0)}}
+.m-bob{animation:bob 2.6s ease-in-out infinite}
+.m-blink{transform-box:fill-box;transform-origin:center;animation:blink 4.5s infinite}
+.live-dot{animation:pulse 1.4s ease-out infinite}
+@media (prefers-reduced-motion: reduce){*{animation:none!important}}
+</style>
+<style>body{display:flex;justify-content:center;min-height:100vh}</style>
+</head>
+<body>
+<div style="width: 390px; height: 1040px; position: relative; box-sizing: border-box; background: #0B0A12; font-family: Inter, system-ui, sans-serif; color: #F4F2FA; overflow: hidden">
+
+  <header style="padding: 16px 16px 0; display: flex; flex-direction: column; gap: 14px">
+    <div style="display: flex; justify-content: space-between; align-items: center">
+      <div style="display: flex; align-items: center; gap: 10px">
+        <svg class="m-bob" width="48" height="48" viewBox="0 0 72 72" aria-hidden="true"><path d="M14 30a22 22 0 0 1 44 0" stroke="#F4F2FA" stroke-width="4" fill="none"></path><path d="M58 32v8a6 6 0 0 1-6 6h-4" stroke="#F4F2FA" stroke-width="3" fill="none"></path><circle cx="47" cy="46" r="3" fill="#C6FF3D"></circle><path d="M13 48c0-15 10-24 23-24s23 9 23 24c0 9-7 12-23 12S13 57 13 48z" fill="#FFE14D"></path><g class="m-blink"><rect x="24" y="38" width="8" height="5" rx="2" fill="#0B0A12"></rect><rect x="40" y="38" width="8" height="5" rx="2" fill="#0B0A12"></rect></g><path d="M30 51h12" stroke="#0B0A12" stroke-width="2.6" stroke-linecap="round"></path></svg>
+        <div style="display: flex; flex-direction: column">
+          <span style="font-size: 11px; font-weight: 800; letter-spacing: 0.12em; color: #FFE14D">ORGANISER</span>
+          <span style="font-family: 'Bricolage Grotesque', sans-serif; font-size: 26px; font-weight: 800; letter-spacing: -0.02em; line-height: 1">Control room</span>
+        </div>
+      </div>
+      <a href="10-home.html" style="height: 40px; padding: 0 14px; border-radius: 12px; border: 1.5px solid #2E2A3D; color: #F4F2FA; text-decoration: none; display: flex; align-items: center; font-size: 13px; font-weight: 700">View app</a>
+    </div>
+    <nav aria-label="Sections" style="display: flex; gap: 6px; overflow-x: auto; padding-bottom: 2px"><a href="40-control-room.html" aria-current="page" style="flex: none; border: 0; background: #F4F2FA; color: #0B0A12; font-size: 13px; font-weight: 800; height: 38px; padding: 0 14px; border-radius: 999px; display: flex; align-items: center; text-decoration: none">Events</a><a href="42-host-participants.html" style="flex: none; border: 1.5px solid #2E2A3D; color: #BDB8CF; font-size: 13px; font-weight: 600; height: 38px; padding: 0 12px; border-radius: 999px; display: flex; align-items: center; text-decoration: none; box-sizing: border-box">Participants</a><a href="43-voting-control.html" style="flex: none; border: 1.5px solid #2E2A3D; color: #BDB8CF; font-size: 13px; font-weight: 600; height: 38px; padding: 0 12px; border-radius: 999px; display: flex; align-items: center; text-decoration: none; box-sizing: border-box">Voting</a><a href="44-qr-generator.html" style="flex: none; border: 1.5px solid #2E2A3D; color: #BDB8CF; font-size: 13px; font-weight: 600; height: 38px; padding: 0 12px; border-radius: 999px; display: flex; align-items: center; text-decoration: none; box-sizing: border-box">QR</a><a href="46-stamp-station.html" style="flex: none; border: 1.5px solid #2E2A3D; color: #BDB8CF; font-size: 13px; font-weight: 600; height: 38px; padding: 0 12px; border-radius: 999px; display: flex; align-items: center; text-decoration: none; box-sizing: border-box">Stations</a></nav>
+  </header>
+
+  <section style="padding: 14px 16px 0">
+    <div style="background: #16141F; border: 1.5px solid #2E2A3D; border-radius: 22px; padding: 14px; display: flex; flex-direction: column; gap: 10px">
+      <label for="announce" style="font-size: 13px; font-weight: 800; letter-spacing: 0.08em; color: #9C97B0">SHOUT TO EVERYONE</label>
+      <textarea id="announce" rows="2" placeholder="e.g. Cricket final starts 10 min late" style="font: inherit; font-size: 15px; border: 1.5px solid #3A3549; border-radius: 14px; padding: 10px 12px; resize: none; color: #F4F2FA; background: #0B0A12"></textarea>
+      <div style="display: flex; justify-content: space-between; align-items: center; gap: 10px">
+        <label style="display: flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 600; min-height: 44px"><input type="checkbox" style="width: 20px; height: 20px; accent-color: #FF4FA3">Urgent banner</label>
+        <button style="height: 44px; padding: 0 20px; border-radius: 14px; border: 0; background: #C6FF3D; color: #0B0A12; font: inherit; font-size: 14px; font-weight: 800; box-shadow: 3px 3px 0 #FF4FA3">Post</button>
+      </div>
+    </div>
+  </section>
+
+  <section style="padding: 16px 16px 0; display: flex; flex-direction: column; gap: 10px">
+    <div style="display: flex; justify-content: space-between; align-items: center">
+      <h2 style="margin: 0; font-family: 'Bricolage Grotesque', sans-serif; font-size: 22px; font-weight: 800">Now and next</h2>
+      <a href="41-event-editor.html" style="height: 40px; padding: 0 12px; border-radius: 12px; border: 1.5px solid #2E2A3D; color: #F4F2FA; text-decoration: none; display: flex; align-items: center; font-size: 13px; font-weight: 700; box-sizing: border-box">+ New event</a>
+    </div>
+
+    <article style="background: #16141F; border: 1.5px solid #FF4FA3; border-radius: 22px; padding: 14px; display: flex; flex-direction: column; gap: 12px">
+      <div style="display: flex; justify-content: space-between; gap: 10px">
+        <div style="display: flex; flex-direction: column; gap: 3px"><span style="font-size: 17px; font-weight: 700">Battle of Bands</span><span style="font-size: 13px; color: #9C97B0">Main Stage · 5:00 – 7:30 PM</span></div>
+        <span style="align-self: flex-start; display: flex; align-items: center; gap: 6px; font-size: 11px; font-weight: 800; color: #FF7DBB; letter-spacing: 0.08em"><span class="live-dot" style="width: 9px; height: 9px; border-radius: 5px; background: #FF4FA3"></span>LIVE</span>
+      </div>
+      <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px">
+        <button style="height: 50px; border-radius: 14px; border: 0; background: #FFE14D; color: #0B0A12; font: inherit; font-size: 14px; font-weight: 800">+15 min</button>
+        <button style="height: 50px; border-radius: 14px; border: 0; background: #C6FF3D; color: #0B0A12; font: inherit; font-size: 14px; font-weight: 800">Done</button>
+        <a href="41-event-editor.html" style="height: 50px; border-radius: 14px; border: 1.5px solid #3A3549; color: #F4F2FA; text-decoration: none; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 700; box-sizing: border-box">Edit</a>
+      </div>
+    </article>
+
+    <article style="background: #16141F; border: 1.5px solid #2E2A3D; border-radius: 22px; padding: 14px; display: flex; flex-direction: column; gap: 12px">
+      <div style="display: flex; justify-content: space-between; gap: 10px">
+        <div style="display: flex; flex-direction: column; gap: 3px"><span style="font-size: 17px; font-weight: 700">Intro to Flutter Workshop</span><span style="font-size: 13px; color: #9C97B0">Seminar Hall 1 · 6:15 – 8:15 PM</span></div>
+        <span style="align-self: flex-start; font-size: 11px; font-weight: 800; color: #0B0A12; background: #FFE14D; padding: 4px 8px; border-radius: 999px">+15</span>
+      </div>
+      <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px">
+        <button style="height: 50px; border-radius: 14px; border: 0; background: #FFE14D; color: #0B0A12; font: inherit; font-size: 14px; font-weight: 800">+15 min</button>
+        <button style="height: 50px; border-radius: 14px; border: 1.5px solid #FF4FA3; background: transparent; color: #FF7DBB; font: inherit; font-size: 14px; font-weight: 800">Cancel</button>
+        <button style="height: 50px; border-radius: 14px; border: 1.5px solid #3A3549; background: transparent; color: #F4F2FA; font: inherit; font-size: 14px; font-weight: 700">Edit</button>
+      </div>
+    </article>
+
+    <article style="background: #16141F; border: 1.5px solid #2E2A3D; border-radius: 22px; padding: 14px; display: flex; flex-direction: column; gap: 12px">
+      <div style="display: flex; flex-direction: column; gap: 3px"><span style="font-size: 17px; font-weight: 700">Inter-college Cricket Final</span><span style="font-size: 13px; color: #9C97B0">Sports Ground · 6:50 – 9:50 PM</span></div>
+      <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px">
+        <button style="height: 50px; border-radius: 14px; border: 0; background: #FFE14D; color: #0B0A12; font: inherit; font-size: 14px; font-weight: 800">+15 min</button>
+        <button style="height: 50px; border-radius: 14px; border: 0; background: #22D3EE; color: #0B0A12; font: inherit; font-size: 14px; font-weight: 800">Score</button>
+        <button style="height: 50px; border-radius: 14px; border: 1.5px solid #3A3549; background: transparent; color: #F4F2FA; font: inherit; font-size: 14px; font-weight: 700">Edit</button>
+      </div>
+    </article>
+  </section>
+
+  <section style="margin: 16px 16px 0; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px">
+    <div style="background: #C6FF3D; color: #0B0A12; border-radius: 18px; padding: 12px; display: flex; flex-direction: column; gap: 2px"><span style="font-family: 'Bricolage Grotesque', sans-serif; font-size: 24px; font-weight: 800">1,284</span><span style="font-size: 12px; font-weight: 700">visitors</span></div>
+    <div style="background: #FF4FA3; color: #0B0A12; border-radius: 18px; padding: 12px; display: flex; flex-direction: column; gap: 2px"><span style="font-family: 'Bricolage Grotesque', sans-serif; font-size: 24px; font-weight: 800">3,410</span><span style="font-size: 12px; font-weight: 700">stars</span></div>
+    <div style="background: #A78BFA; color: #0B0A12; border-radius: 18px; padding: 12px; display: flex; flex-direction: column; gap: 2px"><span style="font-family: 'Bricolage Grotesque', sans-serif; font-size: 24px; font-weight: 800">47</span><span style="font-size: 12px; font-weight: 700">signals</span></div>
+  </section>
+  <p style="margin: 8px 16px 0; font-size: 11px; color: #8A8599">Sample numbers for the mockup</p>
+</div>
+</body>
+</html>

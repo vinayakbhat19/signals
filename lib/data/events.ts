@@ -38,8 +38,7 @@ function toEventWithVenue(row: RawEventRow): EventWithVenue {
   };
 }
 
-const EVENT_SELECT =
-  'id, code, title, description, category, venue_id, starts_at, ends_at, status, poster_url, registration_url, contact_info, is_published, created_at, updated_at, venues(id, name, maps_url)';
+const EVENT_SELECT = '*, venues(id, name, maps_url)';
 
 export async function listEvents(): Promise<EventWithVenue[]> {
   const supabase = createPublicClient();

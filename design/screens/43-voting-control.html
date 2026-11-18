@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Voting control · Fest Live design</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500..800&amp;family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#0B0A12}
+a{color:#C6FF3D}a:hover{color:#E3FF9A}
+</style>
+<style>body{display:flex;justify-content:center;min-height:100vh}</style>
+</head>
+<body>
+<div style="width: 390px; height: 1040px; position: relative; box-sizing: border-box; background: #0B0A12; font-family: Inter, system-ui, sans-serif; color: #F4F2FA; overflow: hidden">
+
+  <header style="padding: 14px 16px 0; display: flex; align-items: center; gap: 10px">
+    <a href="40-control-room.html" aria-label="Back to control room" style="width: 44px; height: 44px; border-radius: 14px; border: 1.5px solid #2E2A3D; display: flex; align-items: center; justify-content: center; box-sizing: border-box; flex: none"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#F4F2FA" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 6l-6 6 6 6"></path></svg></a>
+    <div style="display: flex; flex-direction: column">
+      <span style="font-size: 11px; font-weight: 800; letter-spacing: 0.12em; color: #FFE14D">ORGANISER</span>
+      <h1 style="margin: 0; font-family: 'Bricolage Grotesque', sans-serif; font-size: 26px; font-weight: 800; letter-spacing: -0.02em; line-height: 1">Voting control</h1>
+    </div>
+  </header>
+  <p style="margin: 10px 16px 0; font-size: 13px; line-height: 19px; color: #BDB8CF">Voting is off unless you switch it on. Turn it on only for competitions with an audience vote.</p>
+
+  <section style="margin: 12px 16px 0; background: #16141F; border: 2px solid #C6FF3D; border-radius: 22px; padding: 14px; display: flex; flex-direction: column; gap: 12px">
+    <div style="display: flex; justify-content: space-between; align-items: center; gap: 10px">
+      <div style="display: flex; flex-direction: column; gap: 3px"><span style="font-size: 17px; font-weight: 800">Battle of Bands</span><span style="font-size: 13px; color: #9C97B0">Open · 1,284 votes · leader The Raagas</span></div>
+      <button role="switch" aria-checked="true" aria-label="Voting for Battle of Bands" style="flex: none; width: 58px; height: 34px; border-radius: 17px; border: 0; background: #C6FF3D; position: relative; cursor: pointer"><span style="position: absolute; right: 4px; top: 4px; width: 26px; height: 26px; border-radius: 13px; background: #0B0A12"></span></button>
+    </div>
+
+    <fieldset style="border: 0; margin: 0; padding: 0">
+      <legend style="font-size: 12px; font-weight: 800; letter-spacing: 0.08em; color: #9C97B0; padding: 0 0 8px">SHOW RESULTS</legend>
+      <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; background: #0B0A12; border-radius: 14px; padding: 4px">
+        <button aria-pressed="true" style="height: 40px; border-radius: 10px; border: 0; background: #F4F2FA; color: #0B0A12; font: inherit; font-size: 13px; font-weight: 800">Live</button>
+        <button aria-pressed="false" style="height: 40px; border-radius: 10px; border: 0; background: transparent; color: #BDB8CF; font: inherit; font-size: 13px; font-weight: 600">After close</button>
+        <button aria-pressed="false" style="height: 40px; border-radius: 10px; border: 0; background: transparent; color: #BDB8CF; font: inherit; font-size: 13px; font-weight: 600">Hidden</button>
+      </div>
+    </fieldset>
+
+    <label style="display: flex; justify-content: space-between; align-items: center; min-height: 44px; gap: 10px"><span style="display: flex; flex-direction: column"><span style="font-size: 14px; font-weight: 700">College email only</span><span style="font-size: 12px; color: #9C97B0">Blocks fake Gmail accounts</span></span><input type="checkbox" checked style="width: 22px; height: 22px; accent-color: #C6FF3D"></label>
+    <label style="display: flex; justify-content: space-between; align-items: center; min-height: 44px; gap: 10px"><span style="display: flex; flex-direction: column"><span style="font-size: 14px; font-weight: 700">Must be at the venue</span><span style="font-size: 12px; color: #9C97B0">Voters enter the stage-screen code (changes every 30 s)</span></span><input type="checkbox" checked style="width: 22px; height: 22px; accent-color: #C6FF3D"></label>
+    <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px">
+      <div style="display: flex; flex-direction: column; gap: 6px"><label for="opens" style="font-size: 12px; font-weight: 800; letter-spacing: 0.08em; color: #9C97B0">OPENS</label><input id="opens" value="When switched on" style="height: 44px; font: inherit; font-size: 14px; border: 1.5px solid #3A3549; border-radius: 12px; padding: 0 10px; background: #0B0A12; color: #F4F2FA"></div>
+      <div style="display: flex; flex-direction: column; gap: 6px"><label for="closes" style="font-size: 12px; font-weight: 800; letter-spacing: 0.08em; color: #9C97B0">CLOSES</label><input id="closes" value="7:45 PM" style="height: 44px; font: inherit; font-size: 14px; border: 1.5px solid #3A3549; border-radius: 12px; padding: 0 10px; background: #0B0A12; color: #F4F2FA"></div>
+    </div>
+    <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px">
+      <a href="31-stage-screen.html" style="height: 46px; border-radius: 14px; background: #22D3EE; color: #0B0A12; text-decoration: none; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 800">Stage screen</a>
+      <button style="height: 46px; border-radius: 14px; border: 1.5px solid #3A3549; background: transparent; color: #F4F2FA; font: inherit; font-size: 13px; font-weight: 700">Contestants (4)</button>
+      <button style="height: 46px; border-radius: 14px; border: 0; background: #FF4FA3; color: #0B0A12; font: inherit; font-size: 13px; font-weight: 800">Close now</button>
+    </div>
+  </section>
+
+  <section style="margin: 12px 16px 0; display: flex; flex-direction: column; gap: 8px">
+    <div style="background: #16141F; border: 1.5px solid #2E2A3D; border-radius: 18px; padding: 12px 14px; display: flex; justify-content: space-between; align-items: center; gap: 10px">
+      <div style="display: flex; flex-direction: column; gap: 2px"><span style="font-size: 15px; font-weight: 700">Solo Singing</span><span style="font-size: 12px; color: #FFE14D; font-weight: 700">Scheduled · opens 8:00 PM · 6 contestants</span></div>
+      <button role="switch" aria-checked="true" aria-label="Voting for Solo Singing" style="flex: none; width: 58px; height: 34px; border-radius: 17px; border: 0; background: #C6FF3D; position: relative"><span style="position: absolute; right: 4px; top: 4px; width: 26px; height: 26px; border-radius: 13px; background: #0B0A12"></span></button>
+    </div>
+    <div style="background: #16141F; border: 1.5px solid #2E2A3D; border-radius: 18px; padding: 12px 14px; display: flex; justify-content: space-between; align-items: center; gap: 10px">
+      <div style="display: flex; flex-direction: column; gap: 2px"><span style="font-size: 15px; font-weight: 700">Group Dance</span><span style="font-size: 12px; color: #9C97B0">Off · results hidden (judges decide)</span></div>
+      <button role="switch" aria-checked="false" aria-label="Voting for Group Dance" style="flex: none; width: 58px; height: 34px; border-radius: 17px; border: 1.5px solid #3A3549; background: #24212F; position: relative"><span style="position: absolute; left: 4px; top: 3px; width: 26px; height: 26px; border-radius: 13px; background: #8A8599"></span></button>
+    </div>
+    <div style="background: #16141F; border: 1.5px solid #2E2A3D; border-radius: 18px; padding: 12px 14px; display: flex; justify-content: space-between; align-items: center; gap: 10px">
+      <div style="display: flex; flex-direction: column; gap: 2px"><span style="font-size: 15px; font-weight: 700">Coding Contest</span><span style="font-size: 12px; color: #9C97B0">Off · no audience vote</span></div>
+      <button role="switch" aria-checked="false" aria-label="Voting for Coding Contest" style="flex: none; width: 58px; height: 34px; border-radius: 17px; border: 1.5px solid #3A3549; background: #24212F; position: relative"><span style="position: absolute; left: 4px; top: 3px; width: 26px; height: 26px; border-radius: 13px; background: #8A8599"></span></button>
+    </div>
+  </section>
+
+  <div style="position: absolute; left: 16px; right: 16px; bottom: 22px; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px">
+    <button style="height: 48px; border-radius: 14px; border: 1.5px solid #3A3549; background: transparent; color: #F4F2FA; font: inherit; font-size: 14px; font-weight: 700">Fraud review (3)</button>
+    <button style="height: 48px; border-radius: 14px; border: 1.5px solid #3A3549; background: transparent; color: #F4F2FA; font: inherit; font-size: 14px; font-weight: 700">Export results CSV</button>
+  </div>
+</div>
+</body>
+</html>
