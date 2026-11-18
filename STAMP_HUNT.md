@@ -2,7 +2,7 @@
 
 A game for fest day: visit competitions, scan the stamp QR at each one, climb the leaderboard, win prizes. It gets people to the competitions and gives everyone a reason to use the app.
 
-**Priority:** bonus. Build it only after football, the fest schedule and reliability pass testing (target 23 Nov). If it isn't ready and tested by then, launch it at the next event instead.
+**Priority:** part of the launch. Test data: `supabase/seed_hunt.sql`. If your build shows a placeholder, use Prompt H.0.
 
 ## Rules for players (put these on the Hunt page and the posters)
 1. Sign in with Google to join (the rest of the app needs no sign-in).

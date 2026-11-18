@@ -11,6 +11,7 @@ const EMPTY_LIVE: LiveData = {
   urgent: null,
   changes: [],
   changedEventIds: [],
+  hunt: { totalStamps: 0, closesAt: null, liveStampName: null },
   serverTime: new Date(0).toISOString(),
 };
 

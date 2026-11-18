@@ -50,6 +50,19 @@ function splitCountdownBadge(
   return { value: String(days), unit: days === 1 ? 'DAY' : 'DAYS' };
 }
 
+interface MyHuntMeResponse {
+  signedIn: boolean;
+  stamps?: number;
+  total?: number;
+  rank?: number | null;
+}
+
+async function fetchHuntMe(url: string): Promise<MyHuntMeResponse> {
+  const res = await fetch(url, { cache: 'no-store' });
+  if (!res.ok) return { signedIn: false };
+  return res.json() as Promise<MyHuntMeResponse>;
+}
+
 interface HomeLiveFeedProps {
   festName: string;
   initialData: LiveData;
@@ -68,6 +81,12 @@ export function HomeLiveFeed({ festName, initialData }: HomeLiveFeedProps) {
       shouldRetryOnError: true,
       errorRetryInterval: 15_000,
     }
+  );
+
+  const { data: myHunt } = useSWR<MyHuntMeResponse>(
+    '/api/hunt/me',
+    fetchHuntMe,
+    { revalidateOnFocus: true, shouldRetryOnError: false }
   );
 
   const liveData: LiveApiResponse = data ?? initialData;
@@ -376,7 +395,7 @@ export function HomeLiveFeed({ festName, initialData }: HomeLiveFeedProps) {
         )}
       </section>
 
-      {/* Stamp Hunt Promo Card */}
+      {/* Stamp Hunt Card (live user progress + next live stamp) */}
       <section aria-label="Stamp Hunt">
         <Link
           href="/hunt"
@@ -384,13 +403,20 @@ export function HomeLiveFeed({ festName, initialData }: HomeLiveFeedProps) {
         >
           <div className="min-w-0 flex-1 space-y-1">
             <span className="block text-[11px] font-extrabold uppercase tracking-[0.1em]">
-              STAMP HUNT · CAMPUS QUEST
+              STAMP HUNT
+              {liveData.hunt?.closesAt
+                ? ` · CLOSES ${formatTime(liveData.hunt.closesAt).toUpperCase()}`
+                : ' · CAMPUS QUEST'}
             </span>
             <span className="block font-heading text-[22px] font-extrabold leading-[1.06] tracking-[-0.02em]">
-              Scan QR stations & climb the leaderboard
+              {myHunt?.signedIn
+                ? `You have ${myHunt.stamps ?? 0} of ${myHunt.total ?? liveData.hunt?.totalStamps ?? 0} stamps${myHunt.rank ? ` · #${myHunt.rank}` : ''}`
+                : 'Join the hunt & win prizes'}
             </span>
             <span className="block text-sm font-semibold">
-              Tap to view your passport & top hunters →
+              {liveData.hunt?.liveStampName
+                ? `${liveData.hunt.liveStampName} stamp is live now`
+                : 'Scan QR stations across campus →'}
             </span>
           </div>
           <HuntMascots />

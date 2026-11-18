@@ -1,4 +1,15 @@
-export type UserRole = 'student' | 'volunteer' | 'organiser' | 'admin';
+export type UserRole = 'student' | 'volunteer' | 'scorer' | 'organiser' | 'admin';
+
+export const STAMP_MASCOTS = [
+  'spark',
+  'zap',
+  'beat',
+  'kick',
+  'doodle',
+  'buzz',
+] as const;
+
+export type StampMascot = (typeof STAMP_MASCOTS)[number];
 
 export const EVENT_CATEGORIES = [
   'tech',
@@ -74,31 +85,34 @@ export const SIGNAL_TAGS = [
 export type SignalTag = (typeof SIGNAL_TAGS)[number];
 
 // ---------------------------------------------------------------- Table rows
+// Use `type` aliases (not `interface`) so each row satisfies PostgREST's
+// `Record<string, unknown>` GenericTable constraint in @supabase/supabase-js.
 
-export interface AppSetting {
+export type AppSetting = {
   key: string;
   value: string;
-}
+};
 
-export interface Profile {
+export type Profile = {
   id: string;
   full_name: string | null;
   avatar_url: string | null;
   email: string | null;
   role: UserRole;
   college_verified: boolean;
+  leaderboard_hidden?: boolean;
   created_at: string;
-}
+};
 
-export interface Venue {
+export type Venue = {
   id: string;
   name: string;
   description: string | null;
   maps_url: string | null;
   created_at: string;
-}
+};
 
-export interface Event {
+export type Event = {
   id: string;
   code: string | null;
   title: string;
@@ -117,18 +131,18 @@ export interface Event {
   is_published: boolean;
   created_at: string;
   updated_at: string;
-}
+};
 
-export interface Announcement {
+export type Announcement = {
   id: string;
   message: string;
   event_id: string | null;
   priority: AnnouncementPriority;
   created_by: string | null;
   created_at: string;
-}
+};
 
-export interface EventChange {
+export type EventChange = {
   id: string;
   event_id: string;
   kind: EventChangeKind;
@@ -138,29 +152,29 @@ export interface EventChange {
   new_venue: string | null;
   message: string;
   created_at: string;
-}
+};
 
-export interface Result {
+export type Result = {
   id: string;
   event_id: string;
   title: string;
   body: string;
   is_live: boolean;
   updated_at: string;
-}
+};
 
-export interface Star {
+export type Star = {
   user_id: string;
   event_id: string;
   created_at: string;
-}
+};
 
 /**
  * Public/readable Signal row.
  * Intentionally excludes `contact` — contact is never selectable from `signals`
  * and must only be retrieved via `supabase.rpc('get_signal_contact', { p_signal_id })`.
  */
-export interface Signal {
+export type Signal = {
   id: string;
   user_id: string;
   display_name: string;
@@ -172,9 +186,9 @@ export interface Signal {
   status: SignalStatus;
   expires_at: string;
   created_at: string;
-}
+};
 
-export interface SignalInsert {
+export type SignalInsert = {
   id?: string;
   user_id?: string;
   type: SignalType;
@@ -184,9 +198,9 @@ export interface SignalInsert {
   contact: string;
   status?: 'open';
   expires_at: string;
-}
+};
 
-export interface SignalResponse {
+export type SignalResponse = {
   id: string;
   signal_id: string;
   user_id: string;
@@ -195,19 +209,91 @@ export interface SignalResponse {
   contact: string;
   status: SignalResponseStatus;
   created_at: string;
-}
+};
 
-export interface Report {
+export type Report = {
   id: string;
   signal_id: string;
   reporter_id: string;
   reason: string | null;
   created_at: string;
-}
+};
+
+export type StampHunt = {
+  id: number;
+  name: string;
+  opens_at: string;
+  closes_at: string;
+  stamp_value: number;
+  bonus_value: number;
+  printed_value: number;
+  complete_bonus: number;
+};
+
+/**
+ * Public-safe StampPoint row.
+ * Intentionally excludes `secret` and `print_code` — never readable by clients.
+ */
+export type StampPointPublic = {
+  id: string;
+  name: string;
+  event_id: string | null;
+  venue_id: string | null;
+  mascot: StampMascot;
+  sort: number;
+  active: boolean;
+  bonus_from: string | null;
+  bonus_to: string | null;
+};
+
+export type Stamp = {
+  user_id: string;
+  point_id: string;
+  points: number;
+  method: 'live' | 'printed';
+  scanned_at: string;
+};
+
+export type LeaderboardRow = {
+  user_id: string;
+  display_name: string;
+  verified: boolean;
+  stamps: number;
+  score: number;
+  last_scan: string;
+};
+
+export type ClaimStampResult =
+  | {
+      ok: true;
+      points: number;
+      method: 'live' | 'printed';
+      mascot: StampMascot;
+      stamps: number;
+      total: number;
+      of: number;
+    }
+  | {
+      ok: false;
+      reason:
+        | 'sign_in'
+        | 'closed'
+        | 'unknown'
+        | 'not_live'
+        | 'slow_down'
+        | 'expired'
+        | 'already';
+      message: string;
+    };
+
+export type LiveCodeResult = {
+  code: string;
+  expires_in: number;
+};
 
 // ---------------------------------------------------------------- Supabase Database type
 
-export interface Database {
+export type Database = {
   public: {
     Tables: {
       app_settings: {
@@ -230,6 +316,7 @@ export interface Database {
         Update: {
           full_name?: string | null;
           avatar_url?: string | null;
+          leaderboard_hidden?: boolean;
         };
         Relationships: [];
       };
@@ -333,8 +420,8 @@ export interface Database {
       };
       event_changes: {
         Row: EventChange;
-        Insert: never;
-        Update: never;
+        Insert: Record<string, never>;
+        Update: Record<string, never>;
         Relationships: [
           {
             foreignKeyName: 'event_changes_event_id_fkey';
@@ -379,7 +466,7 @@ export interface Database {
           event_id: string;
           created_at?: string;
         };
-        Update: never;
+        Update: Record<string, never>;
         Relationships: [
           {
             foreignKeyName: 'stars_user_id_fkey';
@@ -458,7 +545,7 @@ export interface Database {
           reporter_id?: string;
           reason?: string | null;
         };
-        Update: never;
+        Update: Record<string, never>;
         Relationships: [
           {
             foreignKeyName: 'reports_signal_id_fkey';
@@ -476,8 +563,73 @@ export interface Database {
           },
         ];
       };
+      stamp_hunt: {
+        Row: StampHunt;
+        Insert: Partial<StampHunt> & { opens_at: string; closes_at: string };
+        Update: Partial<StampHunt>;
+        Relationships: [];
+      };
+      stamp_points: {
+        Row: StampPointPublic;
+        Insert: {
+          id?: string;
+          name: string;
+          event_id?: string | null;
+          venue_id?: string | null;
+          mascot?: StampMascot;
+          sort?: number;
+          active?: boolean;
+          bonus_from?: string | null;
+          bonus_to?: string | null;
+        };
+        Update: {
+          name?: string;
+          event_id?: string | null;
+          venue_id?: string | null;
+          mascot?: StampMascot;
+          sort?: number;
+          active?: boolean;
+          bonus_from?: string | null;
+          bonus_to?: string | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'stamp_points_event_id_fkey';
+            columns: ['event_id'];
+            isOneToOne: false;
+            referencedRelation: 'events';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'stamp_points_venue_id_fkey';
+            columns: ['venue_id'];
+            isOneToOne: false;
+            referencedRelation: 'venues';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
+      stamps: {
+        Row: Stamp;
+        Insert: Record<string, never>;
+        Update: Record<string, never>;
+        Relationships: [
+          {
+            foreignKeyName: 'stamps_point_id_fkey';
+            columns: ['point_id'];
+            isOneToOne: false;
+            referencedRelation: 'stamp_points';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
     };
-    Views: Record<string, never>;
+    Views: {
+      stamp_leaderboard: {
+        Row: LeaderboardRow;
+        Relationships: [];
+      };
+    };
     Functions: {
       get_signal_contact: {
         Args: { p_signal_id: string };
@@ -487,8 +639,24 @@ export interface Database {
         Args: Record<string, never>;
         Returns: boolean;
       };
+      is_volunteer: {
+        Args: Record<string, never>;
+        Returns: boolean;
+      };
+      claim_stamp: {
+        Args: { p_point: string; p_code: string };
+        Returns: ClaimStampResult;
+      };
+      get_live_code: {
+        Args: { p_point: string };
+        Returns: LiveCodeResult;
+      };
+      get_print_code: {
+        Args: { p_point: string };
+        Returns: string | null;
+      };
     };
     Enums: Record<string, never>;
     CompositeTypes: Record<string, never>;
   };
-}
+};

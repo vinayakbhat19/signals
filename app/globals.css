@@ -115,6 +115,35 @@
   40% { transform: rotate(0deg); }
 }
 
+@keyframes stamp-bounce {
+  0%, 100% { transform: translateY(0) rotate(-8deg); }
+  40% { transform: translateY(-10px) rotate(-8deg); }
+  55% { transform: translateY(2px) rotate(-8deg); }
+}
+
+@keyframes jump-joy {
+  0%, 100% { transform: translateY(0) scale(1, 1); }
+  30% { transform: translateY(-30px) scale(0.95, 1.05); }
+  55% { transform: translateY(0) scale(1.08, 0.92); }
+  70% { transform: translateY(0) scale(1, 1); }
+}
+
+@keyframes confetti-fall {
+  0% { transform: translateY(-40px) rotate(0deg); opacity: 1; }
+  100% { transform: translateY(560px) rotate(540deg); opacity: 0.2; }
+}
+
+@keyframes popin {
+  0% { transform: scale(0.6) rotate(-6deg); opacity: 0; }
+  60% { transform: scale(1.1) rotate(-6deg); opacity: 1; }
+  100% { transform: scale(1) rotate(-6deg); opacity: 1; }
+}
+
+@keyframes scan-sweep {
+  0%, 100% { transform: translateY(8px); }
+  50% { transform: translateY(210px); }
+}
+
 .m-bob {
   animation: bob 2.6s ease-in-out infinite;
 }
@@ -159,6 +188,26 @@
   animation: ring 2.4s ease-in-out infinite;
 }
 
+.stamping {
+  animation: stamp-bounce 1.8s ease-in-out infinite;
+}
+
+.jump {
+  animation: jump-joy 1.3s ease-in-out infinite;
+}
+
+.confetti {
+  animation: confetti-fall 3.2s linear infinite;
+}
+
+.popin {
+  animation: popin 0.75s ease-out both;
+}
+
+.scan-line {
+  animation: scan-sweep 2.2s ease-in-out infinite;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .m-bob,
   .m-blink,
@@ -168,7 +217,12 @@
   .ticker-track,
   .beam,
   .twinkle,
-  .bell-ring {
+  .bell-ring,
+  .stamping,
+  .jump,
+  .confetti,
+  .popin,
+  .scan-line {
     animation: none !important;
   }
 }

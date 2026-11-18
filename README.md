@@ -21,6 +21,7 @@ Everything needed to build **Fest Live** (the live fest guide plus the Signals "
 | `templates/participants_template.csv` | Columns for hosts' registration sheets (CSV or Excel) | Send to event hosts |
 | `supabase/schema_changes.sql` | Automatic change alerts: a trigger logs every time, venue or status change with a ready-made message (tested on Postgres 16) | Run right after `schema.sql` |
 | `supabase/storage.sql` | Public buckets for event covers and contestant photos; only organisers can upload | Run after `schema.sql` |
+| `supabase/seed_hunt.sql` | Stamp Hunt test data: opens the hunt for 12 h and creates a stamp point per seeded event (safe to re-run) | After `schema_stamps.sql` and `seed.sql`, development only |
 | `supabase/seed.sql` | Sample venues, events, announcements and a live score | During building; deleted on 24 Nov |
 | `templates/schedule_template.csv` | Columns for the committee's schedule sheet | Send to the committee today |
 
@@ -28,7 +29,7 @@ Everything needed to build **Fest Live** (the live fest guide plus the Signals "
 1. Fill in the placeholders: `{{FEST_NAME}}`, `{{COLLEGE_NAME}}`, `{{COLLEGE_DOMAIN}}`, `{{BRAND_COLOR}}`.
 2. `LAUNCH_CHECKLIST.md` → Phase 0 (committee, GitHub, Supabase, Google sign-in).
 3. Read **PRD section 0**: the first launch is the **fest only** (schedule, announcements, results, audience voting; Stamp Hunt as a bonus). Football, Signals and stars come later.
-4. `PROMPTS.md` → Phase 1 → Track R → Phases 2, 3 → **Track A (A.1–A.4)** → Track V → Prompt 4.3 → Phases 5, 6 → Track H (bonus). Attach the matching `design/png` screens to every prompt. Check each step on your phone before the next.
+4. `PROMPTS.md` → Phase 1 → Track R → Phases 2, 3 → **Track A (A.1–A.4)** → Track V → Prompt 4.3 → Phases 5, 6 → Track H (H.0–H.2). Attach the matching `design/png` screens to every prompt. Check each step on your phone before the next.
 
 ## What was tested in the schema
 On a local Postgres 16 with stand-ins for Supabase's auth:

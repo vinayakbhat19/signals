@@ -14,6 +14,7 @@ export default async function HomePage() {
     urgent: null,
     changes: [],
     changedEventIds: [],
+    hunt: { totalStamps: 0, closesAt: null, liveStampName: null },
     serverTime: new Date().toISOString(),
   };
 

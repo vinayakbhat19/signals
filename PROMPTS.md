@@ -12,7 +12,7 @@ Replace `{{FEST_NAME}}`, `{{COLLEGE_NAME}}`, `{{COLLEGE_DOMAIN}}`, `{{BRAND_COLO
 ---
 
 > **Build order for the first launch (fest only):**
-> Phase 0 → Phase 1 → **Track R** (reliability) → Phase 2 → Phase 3 → **Track A** (accounts, install, scanner, QR generator, event covers) → **Track V** (voting) → Prompt 4.3 → Phase 5 → Phase 6, then **Track H** (Stamp Hunt) only if everything else is tested by 23 Nov.
+> Phase 0 → Phase 1 → **Track R** (reliability) → Phase 2 → Phase 3 → **Track A** (accounts, install, scanner, QR generator, event covers) → **Track V** (voting) → **Track H** (Stamp Hunt: H.0, H.1, H.2) → Prompt 4.3 → Phase 5 → Phase 6. The Stamp Hunt is part of the launch, not a placeholder.
 > **Skip** Prompts 4.1 (My schedule), 4.2 (Signals), **V.3** (offline voting) and **Track S** (football) for now. Read PRD section 0 first, and paste this line at the top of every prompt: *"Scope: follow PRD section 0. Fest only: no football, no Signals, no stars; sign-in only for organisers, volunteers, voters and hunt players."*
 > Database order: `schema.sql` → `schema_changes.sql` → `storage.sql` → `schema_participants.sql` → `schema_voting.sql` → `schema_stamps.sql` (if you build the hunt). `seed.sql` any time during building.
 > **Design:** read `APP_FLOW.md` first. Attach the matching PNGs from `design/png/` to every prompt (IDs 01–46), and tell the agent: *"Match the attached screens exactly; the standalone HTML for each is in design/screens/."*
@@ -412,9 +412,23 @@ Test with airplane mode: open the vote page online, switch to airplane mode, vot
 ```
 **You check:** a rehearsal inside the auditorium itself with 10 phones (Android and iPhone) and the real stage laptop.
 
-## Track H: Stamp Hunt (bonus: only after everything else is tested)
+## Track H: Stamp Hunt (part of the launch)
 
 Before starting: run `supabase/schema_stamps.sql` (after `schema.sql` and `schema_sports.sql`). Read `STAMP_HUNT.md`.
+
+### Prompt H.0: Replace the Stamp Hunt placeholder (use this if /hunt shows "launches in Track H")
+```
+The /hunt page is a placeholder ("Your Fest Passport launches in Track H", "Explore events"). Remove it and build the real Stamp Hunt now. Read STAMP_HUNT.md, APP_FLOW.md (screens 20–23 and flow 3.3) and supabase/schema_stamps.sql. Match the attached PNGs 20 (scanner), 21 (stamp collected), 22 (hunt), 23 (leaderboard) exactly.
+First give me the SQL steps: run supabase/schema_stamps.sql if the stamp tables don't exist, then supabase/seed_hunt.sql for test data.
+1. /hunt, signed in: points / rank / stamps card; passport grid with one mascot tile per stamp point (collected in colour with time; LIVE pulsing border when its competition is on now; missing ones greyed with the competition name and time); "Full leaderboard" link; top-5 leaderboard preview with my row highlighted; rules line; "Hide me from the leaderboard" switch; closing countdown.
+2. /hunt, signed out: the same passport tiles (all missing), the live leaderboard preview, and a big "Join the hunt" button (sign in, then come back). Never show "launches in Track H" or "Explore events".
+3. Call-to-action everywhere on the hunt pages: a "Scan to collect" button that opens /scan, and a "LIVE NOW: <competition> stamp" card linking to that event when a stamp point's competition is running. Empty leaderboard: "No stamps yet. Scan at a competition to be #1."
+4. /hunt/leaderboard (design 23): podium top 3 with mascots, table from rank 4, my row highlighted, "N points to pass <name>" hint, Scan button.
+5. /scan must recognise every Fest Live QR: /stamp/<pointId>?c=<code> → "Collect stamp" (then /stamp/... claims it and shows design 21), /vote/<eventId> → "Open vote", /events/<id> → "Open event", /hunt → "Open Stamp Hunt". Unknown links show the address and ask before opening.
+6. /stamp/[pointId]: claim once with rpc('claim_stamp'); success = design 21 (+N, progress, new rank, next live stamp nearby); friendly messages for already / expired / not_live / closed / slow_down; signed out → login → back here automatically.
+7. Home: the Stamp Hunt card shows my stamps and rank (or "Join the hunt" when signed out) and the next live stamp.
+Test with seed_hunt.sql: open /admin/station/<pointId> on a laptop, scan its QR from a phone via /scan, see the stamp appear on /hunt and the leaderboard within 15 s. Run lint and build; report.
+```
 
 ### Prompt H.1: Hunt pages and claiming
 ```
