@@ -2,11 +2,11 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { Clock, Megaphone, Trophy } from 'lucide-react';
+import { Clock, Megaphone, Trash2, Trophy } from 'lucide-react';
 import { toast } from 'sonner';
 import { useLiveFeed } from '@/lib/live-store';
 import { createClient } from '@/lib/supabase/client';
-import { formatDay, formatRange } from '@/lib/time';
+import { formatDay, formatRange, formatTimeAgo } from '@/lib/time';
 import type { EventStatus } from '@/lib/types';
 
 export default function AdminDashboardPage() {
@@ -76,6 +76,50 @@ export default function AdminDashboardPage() {
       toast.success('Results published!');
     }
   }
+
+  async function deleteUpdateItem(kind: 'notice' | 'change', id: string) {
+    setBusy(true);
+    const supabase = createClient();
+    const table = kind === 'change' ? 'event_changes' : 'announcements';
+    const { error } = await supabase.from(table).delete().eq('id', id);
+    setBusy(false);
+    if (error) toast.error(error.message || 'Could not delete update.');
+    else {
+      toast.success(kind === 'change' ? 'Change log deleted.' : 'Notice deleted.');
+      await refresh();
+    }
+  }
+
+  async function clearAllChangeLogs() {
+    if (feed.changes.length === 0) return;
+    setBusy(true);
+    const supabase = createClient();
+    const ids = feed.changes.map((c) => c.id);
+    const { error } = await supabase.from('event_changes').delete().in('id', ids);
+    setBusy(false);
+    if (error) toast.error(error.message || 'Could not clear change logs.');
+    else {
+      toast.success('All schedule change logs cleared.');
+      await refresh();
+    }
+  }
+
+  const allUpdates = [
+    ...feed.notices.map((n) => ({
+      id: n.id,
+      kind: 'notice' as const,
+      label: n.priority === 'urgent' ? 'URGENT NOTICE' : 'NOTICE',
+      message: n.message,
+      created_at: n.created_at,
+    })),
+    ...feed.changes.map((c) => ({
+      id: c.id,
+      kind: 'change' as const,
+      label: 'SCHEDULE CHANGE',
+      message: c.message,
+      created_at: c.created_at,
+    })),
+  ].sort((a, b) => b.created_at.localeCompare(a.created_at));
 
   return (
     <div className="space-y-6">
@@ -162,6 +206,76 @@ export default function AdminDashboardPage() {
           </button>
         </form>
       </div>
+
+      {/* Manage & Delete Published Updates / Logs */}
+      <section className="rounded-[22px] border border-[#3B2758] bg-[#1F1230] p-5 space-y-3">
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <div>
+            <h2 className="font-heading text-lg font-extrabold text-[#F4F2FA]">
+              Updates &amp; Change Logs ({allUpdates.length})
+            </h2>
+            <p className="text-xs text-[#9C97B0]">
+              Delete old notices or automatic schedule change logs immediately.
+            </p>
+          </div>
+          {feed.changes.length > 0 && (
+            <button
+              type="button"
+              disabled={busy}
+              onClick={() => void clearAllChangeLogs()}
+              className="inline-flex h-9 items-center gap-1.5 rounded-xl border border-[#FF4F5E]/50 bg-[#FF4F5E]/15 px-3 text-xs font-extrabold text-[#FF4F5E] hover:bg-[#FF4F5E]/25 cursor-pointer disabled:opacity-50"
+            >
+              <Trash2 className="size-3.5" />
+              Clear all change logs ({feed.changes.length})
+            </button>
+          )}
+        </div>
+
+        {allUpdates.length === 0 ? (
+          <p className="text-xs italic text-[#9C97B0]">
+            No notices or schedule change logs right now.
+          </p>
+        ) : (
+          <div className="space-y-2">
+            {allUpdates.map((item) => (
+              <div
+                key={`${item.kind}-${item.id}`}
+                className="flex items-start justify-between gap-3 rounded-xl border border-[#3B2758] bg-[#12091E] px-3.5 py-2.5"
+              >
+                <div className="min-w-0 flex-1 space-y-0.5">
+                  <div className="flex items-center gap-2 text-[10px] font-extrabold uppercase tracking-wider">
+                    <span
+                      className={
+                        item.kind === 'change'
+                          ? 'text-[#22D3EE]'
+                          : 'text-[#FFE14D]'
+                      }
+                    >
+                      {item.label}
+                    </span>
+                    <span className="text-[#9C97B0]">
+                      · {formatTimeAgo(item.created_at, feed.server_time)}
+                    </span>
+                  </div>
+                  <p className="text-xs font-medium text-[#F4F2FA] break-words">
+                    {item.message}
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  disabled={busy}
+                  onClick={() => void deleteUpdateItem(item.kind, item.id)}
+                  aria-label="Delete update log"
+                  className="inline-flex h-8 shrink-0 items-center gap-1 rounded-lg border border-[#FF4F5E]/40 bg-[#FF4F5E]/15 px-2.5 text-[11px] font-extrabold text-[#FF4F5E] hover:bg-[#FF4F5E]/25 cursor-pointer disabled:opacity-50"
+                >
+                  <Trash2 className="size-3.5" />
+                  Delete
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
+      </section>
 
       {/* Quick 2-Tap Event Controls */}
       <section className="space-y-3">

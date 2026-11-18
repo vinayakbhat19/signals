@@ -14,17 +14,27 @@ const EMAIL = /^[^@\s]+@[^@\s]+\.[^@\s]+$/;
 const ROLES = ['host', 'volunteer', 'organiser'];
 
 const json = (obj, status, origin) =>
-  new Response(JSON.stringify(obj), {
+  new Response(status === 204 ? null : JSON.stringify(obj), {
     status,
     headers: {
-      'Content-Type': 'application/json',
+      ...(status === 204 ? {} : { 'Content-Type': 'application/json' }),
       'Access-Control-Allow-Origin': origin || 'null',
       'Access-Control-Allow-Headers': 'Authorization, Content-Type',
       'Access-Control-Allow-Methods': 'POST, OPTIONS',
+      'Access-Control-Max-Age': '86400',
       'Cache-Control': 'no-store',
       Vary: 'Origin',
     },
   });
+
+function isAllowedOrigin(origin, allowedSetting) {
+  if (!origin || !allowedSetting) return false;
+  return String(allowedSetting)
+    .split(',')
+    .map((s) => s.trim())
+    .filter(Boolean)
+    .includes(origin);
+}
 
 function sbHeaders(env, key, extra = {}) {
   return { apikey: key, Authorization: `Bearer ${key}`, 'Content-Type': 'application/json', ...extra };
@@ -121,9 +131,9 @@ async function removeStaff(env, actor, b) {
 export default {
   async fetch(req, env) {
     const origin = req.headers.get('Origin');
-    const allowed = env.ALLOWED_ORIGIN;
-    if (req.method === 'OPTIONS') return json({}, origin === allowed ? 204 : 403, origin === allowed ? origin : null);
-    if (origin !== allowed) return json({ ok: false, reason: 'origin' }, 403, null);
+    const okOrigin = isAllowedOrigin(origin, env.ALLOWED_ORIGIN);
+    if (req.method === 'OPTIONS') return json(null, okOrigin ? 204 : 403, okOrigin ? origin : null);
+    if (!okOrigin) return json({ ok: false, reason: 'origin' }, 403, null);
     if (req.method !== 'POST') return json({ ok: false, reason: 'method' }, 405, origin);
 
     const url = new URL(req.url);

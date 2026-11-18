@@ -27,11 +27,13 @@ export default function AdminHostsPage() {
     Array<{ id: string; event_id: string; email: string }>
   >([]);
   const [volunteers, setVolunteers] = useState<
-    Array<{ id: string; email: string | null; full_name: string | null }>
+    Array<{ id: string; email: string | null; full_name: string | null; role: string }>
   >([]);
   const [busy, setBusy] = useState(false);
 
-  const staffApiUrl = process.env.NEXT_PUBLIC_STAFF_API || '';
+  const staffApiUrl =
+    process.env.NEXT_PUBLIC_STAFF_API ||
+    'https://fiesta-staff.vinayak19v.workers.dev';
 
   const load = useCallback(async () => {
     const supabase = createClient();
@@ -45,8 +47,8 @@ export default function AdminHostsPage() {
         .is('accepted_at', null),
       supabase
         .from('profiles')
-        .select('id, full_name, email')
-        .eq('role', 'volunteer'),
+        .select('id, full_name, email, role')
+        .in('role', ['volunteer', 'organiser']),
     ]);
 
     setHosts(
@@ -296,7 +298,7 @@ export default function AdminHostsPage() {
       >
         <h2 className="flex items-center gap-2 font-heading text-lg font-extrabold text-[#F4F2FA]">
           <Users className="size-5 text-[#22D3EE]" />
-          Volunteers ({volunteers.length})
+          Volunteers &amp; Organisers ({volunteers.length})
         </h2>
         <div className="flex gap-2">
           <input
@@ -320,10 +322,61 @@ export default function AdminHostsPage() {
             {volunteers.map((v) => (
               <div
                 key={v.id}
-                className="flex justify-between rounded-xl bg-[#12091E] px-3 py-2 text-xs"
+                className="flex items-center justify-between gap-2 rounded-xl bg-[#12091E] px-3 py-2 text-xs"
               >
-                <span className="font-bold">{v.full_name || v.email}</span>
-                <span className="text-[#22D3EE]">VOLUNTEER</span>
+                <div className="min-w-0">
+                  <span className="block truncate font-bold text-[#F4F2FA]">
+                    {v.full_name || v.email}
+                  </span>
+                  {v.email && v.full_name && (
+                    <span className="block truncate text-[10px] text-[#9C97B0]">
+                      {v.email}
+                    </span>
+                  )}
+                </div>
+                <div className="flex shrink-0 items-center gap-2">
+                  <span className="font-extrabold uppercase text-[#22D3EE]">
+                    {v.role}
+                  </span>
+                  {isAdmin && (
+                    <button
+                      type="button"
+                      disabled={busy}
+                      title="Remove staff access"
+                      onClick={async () => {
+                        setBusy(true);
+                        try {
+                          const supabase = createClient();
+                          const { data: sess } = await supabase.auth.getSession();
+                          const token = sess.session?.access_token;
+                          const base = staffApiUrl.replace(/\/+$/, '').replace(/\/staff$/, '');
+                          const res = await fetch(`${base}/staff/remove`, {
+                            method: 'POST',
+                            headers: {
+                              'Content-Type': 'application/json',
+                              Authorization: `Bearer ${token}`,
+                            },
+                            body: JSON.stringify({ user_id: v.id }),
+                          });
+                          const json = (await res.json()) as { ok?: boolean; message?: string };
+                          if (!res.ok || !json.ok) {
+                            toast.error(json.message || 'Could not remove staff.');
+                          } else {
+                            toast.success('Staff access removed.');
+                            await load();
+                          }
+                        } catch {
+                          toast.error('Could not reach staff service.');
+                        } finally {
+                          setBusy(false);
+                        }
+                      }}
+                      className="text-[#FF4F5E] cursor-pointer"
+                    >
+                      <Trash2 className="size-3.5" />
+                    </button>
+                  )}
+                </div>
               </div>
             ))}
           </div>
