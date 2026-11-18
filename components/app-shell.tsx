@@ -13,6 +13,7 @@ import {
 import { AccountAvatar } from '@/components/account-avatar';
 import { AddToHomeBar } from '@/components/add-to-home-bar';
 import { CookieSheet } from '@/components/cookie-sheet';
+import { useAuth } from '@/lib/use-auth';
 import { cn } from '@/lib/utils';
 
 const CHROMELESS_PREFIXES = [
@@ -40,7 +41,6 @@ const DESKTOP_LINKS = [
   { href: '/venues', label: 'Venues' },
   { href: '/results', label: 'Results' },
   { href: '/updates', label: 'Updates' },
-  { href: '/admin', label: 'Organiser' },
 ] as const;
 
 interface AppShellProps {
@@ -67,6 +67,7 @@ export function AppShell({
   children,
 }: AppShellProps) {
   const pathname = usePathname();
+  const { isOrganiser, isHost, isVolunteer } = useAuth();
   const isChromeless = CHROMELESS_PREFIXES.some((prefix) =>
     pathname.startsWith(prefix)
   );
@@ -118,6 +119,46 @@ export function AppShell({
                 </Link>
               );
             })}
+            {isOrganiser ? (
+              <Link
+                href="/admin/"
+                aria-current={isRouteActive(pathname, '/admin') ? 'page' : undefined}
+                className={cn(
+                  'inline-flex min-h-10 items-center rounded-xl px-3 text-sm font-semibold transition-colors',
+                  isRouteActive(pathname, '/admin')
+                    ? 'bg-[#FF4FD8] text-[#12091E] font-extrabold'
+                    : 'text-[#FFD60A] hover:bg-[#1F1230]'
+                )}
+              >
+                Admin
+              </Link>
+            ) : isHost ? (
+              <Link
+                href="/host/"
+                aria-current={isRouteActive(pathname, '/host') ? 'page' : undefined}
+                className={cn(
+                  'inline-flex min-h-10 items-center rounded-xl px-3 text-sm font-semibold transition-colors',
+                  isRouteActive(pathname, '/host')
+                    ? 'bg-[#FF4FD8] text-[#12091E] font-extrabold'
+                    : 'text-[#FFD60A] hover:bg-[#1F1230]'
+                )}
+              >
+                Host
+              </Link>
+            ) : isVolunteer ? (
+              <Link
+                href="/volunteer/"
+                aria-current={isRouteActive(pathname, '/volunteer') ? 'page' : undefined}
+                className={cn(
+                  'inline-flex min-h-10 items-center rounded-xl px-3 text-sm font-semibold transition-colors',
+                  isRouteActive(pathname, '/volunteer')
+                    ? 'bg-[#FF4FD8] text-[#12091E] font-extrabold'
+                    : 'text-[#FFD60A] hover:bg-[#1F1230]'
+                )}
+              >
+                Volunteer
+              </Link>
+            ) : null}
           </nav>
 
           <AccountAvatar size="sm" />

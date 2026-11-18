@@ -30,7 +30,7 @@ export default function AdminLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const { loading, isOrganiser, profile } = useAuth();
+  const { user, loading, isOrganiser, profile } = useAuth();
 
   if (loading) {
     return (
@@ -40,14 +40,44 @@ export default function AdminLayout({
     );
   }
 
+  if (!user) {
+    return (
+      <div className="mx-auto max-w-md py-16 text-center space-y-4">
+        <ShieldAlert className="mx-auto size-10 text-[#FFD60A]" />
+        <h1 className="font-display text-2xl text-[#F4F2FA]">
+          ORGANISER SIGN IN
+        </h1>
+        <p className="text-sm text-[#BDB8CF]">
+          Please sign in with your Fiesta&apos;26 organiser or admin account to
+          access the Control Room.
+        </p>
+        <div className="flex flex-col gap-2.5 sm:flex-row sm:justify-center">
+          <Link
+            href="/login/?next=/admin/"
+            className="inline-flex h-11 items-center justify-center rounded-xl bg-[#FFD60A] px-6 text-sm font-extrabold text-[#12091E] shadow-[4px_4px_0_#FF4FD8]"
+          >
+            Log in
+          </Link>
+          <Link
+            href="/"
+            className="inline-flex h-11 items-center justify-center rounded-xl border border-[#3B2758] bg-[#1F1230] px-5 text-sm font-bold text-[#F4F2FA]"
+          >
+            Back to Home
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
   if (!isOrganiser) {
     return (
       <div className="mx-auto max-w-md py-16 text-center space-y-3">
         <ShieldAlert className="mx-auto size-10 text-[#FF4F5E]" />
-        <h1 className="font-display text-2xl text-[#F4F2FA]">NOT ALLOWED</h1>
+        <h1 className="font-display text-2xl text-[#F4F2FA]">
+          ACCESS RESTRICTED
+        </h1>
         <p className="text-sm text-[#9C97B0]">
-          Organiser or admin role required. If you are the fest owner, run{' '}
-          <code>supabase/bootstrap_admin.sql</code> in Supabase SQL Editor.
+          This area is only available to Fiesta&apos;26 organisers and admins.
         </p>
         <Link
           href="/"

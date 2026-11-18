@@ -17,7 +17,7 @@ export default function AdminHostsPage() {
   const [staffName, setStaffName] = useState('');
   const [staffEmail, setStaffEmail] = useState('');
   const [staffPassword, setStaffPassword] = useState('');
-  const [staffRole, setStaffRole] = useState<'volunteer' | 'host'>('volunteer');
+  const [staffRole, setStaffRole] = useState<'volunteer' | 'host' | 'organiser'>('host');
   const [staffEventId, setStaffEventId] = useState('');
 
   const [hosts, setHosts] = useState<
@@ -122,7 +122,7 @@ export default function AdminHostsPage() {
   async function createStaffViaWorker(e: React.FormEvent) {
     e.preventDefault();
     if (!staffApiUrl) {
-      toast.error('Deploy workers/staff and set NEXT_PUBLIC_STAFF_API first.');
+      toast.error('Staff account service is currently unavailable.');
       return;
     }
     setBusy(true);
@@ -130,7 +130,8 @@ export default function AdminHostsPage() {
       const supabase = createClient();
       const { data: sess } = await supabase.auth.getSession();
       const token = sess.session?.access_token;
-      const res = await fetch(`${staffApiUrl.replace(/\/$/, '')}/create`, {
+      const base = staffApiUrl.replace(/\/+$/, '').replace(/\/staff$/, '');
+      const res = await fetch(`${base}/staff/create`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -147,18 +148,25 @@ export default function AdminHostsPage() {
               : undefined,
         }),
       });
-      const json = (await res.json()) as { ok?: boolean; error?: string };
+      const json = (await res.json()) as {
+        ok?: boolean;
+        message?: string;
+        error?: string;
+        reason?: string;
+      };
       if (!res.ok || !json.ok) {
-        toast.error(json.error || 'Could not create staff account.');
+        toast.error(
+          json.message || json.error || json.reason || 'Could not create staff account.'
+        );
       } else {
         setStaffName('');
         setStaffEmail('');
         setStaffPassword('');
-        toast.success('Staff account created & confirmed!');
+        toast.success('Staff account created & confirmed! They can log in immediately.');
         await load();
       }
     } catch {
-      toast.error('Could not reach Staff Worker.');
+      toast.error('Could not reach the staff account service. Try again.');
     } finally {
       setBusy(false);
     }
@@ -166,7 +174,7 @@ export default function AdminHostsPage() {
 
   return (
     <div className="space-y-6">
-      {/* Direct Staff Account Creation (Admin + Cloudflare Staff Worker) */}
+      {/* Direct Staff Account Creation (Admin) */}
       {isAdmin && (
         <form
           onSubmit={createStaffViaWorker}
@@ -174,12 +182,12 @@ export default function AdminHostsPage() {
         >
           <h2 className="flex items-center gap-2 font-heading text-lg font-extrabold text-[#F4F2FA]">
             <UserPlus className="size-5 text-[#FF4FD8]" />
-            Create Staff Account Directly (Cloudflare Staff Worker)
+            Create Staff Account (Email + Password)
           </h2>
           <p className="text-xs text-[#9C97B0]">
             {staffApiUrl
-              ? `Connected to ${staffApiUrl}`
-              : 'Deploy workers/staff/ and set NEXT_PUBLIC_STAFF_API to create accounts with email + password in one step.'}
+              ? 'Create a ready-to-use Host, Volunteer, or Organiser login immediately (no email confirmation needed).'
+              : 'Staff account creation service is not connected.'}
           </p>
           <div className="grid gap-2.5 sm:grid-cols-2 lg:grid-cols-5">
             <input
@@ -201,21 +209,22 @@ export default function AdminHostsPage() {
             <input
               type="password"
               required
-              minLength={10}
+              minLength={8}
               value={staffPassword}
               onChange={(e) => setStaffPassword(e.target.value)}
-              placeholder="Password (10+ chars)"
+              placeholder="Password (8+ chars, letter + number)"
               className="h-10 rounded-xl border border-[#3B2758] bg-[#12091E] px-3 text-xs text-[#F4F2FA]"
             />
             <select
               value={staffRole}
               onChange={(e) =>
-                setStaffRole(e.target.value as 'volunteer' | 'host')
+                setStaffRole(e.target.value as 'volunteer' | 'host' | 'organiser')
               }
               className="h-10 rounded-xl border border-[#3B2758] bg-[#12091E] px-3 text-xs text-[#F4F2FA]"
             >
-              <option value="volunteer">Volunteer</option>
               <option value="host">Event Host</option>
+              <option value="volunteer">Volunteer</option>
+              <option value="organiser">Organiser</option>
             </select>
             <button
               type="submit"

@@ -279,8 +279,8 @@ export default function HuntPage() {
         </h2>
         {clues.length === 0 ? (
           <div className="rounded-[22px] border border-dashed border-[#3B2758] bg-[#1F1230]/60 p-6 text-center text-sm text-[#9C97B0]">
-            Run <code>supabase/UPGRADE_CLOUDFLARE_STATIC.sql</code> to publish
-            the 10 Treasure Hunt clues!
+            Treasure Hunt clues will appear here once the fest team opens the
+            hunt.
           </div>
         ) : (
           <div className="grid gap-3 md:grid-cols-2">
