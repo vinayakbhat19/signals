@@ -39,6 +39,23 @@ async function fetchLive(url: string): Promise<LiveApiResponse> {
   return res.json() as Promise<LiveApiResponse>;
 }
 
+const FEST_START_FALLBACK_ISO = '2026-11-25T00:00:00+05:30';
+
+function splitFestCountdown(targetMs: number, nowMs: number) {
+  const diff = Math.max(0, Math.floor((targetMs - nowMs) / 1000));
+  const days = Math.floor(diff / 86_400);
+  const hours = Math.floor((diff % 86_400) / 3600);
+  const minutes = Math.floor((diff % 3600) / 60);
+  const seconds = diff % 60;
+  return {
+    active: diff > 0,
+    days: String(days).padStart(2, '0'),
+    hours: String(hours).padStart(2, '0'),
+    minutes: String(minutes).padStart(2, '0'),
+    seconds: String(seconds).padStart(2, '0'),
+  };
+}
+
 function splitCountdownBadge(
   targetIso: string,
   now: Date
@@ -131,19 +148,27 @@ export function HomeLiveFeed({ festName, initialData }: HomeLiveFeedProps) {
     elapsedMs: 0,
   });
 
+  const festStartIso = appStatus?.fest_starts_at || FEST_START_FALLBACK_ISO;
+  const festStartMs = new Date(festStartIso).getTime();
+  const showFestCountdown =
+    liveData.now.length === 0 &&
+    new Date(liveData.serverTime).getTime() < festStartMs;
+
   useEffect(() => {
     const base = liveData.serverTime;
     const startedAt = Date.now();
+    const stepMs = showFestCountdown ? 1_000 : 30_000;
     const timer = window.setInterval(() => {
       setTickState({ base, elapsedMs: Date.now() - startedAt });
-    }, 30_000);
+    }, stepMs);
     return () => window.clearInterval(timer);
-  }, [liveData.serverTime]);
+  }, [liveData.serverTime, showFestCountdown]);
 
   const baseMs = new Date(liveData.serverTime).getTime();
   const elapsedMs =
     tickState.base === liveData.serverTime ? tickState.elapsedMs : 0;
   const syncedNow = new Date(baseMs + elapsedMs);
+  const festCountdown = splitFestCountdown(festStartMs, syncedNow.getTime());
 
   const changedIds = new Set(liveData.changedEventIds ?? []);
   const totalAlertCount =
@@ -367,18 +392,52 @@ export function HomeLiveFeed({ festName, initialData }: HomeLiveFeedProps) {
             </div>
           </div>
         ) : (
-          <div className="rounded-[22px] border-[1.5px] border-dashed border-[#3B2758] bg-[#1F1230]/60 p-5 text-center space-y-2">
-            <p className="font-heading text-lg font-extrabold text-[#F4F2FA]">
-              Nothing live right now
-            </p>
-            <p className="text-sm text-[#9C97B0]">
+          <div className="rounded-[24px] border-[1.5px] border-[#3B2758] bg-[#1F1230] p-5 text-center space-y-3.5 shadow-[4px_4px_0_#9B6CFF]">
+            <div className="space-y-1">
+              <p className="font-heading text-lg font-extrabold text-[#F4F2FA]">
+                Nothing live right now
+              </p>
+              {festCountdown.active && (
+                <p className="text-[11px] font-extrabold uppercase tracking-[0.12em] text-[#FF4FD8]">
+                  COUNTDOWN TO {festName.toUpperCase()} · 25 NOV
+                </p>
+              )}
+            </div>
+
+            {festCountdown.active && (
+              <div
+                aria-label="Countdown to 25 November"
+                className="grid grid-cols-4 gap-2"
+              >
+                {[
+                  { value: festCountdown.days, label: 'DAYS' },
+                  { value: festCountdown.hours, label: 'HRS' },
+                  { value: festCountdown.minutes, label: 'MIN' },
+                  { value: festCountdown.seconds, label: 'SEC' },
+                ].map((unit) => (
+                  <div
+                    key={unit.label}
+                    className="flex flex-col items-center justify-center rounded-[16px] border-[1.5px] border-[#3B2758] bg-[#12091E] py-2.5"
+                  >
+                    <span className="font-display text-2xl leading-none text-[#FFD60A] sm:text-3xl">
+                      {unit.value}
+                    </span>
+                    <span className="mt-1 text-[10px] font-extrabold tracking-[0.1em] text-[#9C97B0]">
+                      {unit.label}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            <p className="text-sm text-[#BDB8CF]">
               {nextEvent
                 ? `Next up: ${nextEvent.title} at ${formatTime(nextEvent.starts_at)}${nextEvent.venue_name ? ` (${nextEvent.venue_name})` : ''}.`
                 : 'Explore the full events list to plan your day.'}
             </p>
             <Link
               href={nextEvent ? `/events/${nextEvent.id}` : '/events'}
-              className="mt-2 inline-flex min-h-11 items-center rounded-xl bg-[#FFD60A] px-4 text-sm font-extrabold text-[#12091E]"
+              className="inline-flex min-h-11 items-center rounded-xl bg-[#FFD60A] px-5 text-sm font-extrabold text-[#12091E] shadow-[3px_3px_0_#FF4FD8] active:translate-y-0.5 transition-transform"
             >
               {nextEvent ? 'See next event' : 'Browse events'}
             </Link>
