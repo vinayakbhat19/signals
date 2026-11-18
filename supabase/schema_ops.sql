@@ -393,11 +393,11 @@ begin
      group by c.poll_id, p.event_id, c.id, c.name
     on conflict (poll_id, contestant_id) do update
       set votes = excluded.votes, percent = excluded.percent, archived_at = now();
-    with d as (delete from public.votes returning 1) select count(*) into n_votes from d;
+    with d as (delete from public.votes where true returning 1) select count(*) into n_votes from d;
   end if;
-  with d as (delete from public.push_subscriptions returning 1) select count(*) into n_push from d;
-  delete from public.push_queue;
-  delete from public.rate_limits;
+  with d as (delete from public.push_subscriptions where true returning 1) select count(*) into n_push from d;
+  delete from public.push_queue where true;
+  delete from public.rate_limits where true;
   with u as (update public.participants set email = null, phone = null
               where email is not null or phone is not null returning 1) select count(*) into n_contacts from u;
   perform public._audit('archive_and_purge', 'fest', jsonb_build_object('votes_deleted', n_votes, 'push_deleted', n_push, 'contacts_cleared', n_contacts));

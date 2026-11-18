@@ -114,7 +114,7 @@ async function checkDatabase(
 
   const admin = createAdminClient();
   const timeoutPromise = new Promise<never>((_, reject) =>
-    setTimeout(() => reject(new Error('rate_hit timeout')), 300)
+    setTimeout(() => reject(new Error('rate_hit timeout')), 1500)
   );
 
   // Use untyped RPC invoke so rate_hit works cleanly regardless of schema version
