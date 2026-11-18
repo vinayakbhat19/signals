@@ -380,15 +380,23 @@ export default function HomePage() {
             )}
 
             <p className="text-sm text-[#BDB8CF]">
-              {nextEvent
-                ? `Next up: ${nextEvent.title} at ${formatTime(nextEvent.starts_at)}${nextEvent.venue_name ? ` (${nextEvent.venue_name})` : ''}.`
-                : 'Explore all 21 official competitions and register now.'}
+              {festCountdown.active
+                ? `${festName} hasn't started yet — events go live when the countdown finishes. Explore all 21 competitions & register now!`
+                : nextEvent
+                  ? `Next up: ${nextEvent.title} at ${formatTime(nextEvent.starts_at)}${nextEvent.venue_name ? ` (${nextEvent.venue_name})` : ''}.`
+                  : 'Explore all 21 official competitions and register now.'}
             </p>
             <Link
-              href={nextEvent ? `/event/?id=${nextEvent.id}` : '/events/'}
+              href={
+                !festCountdown.active && nextEvent
+                  ? `/event/?id=${nextEvent.id}`
+                  : '/events/'
+              }
               className="inline-flex min-h-11 items-center rounded-xl bg-[#FFD60A] px-5 text-sm font-extrabold text-[#12091E] shadow-[3px_3px_0_#FF4FD8]"
             >
-              {nextEvent ? 'See next event' : 'Browse events'}
+              {!festCountdown.active && nextEvent
+                ? 'See next event'
+                : 'Browse events'}
             </Link>
           </div>
         )}
