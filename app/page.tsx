@@ -17,6 +17,7 @@ import {
   WifiOff,
 } from 'lucide-react';
 import { CATEGORY_DOT_COLOR, CATEGORY_LABELS } from '@/components/category-chip';
+import { EventsTicker } from '@/components/events-ticker';
 import {
   HuntMascots,
   MusicMascot,
@@ -110,26 +111,26 @@ export default function HomePage() {
 
   const latestAlert = urgentNotice
     ? {
-        headline: urgentNotice.message,
-        subline: latestChange
-          ? `+ ${latestChange.message}`
-          : 'Important notice from the Fest Committee',
-      }
+      headline: urgentNotice.message,
+      subline: latestChange
+        ? `+ ${latestChange.message}`
+        : 'Important notice from the Fest Committee',
+    }
     : latestChange
       ? {
-          headline: latestChange.message,
-          subline: secondChange
-            ? `+ ${secondChange.message}`
-            : 'Tap to see all schedule changes & notices',
-        }
+        headline: latestChange.message,
+        subline: secondChange
+          ? `+ ${secondChange.message}`
+          : 'Tap to see all schedule changes & notices',
+      }
       : feed.notices[0]
         ? {
-            headline: feed.notices[0].message,
-            subline:
-              feed.notices.length > 1
-                ? `+ ${feed.notices.length - 1} more committee updates`
-                : 'Tap to view all updates',
-          }
+          headline: feed.notices[0].message,
+          subline:
+            feed.notices.length > 1
+              ? `+ ${feed.notices.length - 1} more committee updates`
+              : 'Tap to view all updates',
+        }
         : null;
 
   return (
@@ -179,6 +180,11 @@ export default function HomePage() {
           </Link>
         </div>
       </header>
+
+      {/* Tilted Neon Yellow Event Timings Ticker */}
+      <div className="!mt-2 lg:!mt-0">
+        <EventsTicker events={feed.events} changes={feed.changes} />
+      </div>
 
       {/* Safety / Backup / Paused / Emergency Banners */}
       {source === 'backup' && (

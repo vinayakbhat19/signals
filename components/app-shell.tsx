@@ -78,7 +78,7 @@ export function AppShell({
     pathname.startsWith('/events/') && !pathname.endsWith('/line-up');
 
   return (
-    <div className="flex min-h-dvh flex-col bg-[#12091E] text-[#F4F2FA]">
+    <div className="flex min-h-dvh flex-col overflow-x-clip bg-[#12091E] text-[#F4F2FA]">
       {/* Desktop top navigation (>= 1024px) with Fiesta'26 halftone band */}
       <header className="halftone-band sticky top-0 z-40 hidden border-b border-[#3B2758] lg:block print:hidden">
         <div className="mx-auto flex h-16 max-w-5xl items-center justify-between gap-4 px-5">
