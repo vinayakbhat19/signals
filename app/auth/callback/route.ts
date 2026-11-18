@@ -3,7 +3,11 @@ import { createClient } from '@/lib/supabase/server';
 
 function getSafeRedirect(nextParam: string | null): string {
   if (!nextParam) return '/';
-  if (nextParam.startsWith('/') && !nextParam.startsWith('//')) {
+  if (
+    nextParam.startsWith('/') &&
+    !nextParam.startsWith('//') &&
+    !nextParam.startsWith('/\\')
+  ) {
     return nextParam;
   }
   return '/';
@@ -12,7 +16,14 @@ function getSafeRedirect(nextParam: string | null): string {
 export async function GET(request: Request) {
   const { searchParams, origin } = new URL(request.url);
   const code = searchParams.get('code');
+  const oauthError = searchParams.get('error');
   const next = getSafeRedirect(searchParams.get('next'));
+
+  if (oauthError === 'access_denied') {
+    return NextResponse.redirect(
+      `${origin}/login?error=access_denied&next=${encodeURIComponent(next)}`
+    );
+  }
 
   if (code) {
     const supabase = await createClient();
@@ -20,7 +31,7 @@ export async function GET(request: Request) {
     if (!error) {
       return NextResponse.redirect(`${origin}${next}`);
     }
-    console.error('[auth/callback] exchangeCodeForSession failed:', error);
+    console.error('[auth/callback] exchangeCodeForSession failed');
   }
 
   return NextResponse.redirect(

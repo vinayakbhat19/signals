@@ -33,6 +33,16 @@
 - [ ] Edit the confirmation and reset-password email templates: fest name, one line, the button.
 - [ ] Storage: run `supabase/storage.sql` (or create public buckets `event-covers` and `contestants` in the dashboard).
 
+### 0.4c Security and reliability accounts
+- [ ] **Upstash** (upstash.com, free): create a Redis database (Mumbai/Singapore region); copy `UPSTASH_REDIS_REST_URL` and `UPSTASH_REDIS_REST_TOKEN`.
+- [ ] **Cloudflare Turnstile** (free): create a widget for your domain; site key → `NEXT_PUBLIC_TURNSTILE_SITE_KEY`, secret → Supabase Authentication → Attack Protection (CAPTCHA) and `TURNSTILE_SECRET_KEY`.
+- [ ] **Web Push keys:** run `npx web-push generate-vapid-keys`; public → `NEXT_PUBLIC_VAPID_PUBLIC_KEY`, private → `VAPID_PRIVATE_KEY`, `VAPID_SUBJECT=mailto:<committee email>`.
+- [ ] **Vercel Blob** (Storage tab) for backup snapshots; `CRON_SECRET` = a long random string; `EMERGENCY_PIN_HASH` = hash of a PIN known only to you and the committee head.
+- [ ] **Uptime monitor** (UptimeRobot or Better Stack, free): check `/api/health` every minute, alert to your phone.
+- [ ] Supabase: Authentication → Rate Limits and Attack Protection set as in `SECURITY.md` section 1; Authentication → enable MFA (TOTP) for organisers.
+- [ ] Run `supabase/schema_ops.sql` **last** (after all the other SQL files). Check `app_config`: `campus_from` = 2026-11-28 00:00 IST, `hosts_until` = 2026-11-30 23:59 IST.
+- [ ] Set your own account's role to `admin` in the dashboard; make the committee head `organiser`.
+
 ### 0.5 Your computer
 - [ ] Node.js LTS installed (`node -v` shows 20 or newer), Git installed, Antigravity installed and signed in.
 - [ ] Create a folder `fest-live`, copy in `PRD.md`, `PROJECT_RULES.md`, `PROMPTS.md`, `supabase/`, `templates/`.

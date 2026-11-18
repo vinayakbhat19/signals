@@ -6,9 +6,11 @@ import { useRouter } from 'next/navigation';
 import { ArrowLeft, CheckCircle2, Eye, EyeOff, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { AlienMascot } from '@/components/mascots';
+import { InAppBrowserSheet } from '@/components/in-app-browser-sheet';
 import { createClient } from '@/lib/supabase/client';
 
-const COLLEGE_DOMAIN = 'sdmcet.ac.in';
+const COLLEGE_DOMAIN =
+  process.env.NEXT_PUBLIC_COLLEGE_DOMAIN || 'sdmcet.ac.in';
 
 export default function SignUpPage() {
   const router = useRouter();
@@ -34,10 +36,13 @@ export default function SignUpPage() {
     const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || window.location.origin;
     const { error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
-      options: { redirectTo: `${siteUrl}/auth/callback?next=/verified` },
+      options: {
+        redirectTo: `${siteUrl}/auth/callback?next=/verified`,
+        queryParams: { prompt: 'select_account' },
+      },
     });
     if (error) {
-      setErrorMsg(error.message);
+      setErrorMsg('Could not start Google sign-in. Try email & password below.');
       setLoadingGoogle(false);
     }
   }
@@ -60,22 +65,26 @@ export default function SignUpPage() {
 
     setLoading(true);
     try {
-      const supabase = createClient();
-      const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || window.location.origin;
-      const { data, error } = await supabase.auth.signUp({
-        email: email.trim(),
-        password,
-        options: {
-          data: { full_name: fullName.trim() },
-          emailRedirectTo: `${siteUrl}/auth/callback?next=/verified`,
-        },
+      const res = await fetch('/api/auth/signup', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          fullName: fullName.trim(),
+          email: email.trim(),
+          password,
+        }),
       });
-      if (error) {
-        setErrorMsg(error.message);
+      const json = (await res.json()) as {
+        ok?: boolean;
+        signedIn?: boolean;
+        error?: string;
+      };
+      if (!res.ok) {
+        setErrorMsg(json.error || 'Could not create account.');
         setLoading(false);
         return;
       }
-      if (data.session) {
+      if (json.signedIn) {
         toast.success('Account created!');
         router.push('/verified');
         router.refresh();
@@ -84,8 +93,8 @@ export default function SignUpPage() {
           `/signup/check-email?email=${encodeURIComponent(email.trim())}`
         );
       }
-    } catch (err) {
-      setErrorMsg(err instanceof Error ? err.message : 'Sign-up failed.');
+    } catch {
+      setErrorMsg('Sign-up is busy right now. Please try again.');
       setLoading(false);
     }
   }
@@ -117,6 +126,8 @@ export default function SignUpPage() {
             </p>
           </div>
         </div>
+
+        <InAppBrowserSheet />
 
         {errorMsg && (
           <div

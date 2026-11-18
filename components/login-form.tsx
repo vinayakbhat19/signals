@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 import { ArrowLeft, Eye, EyeOff, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { AlienMascot } from '@/components/mascots';
+import { InAppBrowserSheet } from '@/components/in-app-browser-sheet';
 import { createClient } from '@/lib/supabase/client';
 
 interface LoginFormProps {
@@ -21,9 +22,11 @@ export function LoginForm({ nextPath, initialError }: LoginFormProps) {
   const [loadingGoogle, setLoadingGoogle] = useState(false);
   const [loadingEmail, setLoadingEmail] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(
-    initialError === 'auth_failed'
-      ? 'Sign-in link expired or failed. Please try again.'
-      : null
+    initialError === 'access_denied'
+      ? 'Sign-in was cancelled. You can try again anytime or continue browsing without signing in.'
+      : initialError === 'auth_failed'
+        ? 'Sign-in link expired or failed. Please try again.'
+        : null
   );
 
   const safeNext =
@@ -39,16 +42,17 @@ export function LoginForm({ nextPath, initialError }: LoginFormProps) {
       const redirectTo = `${siteUrl}/auth/callback?next=${encodeURIComponent(safeNext)}`;
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
-        options: { redirectTo },
+        options: {
+          redirectTo,
+          queryParams: { prompt: 'select_account' },
+        },
       });
       if (error) {
-        setErrorMsg(error.message);
+        setErrorMsg('Could not start Google sign-in. Try email & password below.');
         setLoadingGoogle(false);
       }
-    } catch (err) {
-      setErrorMsg(
-        err instanceof Error ? err.message : 'Could not start Google sign-in.'
-      );
+    } catch {
+      setErrorMsg('Could not start Google sign-in. Try email & password below.');
       setLoadingGoogle(false);
     }
   }
@@ -62,21 +66,22 @@ export function LoginForm({ nextPath, initialError }: LoginFormProps) {
     setLoadingEmail(true);
     setErrorMsg(null);
     try {
-      const supabase = createClient();
-      const { error } = await supabase.auth.signInWithPassword({
-        email: email.trim(),
-        password,
+      const res = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: email.trim(), password }),
       });
-      if (error) {
-        setErrorMsg(error.message);
+      const json = (await res.json()) as { ok?: boolean; error?: string };
+      if (!res.ok) {
+        setErrorMsg(json.error || 'Invalid email or password.');
         setLoadingEmail(false);
         return;
       }
       toast.success('Signed in!');
       router.push(safeNext);
       router.refresh();
-    } catch (err) {
-      setErrorMsg(err instanceof Error ? err.message : 'Sign-in failed.');
+    } catch {
+      setErrorMsg('Sign-in is busy right now. Please try again.');
       setLoadingEmail(false);
     }
   }
@@ -108,6 +113,8 @@ export function LoginForm({ nextPath, initialError }: LoginFormProps) {
             </p>
           </div>
         </div>
+
+        <InAppBrowserSheet />
 
         {errorMsg && (
           <div

@@ -5,7 +5,6 @@ import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { MailCheck, RefreshCw } from 'lucide-react';
 import { toast } from 'sonner';
-import { createClient } from '@/lib/supabase/client';
 
 function CheckEmailInner() {
   const params = useSearchParams();
@@ -22,19 +21,23 @@ function CheckEmailInner() {
   async function handleResend() {
     if (!email || cooldown > 0 || resending) return;
     setResending(true);
-    const supabase = createClient();
-    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || window.location.origin;
-    const { error } = await supabase.auth.resend({
-      type: 'signup',
-      email,
-      options: { emailRedirectTo: `${siteUrl}/auth/callback?next=/verified` },
-    });
-    setResending(false);
-    if (error) {
-      toast.error(error.message);
-    } else {
-      toast.success('Confirmation link sent again!');
-      setCooldown(60);
+    try {
+      const res = await fetch('/api/auth/resend', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email }),
+      });
+      const json = (await res.json()) as { ok?: boolean; error?: string };
+      setResending(false);
+      if (!res.ok) {
+        toast.error(json.error || 'Please wait before trying again.');
+      } else {
+        toast.success('Confirmation link sent again!');
+        setCooldown(60);
+      }
+    } catch {
+      setResending(false);
+      toast.error('Network error. Please try again.');
     }
   }
 

@@ -190,6 +190,22 @@ export function AccountClient({
           />
         </label>
 
+        <Link
+          href="/account/permissions"
+          className="flex min-h-12 items-center gap-3 rounded-xl px-3 py-2 text-sm font-semibold hover:bg-[#2A1840]"
+        >
+          <Smartphone className="size-4 text-[#FFE14D]" />
+          Alerts &amp; camera permissions
+        </Link>
+
+        <Link
+          href="/account/security"
+          className="flex min-h-12 items-center gap-3 rounded-xl px-3 py-2 text-sm font-semibold hover:bg-[#2A1840]"
+        >
+          <ShieldCheck className="size-4 text-[#FF4FD8]" />
+          Security, 2FA &amp; active sessions
+        </Link>
+
         <button
           type="button"
           onClick={openCookieNotice}

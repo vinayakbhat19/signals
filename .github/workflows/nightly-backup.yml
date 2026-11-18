@@ -1,0 +1,30 @@
+name: Nightly Supabase Backup
+
+on:
+  schedule:
+    - cron: '30 18 * * *' # 00:00 IST daily
+  workflow_dispatch:
+
+jobs:
+  backup:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Install PostgreSQL client
+        run: sudo apt-get update && sudo apt-get install -y postgresql-client
+
+      - name: Dump public schema
+        env:
+          SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+        run: |
+          if [ -z "$SUPABASE_DB_URL" ]; then
+            echo "SUPABASE_DB_URL secret not configured"
+            exit 1
+          fi
+          pg_dump "$SUPABASE_DB_URL" --schema=public --no-owner --no-acl -Fc -f fiesta26-backup.dump
+
+      - name: Upload backup artifact (14-day retention)
+        uses: actions/upload-artifact@v4
+        with:
+          name: fiesta26-db-${{ github.run_id }}
+          path: fiesta26-backup.dump
+          retention-days: 14

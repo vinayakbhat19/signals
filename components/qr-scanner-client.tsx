@@ -6,8 +6,10 @@ import { useRouter } from 'next/navigation';
 import {
   AlertCircle,
   CalendarDays,
+  Camera,
   ExternalLink,
   Flashlight,
+  ImageUp,
   Keyboard,
   QrCode,
   Stamp,
@@ -127,7 +129,9 @@ function parseFestQr(raw: string): ParsedQrTarget {
 }
 
 interface BarcodeDetectorLike {
-  detect(source: HTMLVideoElement): Promise<Array<{ rawValue: string }>>;
+  detect(
+    source: HTMLVideoElement | ImageBitmap
+  ): Promise<Array<{ rawValue: string }>>;
 }
 
 declare global {
@@ -140,97 +144,140 @@ export function QrScannerClient() {
   const router = useRouter();
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const trackRef = useRef<MediaStreamTrack | null>(null);
+  const streamRef = useRef<MediaStream | null>(null);
+  const rafRef = useRef<number>(0);
 
   const [cameraState, setCameraState] = useState<
-    'starting' | 'active' | 'denied' | 'unsupported'
-  >('starting');
+    'idle' | 'starting' | 'active' | 'denied' | 'unsupported'
+  >('idle');
   const [torchSupported, setTorchSupported] = useState(false);
   const [torchOn, setTorchOn] = useState(false);
   const [detected, setDetected] = useState<ParsedQrTarget | null>(null);
   const [showManual, setShowManual] = useState(false);
   const [showHelp, setShowHelp] = useState(false);
   const [manualInput, setManualInput] = useState('');
+  const [photoError, setPhotoError] = useState<string | null>(null);
+
+  function stopCamera() {
+    if (rafRef.current) {
+      window.cancelAnimationFrame(rafRef.current);
+      rafRef.current = 0;
+    }
+    if (streamRef.current) {
+      streamRef.current.getTracks().forEach((t) => t.stop());
+      streamRef.current = null;
+    }
+    trackRef.current = null;
+    if (videoRef.current) {
+      videoRef.current.srcObject = null;
+    }
+    setTorchOn(false);
+    setTorchSupported(false);
+  }
+
+  async function openCamera() {
+    setPhotoError(null);
+    if (
+      typeof navigator === 'undefined' ||
+      !navigator.mediaDevices?.getUserMedia
+    ) {
+      setCameraState('unsupported');
+      return;
+    }
+    setCameraState('starting');
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: { facingMode: { ideal: 'environment' } },
+        audio: false,
+      });
+      streamRef.current = stream;
+
+      const video = videoRef.current;
+      if (video) {
+        video.srcObject = stream;
+        await video.play();
+      }
+
+      const track = stream.getVideoTracks()[0] ?? null;
+      trackRef.current = track;
+
+      if (track && typeof track.getCapabilities === 'function') {
+        const caps = track.getCapabilities() as MediaTrackCapabilities & {
+          torch?: boolean;
+        };
+        if (caps.torch) setTorchSupported(true);
+      }
+
+      setCameraState('active');
+
+      if (typeof window.BarcodeDetector === 'function') {
+        const detector = new window.BarcodeDetector({ formats: ['qr_code'] });
+        let lastScanTime = 0;
+
+        const scanLoop = async (ts: number) => {
+          if (!streamRef.current) return;
+          if (ts - lastScanTime > 220 && video && video.readyState >= 2) {
+            lastScanTime = ts;
+            try {
+              const codes = await detector.detect(video);
+              if (codes.length > 0 && codes[0].rawValue) {
+                setDetected(parseFestQr(codes[0].rawValue));
+                stopCamera();
+                setCameraState('idle');
+                return;
+              }
+            } catch {
+              // Ignore single-frame error
+            }
+          }
+          rafRef.current = window.requestAnimationFrame((t) => void scanLoop(t));
+        };
+
+        rafRef.current = window.requestAnimationFrame((t) => void scanLoop(t));
+      }
+    } catch {
+      stopCamera();
+      setCameraState('denied');
+    }
+  }
+
+  async function handlePhotoUpload(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    e.target.value = '';
+    if (!file) return;
+    setPhotoError(null);
+    if (typeof window.BarcodeDetector !== 'function') {
+      setPhotoError(
+        'This browser cannot decode QR photos directly. Please use "Enter a code instead".'
+      );
+      return;
+    }
+    try {
+      const bitmap = await createImageBitmap(file);
+      const detector = new window.BarcodeDetector({ formats: ['qr_code'] });
+      const codes = await detector.detect(bitmap);
+      bitmap.close();
+      if (codes.length > 0 && codes[0].rawValue) {
+        setDetected(parseFestQr(codes[0].rawValue));
+      } else {
+        setPhotoError('No QR code detected in that photo. Try getting closer or enter the code.');
+      }
+    } catch {
+      setPhotoError('Could not read that photo. Try again or enter the code.');
+    }
+  }
 
   useEffect(() => {
-    let active = true;
-    let stream: MediaStream | null = null;
-    let rafId = 0;
-
-    async function startCamera() {
-      if (
-        typeof navigator === 'undefined' ||
-        !navigator.mediaDevices?.getUserMedia
-      ) {
-        if (active) setCameraState('unsupported');
-        return;
-      }
-
-      try {
-        stream = await navigator.mediaDevices.getUserMedia({
-          video: { facingMode: { ideal: 'environment' } },
-          audio: false,
-        });
-
-        if (!active) {
-          stream.getTracks().forEach((t) => t.stop());
-          return;
-        }
-
-        const video = videoRef.current;
-        if (video) {
-          video.srcObject = stream;
-          await video.play();
-        }
-
-        const track = stream.getVideoTracks()[0] ?? null;
-        trackRef.current = track;
-
-        if (track && typeof track.getCapabilities === 'function') {
-          const caps = track.getCapabilities() as MediaTrackCapabilities & {
-            torch?: boolean;
-          };
-          if (caps.torch) setTorchSupported(true);
-        }
-
-        setCameraState('active');
-
-        if (typeof window.BarcodeDetector === 'function') {
-          const detector = new window.BarcodeDetector({ formats: ['qr_code'] });
-          let lastScanTime = 0;
-
-          const scanLoop = async (ts: number) => {
-            if (!active) return;
-            if (ts - lastScanTime > 220 && video && video.readyState >= 2) {
-              lastScanTime = ts;
-              try {
-                const codes = await detector.detect(video);
-                if (codes.length > 0 && codes[0].rawValue) {
-                  setDetected(parseFestQr(codes[0].rawValue));
-                  return;
-                }
-              } catch {
-                // Ignore frame detection error and keep looping
-              }
-            }
-            rafId = window.requestAnimationFrame((t) => void scanLoop(t));
-          };
-
-          rafId = window.requestAnimationFrame((t) => void scanLoop(t));
-        }
-      } catch {
-        if (active) setCameraState('denied');
+    function handleVisibility() {
+      if (document.hidden) {
+        stopCamera();
+        setCameraState((prev) => (prev === 'active' ? 'idle' : prev));
       }
     }
-
-    void startCamera();
-
+    document.addEventListener('visibilitychange', handleVisibility);
     return () => {
-      active = false;
-      if (rafId) window.cancelAnimationFrame(rafId);
-      if (stream) {
-        stream.getTracks().forEach((t) => t.stop());
-      }
-      trackRef.current = null;
+      document.removeEventListener('visibilitychange', handleVisibility);
+      stopCamera();
     };
   }, []);
 
@@ -318,6 +365,30 @@ export function QrScannerClient() {
             <div className="scan-line absolute inset-x-4 top-0 h-0.5 rounded-full bg-[#FFD60A] shadow-[0_0_14px_#FFD60A]" />
           )}
 
+          {cameraState === 'idle' && !detected && (
+            <div className="mx-3 flex flex-col items-center gap-2.5 rounded-2xl bg-[#1F1230]/95 p-4 text-center border border-[#3B2758]">
+              <Camera className="size-7 text-[#FFD60A]" aria-hidden="true" />
+              <button
+                type="button"
+                onClick={() => void openCamera()}
+                className="inline-flex h-11 items-center gap-2 rounded-xl bg-[#FFD60A] px-4 text-xs font-extrabold text-[#12091E] shadow-[3px_3px_0_#FF4FD8] cursor-pointer"
+              >
+                Open camera
+              </button>
+              <label className="inline-flex cursor-pointer items-center gap-1.5 text-[11px] font-bold text-[#22D3EE] underline">
+                <ImageUp className="size-3.5" />
+                Take a photo of the QR
+                <input
+                  type="file"
+                  accept="image/*"
+                  capture="environment"
+                  onChange={(e) => void handlePhotoUpload(e)}
+                  className="hidden"
+                />
+              </label>
+            </div>
+          )}
+
           {cameraState === 'denied' && (
             <div className="mx-4 rounded-2xl bg-[#1F1230]/95 p-4 text-center space-y-2 border border-[#3B2758]">
               <AlertCircle
@@ -328,9 +399,28 @@ export function QrScannerClient() {
                 Camera access blocked
               </p>
               <p className="text-[11px] text-[#9C97B0]">
-                Allow camera in browser settings, or tap &ldquo;Enter a code
-                instead&rdquo; below.
+                Allow camera in browser settings, or take a photo / enter the
+                code below.
               </p>
+              <div className="flex flex-wrap justify-center gap-2 pt-1">
+                <label className="inline-flex cursor-pointer items-center gap-1 rounded-lg bg-[#FFD60A] px-2.5 py-1.5 text-[11px] font-extrabold text-[#12091E]">
+                  <ImageUp className="size-3" />
+                  Take photo
+                  <input
+                    type="file"
+                    accept="image/*"
+                    capture="environment"
+                    onChange={(e) => void handlePhotoUpload(e)}
+                    className="hidden"
+                  />
+                </label>
+                <Link
+                  href="/account/permissions"
+                  className="inline-flex items-center rounded-lg border border-[#3B2758] px-2.5 py-1.5 text-[11px] font-bold text-[#F4F2FA]"
+                >
+                  Fix steps
+                </Link>
+              </div>
             </div>
           )}
 
@@ -348,7 +438,8 @@ export function QrScannerClient() {
         </div>
 
         <p className="mt-5 max-w-xs rounded-2xl bg-[#1F1230]/90 px-4 py-2.5 text-center text-xs font-semibold leading-snug text-[#F4F2FA] backdrop-blur-xs">
-          Point at a Stamp Station, a vote screen, or an event poster
+          {photoError ||
+            'Point at a Stamp Station, a vote screen, or an event poster'}
         </p>
       </div>
 

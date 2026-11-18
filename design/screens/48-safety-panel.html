@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Safety panel: health, pause, mode · Fest Live design</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bungee&amp;family=Bricolage+Grotesque:opsz,wght@12..96,500..800&amp;family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#12091E}
+a{color:#FFD60A}a:hover{color:#FFE680}
+@keyframes pulse{0%{box-shadow:0 0 0 0 rgba(198,255,61,.7)}100%{box-shadow:0 0 0 8px rgba(198,255,61,0)}}
+.ok{animation:pulse 1.8s ease-out infinite}
+@media (prefers-reduced-motion: reduce){*{animation:none!important}}
+</style>
+<style>body{display:flex;justify-content:center;min-height:100vh}</style>
+</head>
+<body>
+<div style="width: 390px; height: 1040px; position: relative; box-sizing: border-box; background: #12091E; font-family: Inter, system-ui, sans-serif; color: #F4F2FA; overflow: hidden">
+
+  <header style="padding: 12px 14px 0; display: flex; align-items: center; gap: 10px">
+    <a href="40-control-room.html" aria-label="Back to control room" style="width: 44px; height: 44px; border-radius: 14px; border: 1.5px solid #3B2758; display: flex; align-items: center; justify-content: center; box-sizing: border-box; flex: none"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#F4F2FA" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 6l-6 6 6 6"></path></svg></a>
+    <div style="display: flex; flex-direction: column"><span style="font-size: 11px; font-weight: 800; letter-spacing: 0.12em; color: #FFE14D">ORGANISER · ADMIN</span><h1 style="margin: 0; font-family: 'Bungee', 'Bricolage Grotesque', sans-serif; font-weight: 400; font-size: 24px; line-height: 1.1">Safety panel</h1></div>
+  </header>
+
+  <section aria-label="System health" style="margin: 14px 16px 0; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px">
+    <div style="background: #1F1230; border: 1.5px solid #3B2758; border-radius: 16px; padding: 10px 12px; display: flex; align-items: center; gap: 10px"><span class="ok" style="width: 10px; height: 10px; border-radius: 5px; background: #C6FF3D; flex: none"></span><span style="display: flex; flex-direction: column"><strong style="font-size: 13px">Database</strong><span style="font-size: 11px; color: #BDB8CF">OK · 120 ms</span></span></div>
+    <div style="background: #1F1230; border: 1.5px solid #3B2758; border-radius: 16px; padding: 10px 12px; display: flex; align-items: center; gap: 10px"><span class="ok" style="width: 10px; height: 10px; border-radius: 5px; background: #C6FF3D; flex: none"></span><span style="display: flex; flex-direction: column"><strong style="font-size: 13px">Sign-in</strong><span style="font-size: 11px; color: #BDB8CF">Google + email OK</span></span></div>
+    <div style="background: #1F1230; border: 1.5px solid #3B2758; border-radius: 16px; padding: 10px 12px; display: flex; align-items: center; gap: 10px"><span style="width: 10px; height: 10px; border-radius: 5px; background: #C6FF3D; flex: none"></span><span style="display: flex; flex-direction: column"><strong style="font-size: 13px">Backup copy</strong><span style="font-size: 11px; color: #BDB8CF">12 s old</span></span></div>
+    <div style="background: #1F1230; border: 1.5px solid #FFE14D; border-radius: 16px; padding: 10px 12px; display: flex; align-items: center; gap: 10px"><span style="width: 10px; height: 10px; border-radius: 5px; background: #FFE14D; flex: none"></span><span style="display: flex; flex-direction: column"><strong style="font-size: 13px">Rate limiter</strong><span style="font-size: 11px; color: #FFE14D">Backup in use</span></span></div>
+    <div style="background: #1F1230; border: 1.5px solid #3B2758; border-radius: 16px; padding: 10px 12px; display: flex; align-items: center; gap: 10px"><span style="width: 10px; height: 10px; border-radius: 5px; background: #C6FF3D; flex: none"></span><span style="display: flex; flex-direction: column"><strong style="font-size: 13px">Alerts (push)</strong><span style="font-size: 11px; color: #BDB8CF">0 waiting · 842 devices</span></span></div>
+    <div style="background: #1F1230; border: 1.5px solid #3B2758; border-radius: 16px; padding: 10px 12px; display: flex; align-items: center; gap: 10px"><span style="width: 10px; height: 10px; border-radius: 5px; background: #C6FF3D; flex: none"></span><span style="display: flex; flex-direction: column"><strong style="font-size: 13px">Email sender</strong><span style="font-size: 11px; color: #BDB8CF">OK · 14 today</span></span></div>
+  </section>
+
+  <section style="margin: 12px 16px 0; background: #1F1230; border: 2px solid #FF4FD8; border-radius: 22px; padding: 14px; display: flex; flex-direction: column; gap: 10px">
+    <div style="display: flex; justify-content: space-between; align-items: center; gap: 10px"><span style="display: flex; flex-direction: column; gap: 2px"><strong style="font-size: 15px">Pause votes and stamps</strong><span style="font-size: 12px; color: #BDB8CF">Emergency switch. Browsing keeps working</span></span><button role="switch" aria-checked="false" aria-label="Pause writes" style="flex: none; width: 58px; height: 34px; border-radius: 17px; border: 1.5px solid #4A3466; background: #2B1A42; position: relative"><span style="position: absolute; left: 4px; top: 3px; width: 26px; height: 26px; border-radius: 13px; background: #9C8FB0"></span></button></div>
+    <div style="display: flex; flex-direction: column; gap: 6px"><label for="bn" style="font-size: 12px; font-weight: 800; letter-spacing: 0.08em; color: #9C8FB0">BANNER FOR EVERYONE</label><input id="bn" placeholder="e.g. Voting is paused for 10 minutes" style="height: 44px; font: inherit; font-size: 14px; border: 1.5px solid #4A3466; border-radius: 12px; padding: 0 12px; background: #12091E; color: #F4F2FA"></div>
+    <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; background: #12091E; border-radius: 12px; padding: 4px">
+      <button aria-pressed="true" style="height: 36px; border-radius: 9px; border: 0; background: #F4F2FA; color: #12091E; font: inherit; font-size: 12px; font-weight: 800">Info</button>
+      <button aria-pressed="false" style="height: 36px; border-radius: 9px; border: 0; background: transparent; color: #BDB8CF; font: inherit; font-size: 12px; font-weight: 600">Warning</button>
+      <button aria-pressed="false" style="height: 36px; border-radius: 9px; border: 0; background: transparent; color: #BDB8CF; font: inherit; font-size: 12px; font-weight: 600">Critical</button>
+    </div>
+    <a href="#" style="height: 44px; border-radius: 14px; border: 1.5px solid #4A3466; color: #F4F2FA; text-decoration: none; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 700">Open emergency mode (works without the database)</a>
+  </section>
+
+  <section style="margin: 12px 16px 0; background: #1F1230; border: 1.5px solid #3B2758; border-radius: 22px; padding: 14px; display: flex; flex-direction: column; gap: 10px">
+    <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 10px"><span style="display: flex; flex-direction: column; gap: 2px"><strong style="font-size: 15px">App mode</strong><span style="font-size: 13px; color: #CFCBDD">Fest mode now. Switches to <strong style="color: #FFD60A">campus mode</strong> on Sat 28 Nov, 12:00 AM</span></span><span style="font-size: 11px; font-weight: 800; color: #12091E; background: #FFD60A; padding: 4px 10px; border-radius: 999px; flex: none">FEST</span></div>
+    <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; background: #12091E; border-radius: 12px; padding: 4px">
+      <button aria-pressed="true" style="height: 36px; border-radius: 9px; border: 0; background: #F4F2FA; color: #12091E; font: inherit; font-size: 12px; font-weight: 800">Automatic</button>
+      <button aria-pressed="false" style="height: 36px; border-radius: 9px; border: 0; background: transparent; color: #BDB8CF; font: inherit; font-size: 12px; font-weight: 600">Force fest</button>
+      <button aria-pressed="false" style="height: 36px; border-radius: 9px; border: 0; background: transparent; color: #BDB8CF; font: inherit; font-size: 12px; font-weight: 600">Force campus</button>
+    </div>
+    <a href="60-fest-over.html" style="height: 44px; border-radius: 14px; background: #9B6CFF; color: #12091E; text-decoration: none; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 800">Preview campus mode (only me)</a>
+    <button disabled style="height: 44px; border-radius: 14px; border: 1.5px dashed #4A3466; background: transparent; color: #9C8FB0; font: inherit; font-size: 13px; font-weight: 700">Archive results + delete personal data (after the fest)</button>
+  </section>
+
+  <h2 style="margin: 14px 16px 6px; font-size: 12px; font-weight: 800; letter-spacing: 0.1em; color: #9C8FB0">LATEST CHANGES (LOGGED)</h2>
+  <ul style="list-style: none; margin: 0 16px; padding: 0; background: #1F1230; border: 1.5px solid #3B2758; border-radius: 16px; overflow: hidden; font-size: 12px">
+    <li style="display: flex; justify-content: space-between; gap: 8px; padding: 8px 12px"><span><strong>Neha S</strong> added as host · Solo Singing</span><span style="color: #9C8FB0; flex: none">2 min</span></li>
+    <li style="display: flex; justify-content: space-between; gap: 8px; padding: 8px 12px; border-top: 1px solid #3B2758"><span><strong>Org</strong> turned voting on · Battle of Bands</span><span style="color: #9C8FB0; flex: none">9 min</span></li>
+    <li style="display: flex; justify-content: space-between; gap: 8px; padding: 8px 12px; border-top: 1px solid #3B2758"><span><strong>Admin</strong> changed role · Ravi → volunteer</span><span style="color: #9C8FB0; flex: none">1 h</span></li>
+  </ul>
+</div>
+</body>
+</html>

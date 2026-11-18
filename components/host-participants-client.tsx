@@ -7,9 +7,11 @@ import { ArrowLeft, Download, Upload } from 'lucide-react';
 import { toast } from 'sonner';
 import {
   importParticipantsAction,
+  logParticipantExportAction,
   setShowLineupAction,
   updateParticipantStatusAction,
 } from '@/app/host/events/[id]/participants/actions';
+import { buildSafeCsv } from '@/lib/csv-safe';
 import type { ParticipantPrivate, ParticipantStatus } from '@/lib/types';
 
 function pickField(row: Record<string, string>, patterns: RegExp[]): string {
@@ -37,10 +39,18 @@ export function HostParticipantsClient({
   );
 
   function handleCsvUpload(file: File) {
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error('File must be 5 MB or smaller.');
+      return;
+    }
     Papa.parse<Record<string, string>>(file, {
       header: true,
       skipEmptyLines: true,
       complete(res) {
+        if (res.data.length > 5000) {
+          toast.error('Maximum 5,000 rows per upload.');
+          return;
+        }
         const mapped = res.data
           .map((raw) => {
             const name = pickField(raw, [
@@ -89,17 +99,18 @@ export function HostParticipantsClient({
   }
 
   function exportCsv() {
-    const csv = Papa.unparse(
-      participants.map((p) => ({
-        order: p.performance_order ?? '',
-        name: p.name,
-        team: p.team ?? '',
-        college: p.college ?? '',
-        department: p.department ?? '',
-        email: p.email ?? '',
-        phone: p.phone ?? '',
-        status: p.status,
-      }))
+    const csv = buildSafeCsv(
+      ['order', 'name', 'team', 'college', 'department', 'email', 'phone', 'status'],
+      participants.map((p) => [
+        p.performance_order ?? '',
+        p.name,
+        p.team ?? '',
+        p.college ?? '',
+        p.department ?? '',
+        p.email ?? '',
+        p.phone ?? '',
+        p.status,
+      ])
     );
     const blob = new Blob([csv], { type: 'text/csv;charset=utf-8' });
     const url = URL.createObjectURL(blob);
@@ -108,6 +119,7 @@ export function HostParticipantsClient({
     a.download = `${eventTitle.toLowerCase().replace(/\s+/g, '-')}-participants.csv`;
     a.click();
     URL.revokeObjectURL(url);
+    void logParticipantExportAction(eventId, participants.length);
   }
 
   const statuses: ParticipantStatus[] = [

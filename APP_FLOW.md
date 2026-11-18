@@ -57,6 +57,10 @@ Sample names and numbers in the designs are placeholders.
 | 44 | QR generator | `/admin/qr` | Organiser | events, venues, polls, stamp points | Print · PNG · Copy link · All events |
 | 45 | QR poster (A4) | `/admin/qr/print` | Organiser | — | Print |
 | 46 | Stamp Station | `/admin/station/[pointId]` | Volunteer/organiser | `rpc get_live_code`, stamps count | — (display only, keeps screen on) |
+| 08 | Alerts and camera | `/account/permissions` | Everyone | Notification and camera state, push subscription | Turn on alerts · Not now · Try scanning → 20 · Enter a code · Back → 14 |
+| 47 | Manage hosts | `/admin/hosts` | Organiser | `event_hosts`, `host_invites`, `rpc invite_host` | Invite · Remove · Cancel invite · Back → 40 |
+| 48 | Safety panel | `/admin/safety` | Organiser | health, `app_config`, `audit_log` | Pause writes · Banner · Mode (Automatic/Force) · Preview campus mode → 60 · Archive and purge · Emergency mode |
+| 60 | Fiesta'26 is a wrap | `/fest-over` | Everyone, first visit in campus mode | winners, `poll_results_archive` | Open Signals → 90 · Archive |
 | 90–94 | Signals, Raise a Signal, My schedule, Football, Scorer | — | **Later** | — | Not part of the first launch |
 
 ---
@@ -160,13 +164,23 @@ flowchart LR
 ```
 Rules: the Home alert shows changes and urgent notices from the **last 3 hours**, newest first (up to 2 lines plus "N more"); tapping opens 15. A student can dismiss it; it comes back when a **new** change arrives (remember the newest id seen, in localStorage). Changes older than 3 hours stay on the Updates page.
 
+## 3.7 Fest mode and campus mode
+```mermaid
+flowchart LR
+  F[Fest mode: Home · Events · SCAN · Vote · Hunt] -->|28 Nov 00:00 IST, automatic| C[Campus mode: Home · Events · SCAN · Signals · Me]
+  F -->|organiser: Force campus / Preview| C
+  C --> O[60 Fest over page, once] --> A[/fest-archive/]
+  C --> P[Organiser: Archive and purge]
+  C -. votes and stamps refused by the database .-> X[The fest is over]
+```
+
 ## 4. Roles
 
 | Role | How they get it | Can do |
 | --- | --- | --- |
 | Visitor | Nobody signs in | Everything public: home, events, line-up, results, leaderboard, live vote results (when visible), scanner |
 | Student | Signs up or logs in | + vote, Stamp Hunt, My account; **Verified** badge after confirming a college email |
-| Host | Organiser adds them to an event (`event_hosts`) | + manage that event's participants (upload, check in, order, export, show/hide line-up) |
+| Host | Organiser invites them by email (`invite_host`); active once that email is confirmed; expires at `hosts_until` | + manage that event's participants (upload, check in, order, export, show/hide line-up) |
 | Volunteer | Organiser sets `role = volunteer` | + run Stamp Stations and stage screens |
 | Organiser | Admin sets `role = organiser` | + everything in the control room |
 | Admin | Set in the Supabase dashboard | + make people organisers |
@@ -217,7 +231,7 @@ supabase/    schema.sql, storage.sql, schema_participants.sql, schema_voting.sql
 public/      manifest icons, campus-map.jpg (optional), schedule.json (built)
 ```
 
-**Database install order:** `schema.sql` → `schema_changes.sql` → `storage.sql` → `schema_participants.sql` → `schema_voting.sql` → `schema_stamps.sql` (hunt only) → `seed.sql` (development only).
+**Database install order:** `schema.sql` → `schema_changes.sql` → `storage.sql` → `schema_participants.sql` → `schema_voting.sql` → `schema_stamps.sql` → **`schema_ops.sql` (last)** → `seed.sql` / `seed_hunt.sql` (development only).
 
 ---
 

@@ -2,17 +2,14 @@
 
 import { revalidatePath } from 'next/cache';
 import { z } from 'zod';
-import { getProfile } from '@/lib/auth';
+import { requireRole } from '@/lib/auth';
+import { rateLimit } from '@/lib/ratelimit';
+import { createAdminClient } from '@/lib/supabase/admin';
 import { createClient } from '@/lib/supabase/server';
 import type { ParticipantStatus } from '@/lib/types';
 
 async function assertEventHost(eventId: string) {
-  const profile = await getProfile();
-  if (!profile) throw new Error('Not signed in');
-  if (profile.role === 'organiser' || profile.role === 'admin') return;
-  const supabase = await createClient();
-  const { data } = await supabase.rpc('is_event_host', { p_event: eventId });
-  if (!data) throw new Error('Not allowed');
+  return requireRole('host', eventId);
 }
 
 const participantRowSchema = z.object({
@@ -29,8 +26,19 @@ export async function importParticipantsAction(
   eventId: string,
   rows: z.infer<typeof participantRowSchema>[]
 ) {
-  await assertEventHost(eventId);
-  const parsed = z.array(participantRowSchema).min(1).max(500).safeParse(rows);
+  const profile = await assertEventHost(eventId);
+  const rl = await rateLimit(`participants-import:${profile.id}`, {
+    limit: 10,
+    windowSeconds: 3600,
+    failMode: 'open',
+  });
+  if (!rl.allowed) {
+    return {
+      ok: false as const,
+      error: `Too many imports. Try again in ${rl.retryAfter || 60} seconds.`,
+    };
+  }
+  const parsed = z.array(participantRowSchema).min(1).max(5000).safeParse(rows);
   if (!parsed.success) {
     return { ok: false as const, error: parsed.error.issues[0]?.message ?? 'Invalid rows' };
   }
@@ -114,5 +122,32 @@ export async function setShowLineupAction(eventId: string, showPublic: boolean) 
   if (error) return { ok: false as const, error: error.message };
   revalidatePath(`/host/events/${eventId}/participants`);
   revalidatePath(`/events/${eventId}/line-up`);
+  return { ok: true as const };
+}
+
+export async function logParticipantExportAction(
+  eventId: string,
+  rowCount: number
+) {
+  const profile = await assertEventHost(eventId);
+  try {
+    const admin = createAdminClient();
+    await (
+      admin as unknown as {
+        from: (t: string) => {
+          insert: (row: Record<string, unknown>) => Promise<unknown>;
+        };
+      }
+    )
+      .from('audit_log')
+      .insert({
+        actor: profile.id,
+        action: 'participants_exported',
+        target: eventId,
+        detail: { row_count: rowCount },
+      });
+  } catch {
+    // Graceful no-op if schema_ops.sql not applied yet
+  }
   return { ok: true as const };
 }

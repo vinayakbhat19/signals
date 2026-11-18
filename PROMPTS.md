@@ -11,11 +11,12 @@ Replace `{{FEST_NAME}}`, `{{COLLEGE_NAME}}`, `{{COLLEGE_DOMAIN}}`, `{{BRAND_COLO
 
 ---
 
-> **Build order for the first launch (fest only):**
-> Phase 0 → Phase 1 → **Track R** (reliability) → Phase 2 → Phase 3 → **Track A** (accounts, install, scanner, QR generator, event covers) → **Track V** (voting) → **Track H** (Stamp Hunt: H.0, H.1, H.2) → Prompt 4.3 → Phase 5 → Phase 6. The Stamp Hunt is part of the launch, not a placeholder.
-> **Skip** Prompts 4.1 (My schedule), 4.2 (Signals), **V.3** (offline voting) and **Track S** (football) for now. Read PRD section 0 first, and paste this line at the top of every prompt: *"Scope: follow PRD section 0. Fest only: no football, no Signals, no stars; sign-in only for organisers, volunteers, voters and hunt players."*
-> Database order: `schema.sql` → `schema_changes.sql` → `storage.sql` → `schema_participants.sql` → `schema_voting.sql` → `schema_stamps.sql` (if you build the hunt). `seed.sql` any time during building.
-> **Design:** read `APP_FLOW.md` first. Attach the matching PNGs from `design/png/` to every prompt (IDs 01–46), and tell the agent: *"Match the attached screens exactly; the standalone HTML for each is in design/screens/."*
+> **Build order (Fiesta'26 launch):**
+> Phase 0 → Phase 1 → **Track R** (R.1–R.4: reliability, rate limits, safety panel) → Phase 2 → Phase 3 → **Track A** (A.1–A.5) → **Track SEC** (SEC.1–SEC.2: sign-in and security) → **Track HOST** → **Track N** (permissions and notifications) → **Track V** (V.1–V.2) → **Track H** (H.0–H.2) → **Track END** (END.1: mode switch and fest-over) → Prompt 4.3 → **Track TEST** → Phase 5 → Phase 6. **Track END.2** (the Signals app for 28 Nov) after the fest starts, or earlier if time allows.
+> **Skip** Prompts 4.1 and 4.2 here (they are END.2), **V.3** (offline voting) and **Track S** (football). Read PRD section 0 first, and paste this line at the top of every prompt: *"Scope: follow PRD section 0. Fest mode until 27 Nov, campus mode after. No football."*
+> Database order: `schema.sql` → `schema_changes.sql` → `storage.sql` → `schema_participants.sql` → `schema_voting.sql` → `schema_stamps.sql` → **`schema_ops.sql` (last)**. `seed.sql` and `seed_hunt.sql` only during building.
+> **Design:** read `APP_FLOW.md` and `BRAND.md` first. Attach the matching PNGs from `design/png/` to every prompt (IDs 01–60), and tell the agent: *"Match the attached screens exactly; the standalone HTML for each is in design/screens/."*
+> **Security and failure rules apply to every prompt:** `SECURITY.md`, `RESILIENCE.md`.
 
 ## Phase 1: Foundation (19 Nov)
 
@@ -311,6 +312,16 @@ Report what you created and the commands.
 ```
 **You check:** run the load test once on the preview, and do the kill test yourself before any live match.
 
+### Prompt R.4: Rate limits with fallbacks, banners and the safety panel
+```
+Read RESILIENCE.md, SECURITY.md and supabase/schema_ops.sql (app_config, app_status, rate_hit). Match PNG 48 (safety panel).
+1. lib/ratelimit.ts: limit(key, { limit, windowSeconds, failMode }) tries Upstash (@upstash/ratelimit sliding window); on error or after 300 ms falls back to rpc('rate_hit') with the service-role client; if that also fails uses an in-memory Map per instance; failMode 'open' (default) or 'closed' (sign-up, password reset). Returns { allowed, retryAfter, source } and never throws. Use the limits in RESILIENCE.md section 3 everywhere they are listed. A blocked request returns 429 with Retry-After and a friendly message.
+2. lib/status.ts: getAppStatus() = rpc('app_status') cached 15 s (tag "status") with the last snapshot as fallback. The shell shows: the banner (info/warning/critical colours) at the very top; "Backup mode" when data comes from the snapshot; "Votes and stamps are paused" when writes_paused. Map Postgres errors with code P0001 (raised by the database) to their message text.
+3. /admin/safety (organiser): health tiles (database ping with latency, auth ping, snapshot age, limiter in use: upstash | database | memory, push queue size and device count, email sender status), the pause switch (updates app_config.writes_paused), banner text and level, the mode radio Automatic / Force fest / Force campus, "Preview campus mode (only me)", the archive button (disabled outside campus mode), and the latest 10 audit_log rows. Every change calls revalidateTag('status').
+4. /api/health returns { db, auth, snapshot_age_s, limiter, version } with no caching.
+Test: break the Upstash URL (limiter source becomes "database"), then also the database URL ("memory"), hit login 11 times (429 with retry-after), turn writes_paused on and confirm votes show the paused message and the banner appears within 20 s. Report with evidence.
+```
+
 ## Track A: Accounts, install, scanner, QR generator, event covers (after Phase 3)
 
 Before starting: run `supabase/storage.sql`. In Supabase → Authentication → Providers → Email: enable email sign-in and **"Confirm email"**. Set up custom SMTP (see LAUNCH_CHECKLIST.md 0.4b): Supabase's built-in email sender is only for testing and sends very few emails per hour.
@@ -370,6 +381,62 @@ Read APP_FLOW.md section 3.6 and supabase/schema_changes.sql (event_changes is f
 4. Events list and event page: chips TIME CHANGED / MOVED / TIME + VENUE CHANGED / CANCELLED when the event has a change in the last 3 hours, with the old time/venue crossed out next to the new one.
 5. Organiser panel: after "+15 min", "Cancel" or a venue/time edit, show a toast with the exact message students will see ("Students now see: …") and an "Undo" for 10 seconds (restores the old values, which logs a matching change).
 Test: delay an event by 15 min, move another to a new venue, cancel and restore a third; each must appear on a phone's Home within about 15 s with the right wording, and description edits must not create alerts. Run lint and build; report.
+```
+
+## Track SEC: Sign-in and security (after Track A)
+
+### Prompt SEC.1: Sign-in, sessions and roles
+```
+Read SECURITY.md sections 1–3, PERMISSIONS_NOTIFICATIONS.md ("Continue with Google") and PROJECT_RULES.md. Match PNGs 03, 04, 05, 07.
+1. Google: signInWithOAuth provider google with queryParams { prompt: 'select_account' }, redirectTo NEXT_PUBLIC_SITE_URL/auth/callback?next=<relative path>; the callback exchanges the code on the server and only accepts same-origin relative paths in `next`. Friendly page for access_denied.
+2. In-app browser detection (Instagram, Facebook "FBAN|FBAV", WhatsApp, Line, Snapchat, LinkedIn, Telegram): Google blocks sign-in there ("disallowed_useragent"). Show a sheet "Open in Chrome or Safari to continue with Google" with a Copy link button and the email + password form as the alternative.
+3. Email sign-up and login as in A.1, plus Cloudflare Turnstile (or hCaptcha, whichever Supabase Auth is set to) on sign-up and reset; generic errors that never reveal whether an email exists; password min 8 with a number and a strength meter; resend confirmation 1 per 60 s.
+4. Sessions: @supabase/ssr cookies (httpOnly, Secure, SameSite=Lax), refreshed in middleware; never put tokens in localStorage; "Sign out" and "Sign out on all devices" on My account.
+5. Roles: lib/auth.ts requireRole('organiser' | 'host' | 'volunteer', eventId?) used in EVERY admin/host page and server action. It reads profiles.role / is_event_host() from the database, never from client data or JWT metadata. Unauthorised visits to /admin and /host return notFound().
+6. Organisers and admins: /account/security to enrol TOTP MFA (QR code + 6-digit confirm); admin pages require the aal2 level once enrolled.
+7. Rate limit with lib/ratelimit.ts (see R.4): sign-up 5/10 min/IP, login 10/10 min per IP+email, reset 3/hour/email, resend 1/min.
+Test: college email sign-up (badge only after the link), Gmail (never a badge), 11 wrong passwords (429), Instagram in-app browser (sheet appears), /admin as a student (404). Report with evidence.
+```
+
+### Prompt SEC.2: Hardening, uploads, secrets
+```
+Read SECURITY.md sections 4–9.
+1. next.config headers on all routes: Content-Security-Policy (begin Report-Only with a per-request nonce, fix violations, then enforce), Strict-Transport-Security, X-Content-Type-Options, Referrer-Policy, Permissions-Policy (camera=(self), microphone=(), geolocation=(), payment=()), frame-ancestors 'none'. poweredByHeader false, devIndicators false.
+2. Every server action and route handler: check the Origin header, validate with zod, cap body size, never trust client-sent roles or ids, no service-role key outside lib/supabase/admin.ts (import 'server-only').
+3. Uploads (event covers, contestant photos): jpeg/png/webp only, 5 MB max, verify magic bytes on the server, re-encode to strip metadata, random names.
+4. CSV/Excel: parse in the browser, limit 5 MB and 5,000 rows, read formulas as values; on export prefix cells starting with = + - @ with a single quote; each export creates an audit entry (server action using the service role into audit_log).
+5. Secrets: grep the repo and the .next client output for SUPABASE_SERVICE_ROLE_KEY, VAPID_PRIVATE_KEY, UPSTASH_REDIS_REST_TOKEN, EMERGENCY_PIN_HASH, CRON_SECRET; add .env* to .gitignore; add a gitleaks pre-commit hook.
+6. npm audit --omit=dev must show no high/critical; write DECISIONS.md with one line per dependency.
+7. Logging: no emails, phone numbers or tokens in logs.
+8. Run every check in SECURITY.md section 9 (the curl tests need NEXT_PUBLIC_SUPABASE_URL and the anon key) and paste each command and its output. Fix failures and rerun.
+```
+
+## Track HOST: Host management (after Track SEC)
+
+### Prompt HOST.1: Invite, manage and expire hosts
+```
+Read HOSTS_AND_AFTER_FEST.md (Part 1) and supabase/schema_ops.sql (host_invites, invite_host, is_event_host, audit_log). Match PNGs 47 (manage hosts) and 42 (host participants).
+1. /admin/hosts (organiser only): list every event with its hosts (event_hosts joined to profiles) and pending invites (host_invites); "Invite a host" form (event + email) calling rpc('invite_host'), showing status active or invited and the friendly error messages; remove a host (delete from event_hosts); cancel an invite (delete from host_invites); "No host yet" rows; show app_config.hosts_until ("Access ends …").
+2. After an invite is stored, email the person (the app's SMTP/Resend) with a link to /login?next=/host and the line "Sign in with THIS email address". If the email fails show "Invite saved, but the email could not be sent: share this link".
+3. /host: events I host with counts (registered, checked in) and links to /host/events/[id]/participants. Use requireRole('host', eventId); the database function is_event_host also enforces hosts_until.
+4. Participants page as in Prompt A.4. Hosts cannot change an event's time, venue or status. Every export creates an audit entry.
+5. After hosts_until the host pages return 404; signed-in hosts see "Host access has ended".
+Test: invite an email with no account (status invited); sign up with it WITHOUT confirming (no host access); confirm (host access appears); open another event's participants (404); set hosts_until in the past (404); remove the host (access ends at once). Report with evidence.
+```
+
+## Track N: Permissions and notifications (after Track HOST)
+
+### Prompt N.1: Alerts (push) and camera permission
+```
+Read PERMISSIONS_NOTIFICATIONS.md and supabase/schema_ops.sql (push_subscriptions, push_queue). Match PNGs 08 (alerts + camera), 06 (add to home screen), 20 (scanner), 15 (updates).
+1. Service worker: handle 'push' (title, body, icon /brand/icon-192.png, data.url, tag = event id so alerts for one event replace each other) and 'notificationclick' (focus or open data.url).
+2. /account/permissions (design 08). NEVER request a permission on page load. "Turn on alerts": check Notification and PushManager support; on iPhone Safari outside the installed app show the Add to Home Screen steps; otherwise Notification.requestPermission(), pushManager.subscribe with NEXT_PUBLIC_VAPID_PUBLIC_KEY, POST /api/push/subscribe. "Not now" is remembered for 7 days. Show the real state (not asked / on / blocked) with a turn-off action and the blocked steps.
+3. /api/push/subscribe and /api/push/unsubscribe: server routes using the service role (the tables have no client access): validate with zod (https endpoint ≤ 1000 chars, keys, topics from the allowlist changes, urgent, vote, hunt, event:<uuid>), upsert on endpoint, attach user_id when signed in, rate limit 10/hour/IP.
+4. lib/push.ts with web-push (VAPID_PUBLIC/PRIVATE/SUBJECT from env): sendToTopic loads matching subscriptions in batches of 200, 5 s timeout, TTL 3600, urgency high for 'urgent'; delete subscriptions on 404/410, count failures otherwise and delete after 5; at most 6 alerts per device per hour.
+5. Delivery: after every organiser save that creates event_changes or an urgent announcement, flush pending push_queue rows with Next after() (oldest first, set sent_at, attempts+1). Also /api/push/flush protected by an x-cron-secret header for Vercel Cron or manual use, and a "Resend alerts" button on /admin/safety.
+6. Camera on /scan: ask only after the user taps "Open camera" (getUserMedia with facingMode environment); handle NotAllowedError (show the blocked steps from design 08), NotFoundError and insecure contexts; stop all tracks when leaving the page or when the tab is hidden; fallbacks "Take a photo of the QR" (input type=file accept=image/* capture=environment, decoded in the browser) and "Enter a code".
+7. Add the entry points listed at the end of PERMISSIONS_NOTIFICATIONS.md (screens 05, 15, 14, 20).
+Test: Android Chrome (browser and installed), iPhone (installed only), deny and re-allow notifications and camera, send a delay and see the alert within 10 s, delete a subscription in the browser and confirm it is removed after the next send, confirm the camera light turns off after leaving /scan. Report with evidence.
 ```
 
 ## Track V: Audience voting (after Phase 3)
@@ -451,6 +518,34 @@ Read STAMP_HUNT.md. Build:
 Test the full loop on two phones: station shows the QR, the other phone scans, the stamp appears, the leaderboard updates within 15 s. Wait 90 s and scan a screenshot of the old QR: it must be refused. Run lint and build; report.
 ```
 **You check:** the screenshot test, and a printed standee scanned during and outside its competition time.
+
+## Track END: Back to the Signals app after the fest (before testing)
+
+### Prompt END.1: Mode switch, fest-over page and archive
+```
+Read HOSTS_AND_AFTER_FEST.md (Part 2) and supabase/schema_ops.sql (app_config, current_mode, app_status, archive_and_purge_fest). Match PNGs 60 (fest over) and 48 (safety panel).
+1. Mode drives the shell: getAppStatus().mode. Fest mode bottom bar: Home · Events · SCAN · Vote · Hunt. Campus mode: Home · Events · SCAN · Signals · Me. Keep both definitions and a route allowlist per mode in lib/modes.ts. In campus mode /vote, /hunt (except the archive), /screen/* and /admin/station redirect to /fest-archive; in fest mode /signals redirects to Home.
+2. The mode refreshes within 20 s without a reload (SWR on /api/live, which now includes app_status). The first visit after the switch shows /fest-over (design 60) once (localStorage flag in try/catch), then Home is the campus Home.
+3. /fest-archive: Stamp Hunt top 10 (stamp_leaderboard), audience favourites (poll_results_archive, falling back to poll_results), the competitions with their results, thank-you text. Read-only.
+4. Votes and stamps are refused by the database after the switch (message "The fest is over"): show it nicely if a stale page tries.
+5. Brand: campus mode uses the campus app name and logo (placeholder wordmark 'Signals' in config/brand.ts, to be replaced); the Fiesta logo stays only in the archive and fest-over page.
+6. "Preview campus mode (only me)": a signed cookie, read by getAppStatus() for organisers only, with a visible "Preview" ribbon. A preview never changes the database.
+7. Safety panel archive button: confirm by typing DELETE FEST DATA, call rpc('archive_and_purge_fest'), show the returned counts; disabled outside campus mode.
+8. After the purge, ask for alert permission again the next time the user opens Account → Alerts and camera.
+Test on a COPY of the database: set campus_from to 2 minutes ahead and watch a phone flip by itself within 20 s; try to vote and stamp (refused); run the purge (counts match, vote totals kept, emails gone); set campus_from back to 2026-11-28 00:00 IST. Report with evidence.
+```
+
+### Prompt END.2: The Signals app for 28 Nov (Level B)
+```
+Build the minimum campus (original) app that shows in campus mode: run Prompts 4.1 and 4.2 above (My schedule, Signals: board, Raise a Signal, "I'm interested", accept, report, organiser moderation) with these differences: they appear only in campus mode; use the existing tables from supabase/schema.sql (signals, signal_responses, reports, stars); restyle with the brand tokens in BRAND.md (or the campus brand when I send it); contacts stay hidden until the poster accepts (get_signal_contact); apply the same security rules (SECURITY.md) and rate limits (3 open Signals per user at most; 5 new Signals per hour). Match the existing PNGs 90, 91, 92.
+```
+
+## Track TEST: Run the gates before we test
+
+### Prompt TEST.1: Run PRE_TEST_CHECKLIST.md
+```
+Run PRE_TEST_CHECKLIST.md from top to bottom against the preview deployment. For every item you can check yourself (curl tests, lint, build, unit tests, k6 load tests, kill tests, schema tests): run it, paste the command and its output as evidence, and mark PASS or FAIL. Mark NEEDS A PERSON for anything that needs a phone or the committee. Fix every FAIL that is a code problem and run that check again. End with a table of results and the list of items I must check by hand.
+```
 
 ## Utility prompts (use any time)
 

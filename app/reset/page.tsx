@@ -4,7 +4,6 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { ArrowLeft, Loader2, Mail } from 'lucide-react';
 import { toast } from 'sonner';
-import { createClient } from '@/lib/supabase/client';
 
 export default function ResetPasswordPage() {
   const [email, setEmail] = useState('');
@@ -15,17 +14,23 @@ export default function ResetPasswordPage() {
     e.preventDefault();
     if (!email.trim()) return;
     setLoading(true);
-    const supabase = createClient();
-    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || window.location.origin;
-    const { error } = await supabase.auth.resetPasswordForEmail(email.trim(), {
-      redirectTo: `${siteUrl}/auth/callback?next=/reset/new`,
-    });
-    setLoading(false);
-    if (error) {
-      toast.error(error.message);
-    } else {
-      setSent(true);
-      toast.success('Reset link sent!');
+    try {
+      const res = await fetch('/api/auth/reset', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: email.trim() }),
+      });
+      const json = (await res.json()) as { ok?: boolean; error?: string; message?: string };
+      setLoading(false);
+      if (!res.ok) {
+        toast.error(json.error || 'Please try again later.');
+      } else {
+        setSent(true);
+        toast.success('Check your inbox');
+      }
+    } catch {
+      setLoading(false);
+      toast.error('Network error. Please try again.');
     }
   }
 
@@ -50,7 +55,8 @@ export default function ResetPasswordPage() {
           <Mail className="size-6 text-[#FFD60A]" />
           <p className="font-bold text-[#F4F2FA]">Check your inbox</p>
           <p className="text-[#BDB8CF]">
-            Open the password reset link we sent to <strong>{email}</strong>.
+            If an account exists for <strong>{email}</strong>, we sent a
+            password reset link.
           </p>
         </div>
       ) : (

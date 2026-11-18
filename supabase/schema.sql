@@ -1,6 +1,6 @@
 -- Fest Live: database schema for Supabase (Postgres).
 -- Run once in Supabase: SQL Editor -> New query -> paste -> Run.
--- Before running, verify college_domain below (sdmcet.ac.in).
+-- Before running, replace {{COLLEGE_DOMAIN}} below (e.g. coeptech.ac.in).
 --
 -- Security model
 --   * Row Level Security (RLS) is on for every table.
@@ -18,7 +18,7 @@ create table public.app_settings (
   key   text primary key,
   value text not null
 );
-insert into public.app_settings (key, value) values ('college_domain', 'sdmcet.ac.in');
+insert into public.app_settings (key, value) values ('college_domain', '{{COLLEGE_DOMAIN}}');
 
 -- ---------------------------------------------------------------- profiles
 create table public.profiles (

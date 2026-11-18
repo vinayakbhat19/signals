@@ -3,8 +3,10 @@
 import { useEffect, useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import useSWR from 'swr';
 import {
+  AlertTriangle,
   Bell,
   ChevronRight,
   ExternalLink,
@@ -20,11 +22,13 @@ import {
   TechMascot,
 } from '@/components/mascots';
 import type { LiveData } from '@/lib/data/live';
+import type { AppStatus } from '@/lib/modes';
 import { formatTime, minutesUntil } from '@/lib/time';
 import { cn } from '@/lib/utils';
 
 interface LiveApiResponse extends LiveData {
   _source?: 'db' | 'cache' | 'fallback';
+  appStatus?: AppStatus;
 }
 
 async function fetchLive(url: string): Promise<LiveApiResponse> {
@@ -70,6 +74,7 @@ interface HomeLiveFeedProps {
 }
 
 export function HomeLiveFeed({ festName, initialData }: HomeLiveFeedProps) {
+  const router = useRouter();
   const { data, error, isValidating, mutate } = useSWR<LiveApiResponse>(
     '/api/live',
     fetchLive,
@@ -91,6 +96,23 @@ export function HomeLiveFeed({ festName, initialData }: HomeLiveFeedProps) {
   );
 
   const liveData: LiveApiResponse = data ?? initialData;
+  const appStatus = liveData.appStatus;
+
+  // Auto-switch to /fest-over once when mode flips from fest -> campus
+  useEffect(() => {
+    if (appStatus?.mode !== 'campus') return;
+    try {
+      const seen = localStorage.getItem('fiesta26_fest_over_seen');
+      if (!seen) {
+        localStorage.setItem('fiesta26_fest_over_seen', '1');
+        router.push('/fest-over');
+      } else {
+        router.push('/signals');
+      }
+    } catch {
+      router.push('/fest-over');
+    }
+  }, [appStatus?.mode, router]);
 
   const [tickState, setTickState] = useState<{
     base: string;
@@ -193,6 +215,43 @@ export function HomeLiveFeed({ festName, initialData }: HomeLiveFeedProps) {
           </Link>
         </div>
       </header>
+
+      {/* Global Safety / Backup / Writes-Paused Banners */}
+      {(liveData._source === 'cache' || liveData._source === 'fallback') && (
+        <div
+          role="status"
+          className="flex items-center gap-2 rounded-2xl border border-[#FFE14D]/60 bg-[#1F1230] px-3.5 py-2.5 text-xs font-bold text-[#FFE14D]"
+        >
+          <AlertTriangle className="size-4 shrink-0" aria-hidden="true" />
+          Running in backup mode — updates may be delayed.
+        </div>
+      )}
+
+      {appStatus?.writes_paused && (
+        <div
+          role="status"
+          className="flex items-center gap-2 rounded-2xl border border-[#FF9F43]/60 bg-[#FF9F43]/15 px-3.5 py-2.5 text-xs font-bold text-[#FF9F43]"
+        >
+          <AlertTriangle className="size-4 shrink-0" aria-hidden="true" />
+          Votes and stamps are temporarily paused. Schedule browsing is live!
+        </div>
+      )}
+
+      {appStatus?.banner && (
+        <div
+          role="status"
+          className={cn(
+            'rounded-2xl px-4 py-3 text-xs font-extrabold',
+            appStatus.banner_level === 'critical'
+              ? 'bg-[#FF4F5E] text-white'
+              : appStatus.banner_level === 'warning'
+                ? 'bg-[#FFE14D] text-[#12091E]'
+                : 'bg-[#9B6CFF] text-[#12091E]'
+          )}
+        >
+          {appStatus.banner}
+        </div>
+      )}
 
       {/* Important Updates Banner (matching updated 10-home.png) */}
       {latestAlert && (

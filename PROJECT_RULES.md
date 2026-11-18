@@ -35,6 +35,13 @@ supabase/             schema.sql, seed.sql (already written; do not rewrite)
 - Votes are added only through `rpc('cast_vote')`; never select `secret` from `polls`; never show who voted for whom.
 - Clients poll only while the tab is visible and keep the last good data.
 
+## Safety and failure (see SECURITY.md, RESILIENCE.md)
+- Every admin/host page and server action calls `requireRole()` (database-backed). Unauthorised = 404.
+- Every endpoint in RESILIENCE.md section 3 uses `lib/ratelimit.ts` (Upstash → database → memory). Never throw from the limiter.
+- Mode comes from `getAppStatus()` (database `app_status()`); never from a date check in the browser. Votes and stamps may be refused by the database ('The fest is over', 'Writes are paused'): show those messages.
+- Permissions (notifications, camera) are requested only after a tap and an explanation; stop camera tracks when leaving the scanner.
+- Push tables, `rate_limits`, `audit_log` and `host_invites` are server-side only.
+
 ## Security
 - Row Level Security is already defined in `supabase/schema.sql`. Do not disable it and do not rely on the UI alone: every server action checks the user and role again.
 - **Never `select('*')` from `signals`.** List the columns. The `contact` column is not readable; get it with `supabase.rpc('get_signal_contact', { p_signal_id })`.

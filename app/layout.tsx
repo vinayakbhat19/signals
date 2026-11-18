@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from 'next';
 import { Analytics } from '@vercel/analytics/next';
 import { AppShell } from '@/components/app-shell';
+import { SwRegister } from '@/components/sw-register';
 import { Toaster } from '@/components/ui/sonner';
 import './globals.css';
 
@@ -79,6 +80,7 @@ export default function RootLayout({
         <AppShell festName={festName} collegeName={collegeName}>
           {children}
         </AppShell>
+        <SwRegister />
         <Toaster theme="dark" position="top-center" richColors />
         <Analytics />
       </body>

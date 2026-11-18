@@ -4,6 +4,11 @@ Everything needed to build **Fest Live** (the live fest guide plus the Signals "
 
 | File | What it is | When you use it |
 | --- | --- | --- |
+| `PRE_TEST_CHECKLIST.md` | **The gates before any student test** (sign-in, security, failure drills, load, alerts, hosts, mode switch) | Run with Prompt TEST.1 |
+| `SECURITY.md` | Sign-in, roles, headers, uploads, secrets, privacy, 15 security checks | Read before Track SEC |
+| `RESILIENCE.md` | Failure matrix (what if X fails), rate limits with fallbacks, degradation levels, load tests | Read before Track R.4 |
+| `PERMISSIONS_NOTIFICATIONS.md` | Push alerts, camera, Google sign-in in in-app browsers | Read before Track N |
+| `HOSTS_AND_AFTER_FEST.md` | Host management, and the automatic switch back to the Signals app on 28 Nov | Read before HOST.1 and END.1 |
 | `BRAND.md` + `brand/` | **Official Fiesta'26 look:** logo, banner, app icons, colours, fonts | Copy `brand/` to `public/brand/`; attach with the first UI prompt |
 | `FORMS_CHECK.md` | What the Linktree form previews show: confirmed times/venues and forms that look unfinished | Send to the committee |
 | `APP_FLOW.md` | **The complete structure:** every screen (IDs 01–46), route, who sees it, where each button goes, flows, roles and the Next.js folder layout | Read first, alongside the designs |
@@ -22,6 +27,7 @@ Everything needed to build **Fest Live** (the live fest guide plus the Signals "
 | `supabase/schema_participants.sql` | Event hosts, participants (private emails/phones), public line-up view (tested on Postgres 16) | Run after `storage.sql` |
 | `templates/participants_template.csv` | Columns for hosts' registration sheets (CSV or Excel) | Send to event hosts |
 | `supabase/schema_changes.sql` | Automatic change alerts: a trigger logs every time, venue or status change with a ready-made message (tested on Postgres 16) | Run right after `schema.sql` |
+| `supabase/schema_ops.sql` | **Run last.** Fest/campus mode, kill switch, host invites, audit log, database rate limiter, push storage, archive and purge (tested on Postgres 16) | After all other SQL files |
 | `supabase/storage.sql` | Public buckets for event covers and contestant photos; only organisers can upload | Run after `schema.sql` |
 | `supabase/seed_hunt.sql` | Stamp Hunt test data: opens the hunt for 12 h and creates a stamp point per seeded event (safe to re-run) | After `schema_stamps.sql` and `seed.sql`, development only |
 | `supabase/seed.sql` | Sample venues, events, announcements and a live score | During building; deleted on 24 Nov |
@@ -93,3 +99,15 @@ On a local Postgres 16 that copies Supabase's default permissions, installed in 
 - Delaying an event logs "… now starts at 6:15 PM (was 6:00 PM)"; moving it logs "… moved to Main Stage (was Seminar Hall 1)"; changing both logs one combined message; cancelling and restoring log "… is cancelled" and "… is back on at …" (India time).
 - Editing a description or marking an event done creates no alert.
 - Everyone can read alerts; students can't add or delete them.
+
+## What was tested for operations and safety (`schema_ops.sql`)
+Installed in launch order on a local Postgres 16 with Supabase-style permissions:
+- the mode is `fest` now and flips to `campus` at `campus_from` by itself; an organiser can force either; students can't change it;
+- votes and stamps are accepted in fest mode, refused when writes are paused ("Writes are paused…") and refused in campus mode ("The fest is over");
+- host invites: an unconfirmed sign-up with an invited email does **not** become a host; confirming the email does; a Google sign-up with a pending invite becomes a host; an existing confirmed user becomes a host at once; students can't invite; bad emails are rejected;
+- a host sees their participants and loses access when `hosts_until` passes;
+- the audit log records role changes, host changes and config changes; students see nothing;
+- the database rate limiter allows N hits and then blocks, with a retry time; clients can't call it;
+- delays and urgent announcements create push-queue rows; normal announcements don't; students can't read push tables;
+- the archive/purge refuses in fest mode and for students, and in campus mode keeps vote totals, deletes votes, push subscriptions and participants' contact details.
+Not tested here (needs real services or phones): Google/Email sign-in, MFA, Upstash, Web Push delivery, camera, headers. They are covered by `PRE_TEST_CHECKLIST.md`.

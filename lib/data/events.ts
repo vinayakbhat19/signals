@@ -1,4 +1,5 @@
 import { createPublicClient } from '@/lib/supabase/public';
+import { readBundledSchedule, readEmergencyOverlay } from '@/lib/snapshot';
 import type { Event, Result, Venue } from '@/lib/types';
 
 export type VenueSummary = Pick<Venue, 'id' | 'name' | 'maps_url'>;
@@ -41,19 +42,37 @@ function toEventWithVenue(row: RawEventRow): EventWithVenue {
 const EVENT_SELECT = '*, venues(id, name, maps_url)';
 
 export async function listEvents(): Promise<EventWithVenue[]> {
-  const supabase = createPublicClient();
-  const { data, error } = await supabase
-    .from('events')
-    .select(EVENT_SELECT)
-    .eq('is_published', true)
-    .order('starts_at', { ascending: true });
+  try {
+    const supabase = createPublicClient();
+    const { data, error } = await supabase
+      .from('events')
+      .select(EVENT_SELECT)
+      .eq('is_published', true)
+      .order('starts_at', { ascending: true });
 
-  if (error) {
-    console.error('[data/events] listEvents failed:', error);
-    throw new Error(`Failed to load events: ${error.message}`);
+    if (error) {
+      throw new Error(error.message);
+    }
+
+    const overlay = readEmergencyOverlay();
+    return ((data ?? []) as unknown as RawEventRow[])
+      .map(toEventWithVenue)
+      .map((ev) => {
+        const ov = overlay.eventOverrides[ev.id];
+        return ov?.status ? { ...ev, status: ov.status } : ev;
+      });
+  } catch (err) {
+    console.error(
+      '[data/events] listEvents failed; using bundled schedule snapshot:',
+      err instanceof Error ? err.message : String(err)
+    );
+    const snap = readBundledSchedule();
+    const overlay = readEmergencyOverlay();
+    return (snap?.events ?? []).map((ev) => {
+      const ov = overlay.eventOverrides[ev.id];
+      return ov?.status ? { ...ev, status: ov.status } : ev;
+    });
   }
-
-  return ((data ?? []) as unknown as RawEventRow[]).map(toEventWithVenue);
 }
 
 export async function getEvent(id: string): Promise<EventWithDetails | null> {

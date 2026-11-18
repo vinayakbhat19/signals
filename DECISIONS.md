@@ -1,17 +1,23 @@
-# Architecture & Implementation Decisions
+# Dependency Decisions (`DECISIONS.md`)
 
-## Phase 1.1
-- **Brand color placeholder**: Using `#6D28D9` as the temporary brand color via CSS variables so the UI palette can be updated easily later once final fest branding is chosen.
-- **Next.js 16 `proxy.ts`**: Next.js 16 deprecated `middleware.ts` in favor of `proxy.ts` (exporting `proxy`). Used `proxy.ts` to follow Next.js 16 conventions cleanly without deprecation warnings.
-- **`isLive` / `isUpNext` status handling**: Events marked `'done'` (as well as `'cancelled'`) return `false` from `isLive` and `isUpNext` so organisers clicking "Mark done" immediately remove an event from "Happening now" and "Up next".
-- **Node types version**: Installed `@types/node@^24` (matching the local Node 24 runtime) so `vitest@5` installs cleanly without peer-dependency conflicts.
-- **System font stack**: Removed build-time `next/font/google` fetch in favor of a system UI font stack for instant rendering on weak campus Wi-Fi, smaller page payloads, and reliable offline builds.
+Every direct dependency in `package.json` and why it is included:
 
-## Phase 2
-- **Classic ISR (`revalidate = 30` / `15`)**: Disabled `cacheComponents` in `next.config.ts` so Next.js route-level ISR (`export const revalidate = 30`, `export const revalidate = 15`, `dynamicParams = true`) and `revalidatePath` work exactly as specified in `PROJECT_RULES.md` and `PRD.md`, with predictable edge caching and clear build output.
-
-## Neon Night Kit Upgrade
-- **Dark-only "Neon Night" theme**: Switched the design system to match `design/png/*.png` and `design/screens/*.html` (`#0B0A12` background, `#16141F` cards, `#2E2A3D` borders, `#C6FF3D` lime primary, `#FF4FA3` pink live accent, `Bricolage Grotesque` + `Inter`, inline SVG mascots with CSS animations disabled under `prefers-reduced-motion`).
-- **Google Fonts via `<link>`**: Loaded `Bricolage Grotesque` and `Inter` via standard `<link rel="stylesheet">` with `display=swap` so production builds remain offline-safe while browsers get the exact design typography.
-- **Incremental Supabase migration**: Created `supabase/migration_v2_upgrade.sql` so existing v1 Supabase databases can safely upgrade (`handle_new_user`, `handle_user_confirmed`, and `events.cover_url/host_name/host_coordinator`) before running `storage.sql`, `schema_participants.sql`, `schema_voting.sql`, and `schema_stamps.sql`.
-- **Events route & `/schedule` redirect**: Added `/events` as the primary events directory per `APP_FLOW.md` and redirected `/schedule` → `/events` for backward compatibility.
+| Package | Purpose |
+| --- | --- |
+| `next` | App Router framework, ISR/SSG edge caching, Server Actions, security headers |
+| `react`, `react-dom` | UI runtime |
+| `@supabase/supabase-js` | Typed Supabase Postgres, Auth, Storage, and RPC client |
+| `@supabase/ssr` | Cookie-backed `httpOnly` PKCE sessions for App Router server components and `proxy.ts` |
+| `zod` | Server-side schema validation for all server actions, API routes, and CSV imports |
+| `swr` | Lightweight client polling for `/api/live` (20 s) and `/api/vote/[id]` (5 s) with hidden-tab pause |
+| `lucide-react` | Tree-shakable SVG icon set |
+| `qrcode` | Client & server QR data-URL generation for Stamp Stations, Vote screens, 2FA TOTP, and printable posters |
+| `papaparse` | Browser-side CSV parsing for organiser schedule import and host participant import |
+| `date-fns`, `date-fns-tz` | Explicit `Asia/Kolkata` (IST) date/time formatting and UTC conversion |
+| `@base-ui/react`, `class-variance-authority`, `cn` | Accessible UI primitives and Tailwind v4 utility composition |
+| `shadcn` (dev), `tw-animate-css` | Component scaffolding CLI (dev-only) and CSS animations |
+| `sonner` | Toast notifications for forms, votes, and organiser actions |
+| `next-themes` | Theme provider compatibility for shadcn components |
+| `@vercel/analytics` | Cookie-free privacy-friendly pageview analytics |
+| `server-only` | Compile-time guard preventing server secrets (`lib/supabase/admin.ts`, `lib/ratelimit.ts`, `lib/push.ts`, `lib/snapshot.ts`) from entering client bundles |
+| `vitest` (dev) | Unit testing for IST time logic, CSV injection sanitisation, and upload signature checks |

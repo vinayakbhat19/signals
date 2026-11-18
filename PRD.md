@@ -27,6 +27,9 @@ The first launch is **Fiesta'26** (Fiesta 2026, intra college cultural fest, SDM
 | --- | --- |
 | Home (live now, up next, ticker), fest schedule, event pages, venues, announcements, results | **Football** live scores (`schema_sports.sql`, Track S) |
 | **Audience voting** for selected **outdoor** competitions (`VOTING.md`); switched off for auditorium competitions (no network inside) | **Signals** (F11, F14) and **My schedule / stars** (F10) |
+| **Sign-in and security:** Google, email + password, CAPTCHA, MFA for organisers, headers, audit log (`SECURITY.md`) | |
+| **Phone alerts (push) and camera permission** with explanations (`PERMISSIONS_NOTIFICATIONS.md`) | |
+| **Host management** (invite, scope, expiry) and **after-fest mode switch** back to the Signals app on 28 Nov (`HOSTS_AND_AFTER_FEST.md`) | |
 | **Change alerts:** every delay, time change, venue change or cancellation appears automatically at the top of Home and on an Updates page (`schema_changes.sql`) | |
 | Organiser panel, CSV import, **event editor with cover photos and hosts**, **QR generator**, PWA with an **install bar** | Nearby, personal QR connect, communities, workshops |
 | **Accounts:** Google or email + password (email confirmed, check-email and verified screens), cookie notice, My account page, **in-app QR scanner** (raised SCAN button in the bottom bar) | |
