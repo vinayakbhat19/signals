@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import useSWR from 'swr';
 import {
+  Bell,
   ChevronRight,
   MapPin,
   Megaphone,
@@ -93,12 +94,39 @@ export function HomeLiveFeed({ festName, initialData }: HomeLiveFeedProps) {
     tickState.base === liveData.serverTime ? tickState.elapsedMs : 0;
   const syncedNow = new Date(baseMs + elapsedMs);
 
-  const tickerItems = [
-    ...(liveData.urgent ? [liveData.urgent.message] : []),
-    ...liveData.announcements
-      .filter((a) => a.id !== liveData.urgent?.id)
-      .map((a) => a.message),
-  ];
+  const changedIds = new Set(liveData.changedEventIds ?? []);
+  const totalAlertCount =
+    (liveData.changes?.length ?? 0) +
+    (liveData.urgent ? 1 : 0);
+
+  // Pick the most recent important update (urgent notice or latest event change)
+  const latestChange = liveData.changes?.[0] ?? null;
+  const secondChange = liveData.changes?.[1] ?? null;
+  const latestAlert = liveData.urgent
+    ? {
+        headline: liveData.urgent.message,
+        subline: latestChange
+          ? `+ ${latestChange.message}`
+          : liveData.announcements.length > 1
+            ? `Tap to see all ${liveData.announcements.length} updates`
+            : 'Important notice from the Fest Committee',
+      }
+    : latestChange
+      ? {
+          headline: latestChange.message,
+          subline: secondChange
+            ? `+ ${secondChange.message}`
+            : 'Tap to see all schedule changes & notices',
+        }
+      : liveData.announcements[0]
+        ? {
+            headline: liveData.announcements[0].message,
+            subline:
+              liveData.announcements.length > 1
+                ? `+ ${liveData.announcements.length - 1} more committee updates`
+                : 'Tap to view all updates',
+          }
+        : null;
 
   const [featuredLive, ...otherLive] = liveData.now;
   const nextEvent = liveData.next[0] ?? null;
@@ -144,24 +172,31 @@ export function HomeLiveFeed({ festName, initialData }: HomeLiveFeedProps) {
         </div>
       </header>
 
-      {/* Slanted Neon Lime Announcement Ticker */}
-      {tickerItems.length > 0 && (
+      {/* Important Updates Banner (matching updated 10-home.png) */}
+      {latestAlert && (
         <Link
-          href="/announcements"
-          aria-label={`Latest update: ${tickerItems[0]}`}
-          className="-mx-5 flex h-9 items-center overflow-hidden bg-[#C6FF3D] text-[#0B0A12] -rotate-[1deg] lg:mx-0 lg:rounded-2xl lg:rotate-0"
+          href="/updates"
+          className="flex items-center gap-3 rounded-[22px] bg-[#FFE14D] px-4 py-3.5 text-[#0B0A12] shadow-[4px_4px_0_#FF4F5E] transition-transform active:translate-y-0.5"
         >
-          <div
-            aria-hidden="true"
-            className="ticker-track flex items-center gap-5 whitespace-nowrap px-4 text-[13px] font-extrabold uppercase tracking-[0.04em]"
-          >
-            {[...tickerItems, ...tickerItems].map((msg, idx) => (
-              <span key={idx} className="inline-flex items-center gap-5">
-                <span>{msg}</span>
-                <span>✦</span>
-              </span>
-            ))}
+          <span className="flex size-11 shrink-0 items-center justify-center rounded-[14px] bg-[#0B0A12] text-[#FFE14D]">
+            <Bell className="bell-ring size-5 stroke-[2.3]" aria-hidden="true" />
+          </span>
+          <div className="min-w-0 flex-1 space-y-0.5">
+            <span className="flex items-center gap-1.5 text-[11px] font-extrabold uppercase tracking-[0.08em]">
+              <span className="size-2 rounded-full bg-[#FF4F5E]" />
+              IMPORTANT
+              {totalAlertCount > 0
+                ? ` · ${totalAlertCount} ${totalAlertCount === 1 ? 'UPDATE' : 'UPDATES'}`
+                : ' · UPDATES'}
+            </span>
+            <p className="line-clamp-2 text-[15px] font-extrabold leading-snug">
+              {latestAlert.headline}
+            </p>
+            <p className="truncate text-xs font-semibold text-[#0B0A12]/80">
+              {latestAlert.subline}
+            </p>
           </div>
+          <ChevronRight className="size-5 shrink-0" aria-hidden="true" />
         </Link>
       )}
 
@@ -312,6 +347,12 @@ export function HomeLiveFeed({ festName, initialData }: HomeLiveFeedProps) {
                     <span className="block truncate text-[13px] text-[#9C97B0]">
                       {formatTime(event.starts_at)} ·{' '}
                       {event.venue_name ?? 'Venue TBA'}
+                      {changedIds.has(event.id) && (
+                        <span className="font-extrabold text-[#FFE14D]">
+                          {' '}
+                          · changed
+                        </span>
+                      )}
                     </span>
                   </div>
 
@@ -376,7 +417,7 @@ export function HomeLiveFeed({ festName, initialData }: HomeLiveFeedProps) {
           Results
         </Link>
         <Link
-          href="/announcements"
+          href="/updates"
           className="flex min-h-14 flex-col items-center justify-center gap-1 rounded-[18px] border-[1.5px] border-[#2E2A3D] bg-[#16141F] px-2 py-2.5 text-xs font-bold text-[#F4F2FA] hover:border-[#22D3EE]"
         >
           <Megaphone className="size-4 text-[#22D3EE]" aria-hidden="true" />

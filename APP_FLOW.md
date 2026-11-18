@@ -36,7 +36,8 @@ Sample names and numbers in the designs are placeholders.
 | 05 | You're verified | `/auth/callback?next=/verified` | After clicking the link | `profiles.college_verified` | Add to Home Screen → 06 · Go to the fest → 10 |
 | 06 | Add to Home Screen | sheet / `/install` | Browser visitors | `beforeinstallprompt`, display-mode | Add to Home Screen (Android) · iPhone steps · Maybe later |
 | 07 | Log in | `/login` | Signed out | `auth.signInWithPassword`, Google | Log in → previous page or 10 · Forgot password → `/reset` · Create account → 03 |
-| 10 | Home | `/` | Everyone | `/api/live` (now, next, announcements), open polls, my hunt summary | Live card → 30 or 12 · Up next → 12 · Hunt card → 22 · Avatar → 14 · Add bar → 06 |
+| 10 | Home | `/` | Everyone | `/api/live` (now, next, **latest event changes + urgent notices**), open polls, my hunt summary | **Important updates alert (top) → 15** · Live card → 30 or 12 · Up next → 12 · Hunt card → 22 · Avatar → 14 · Add bar → 06 |
+| 15 | Updates and notices | `/updates` | Everyone | `event_changes` + announcements | Change → 12 · tabs All / Changes / Notices |
 | 11 | Events | `/events` | Everyone | events + venue + host + cover, poll/stamp flags | Card → 12 (or 30 when voting) · Scan → 20 · Tabs All/Live/Soon/Done · Search |
 | 12 | Event page | `/events/[id]` | Everyone | event, host, cover, poll, stamp point, line-up count | Line-up → 13 · Vote (when open) → 30 · Calendar · Directions · Share · Contact host |
 | 13 | Line-up | `/events/[id]/line-up` | Everyone | `participants_public` | Vote → 30 · Show all |
@@ -47,6 +48,8 @@ Sample names and numbers in the designs are placeholders.
 | 23 | Leaderboard | `/hunt/leaderboard` | Everyone | `stamp_leaderboard` | Scan → 20 · Back → 22 |
 | 30 | Audience vote | `/vote/[eventId]` | Everyone views; signed in votes | `poll_results`, my vote | Vote · stage code box · Back |
 | 31 | Stage screen | `/screen/vote/[eventId]` | Volunteer/organiser device, projector | `poll_results`, `rpc get_vote_code` | — (display only) |
+| 32 (later) | Vote saved offline | `/vote/[eventId]` (offline state) | Signed-in voters with no network | IndexedDB queue → `rpc cast_vote_offline` | Back to the fest → 10 |
+| 33 (later) | Stage screen, offline mode | `/screen/vote/[eventId]` (offline state) | Stage laptop with no network | codes from `rpc get_vote_codes` stored in advance | — (display only) |
 | 40 | Control room | `/admin` | Organiser | events now/next, stats | Tabs: Events · Participants → 42 · Voting → 43 · QR → 44 · Stations → 46 · New event / Edit → 41 |
 | 41 | Event editor | `/admin/events/[id]` | Organiser | event + cover upload | Preview → 12 · Save and publish |
 | 42 | Host: participants | `/host/events/[id]/participants` | Event host or organiser | `participants` (private fields) | Upload CSV/Excel · Import · Check in · Show line-up switch · Add · Export CSV/Excel |
@@ -116,6 +119,19 @@ flowchart LR
   ORG --> SS
 ```
 
+### 3.4b Voting in a hall with no network (later: not used at this fest; auditorium voting is off)
+```mermaid
+flowchart LR
+  OUT[Outside: signal] -->|open vote page, signed in| SAVE[Page + contestants saved on phone]
+  LAP[Stage laptop online] -->|download codes for the show| SO[33 Stage screen offline]
+  SAVE --> IN[Inside: no network]
+  SO --> IN
+  IN -->|pick + type stage code| Q[32 Vote saved on phone]
+  Q -->|walk out, signal back / reopen app| SYNC[rpc cast_vote_offline]
+  SYNC -->|ok| C[Counted]
+  SYNC -->|refused| R[Reason shown]
+```
+
 ### 3.5 Host and organiser
 ```mermaid
 flowchart LR
@@ -130,6 +146,19 @@ flowchart LR
 ```
 
 ---
+
+## 3.6 Change alerts (delays, time and venue changes, cancellations)
+```mermaid
+flowchart LR
+  O[Organiser: +15 min / edit time / change venue / cancel] -->|save| DB[(events)]
+  DB -->|trigger| CH[(event_changes: ready-made message)]
+  CH --> API[/api/live, cached 15 s, refreshed instantly on save/]
+  API --> HA[10 Home: Important updates alert at the top]
+  API --> UP[15 Updates page]
+  API --> EC[11 Events / 12 Event: CHANGED / MOVED / CANCELLED tags, old value crossed out]
+  N[Organiser: urgent notice] --> API
+```
+Rules: the Home alert shows changes and urgent notices from the **last 3 hours**, newest first (up to 2 lines plus "N more"); tapping opens 15. A student can dismiss it; it comes back when a **new** change arrives (remember the newest id seen, in localStorage). Changes older than 3 hours stay on the Updates page.
 
 ## 4. Roles
 
@@ -150,6 +179,7 @@ flowchart LR
 app/
   (public)/
     page.tsx                         10 Home
+    updates/page.tsx                 15 Updates and notices
     welcome/page.tsx                 01 Welcome (+ 02 cookie sheet component)
     events/page.tsx                  11 Events
     events/[id]/page.tsx             12 Event page
@@ -187,7 +217,7 @@ supabase/    schema.sql, storage.sql, schema_participants.sql, schema_voting.sql
 public/      manifest icons, campus-map.jpg (optional), schedule.json (built)
 ```
 
-**Database install order:** `schema.sql` → `storage.sql` → `schema_participants.sql` → `schema_voting.sql` → `schema_stamps.sql` (hunt only) → `seed.sql` (development only).
+**Database install order:** `schema.sql` → `schema_changes.sql` → `storage.sql` → `schema_participants.sql` → `schema_voting.sql` → `schema_stamps.sql` (hunt only) → `seed.sql` (development only).
 
 ---
 

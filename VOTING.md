@@ -53,3 +53,30 @@ Recommendation: for big crowd events, turn **"Must be at the venue" on.** It sto
 
 ## Load
 After a popular performance, hundreds of people may vote within a minute. That's a few writes per second, which Postgres handles easily, and each vote is one small row. Results are cached for 5 s (`s-maxage=5`, tag `votes:<eventId>`), so thousands of people watching the bars cost about one database read every 5 s per competition. The stage screen polls every 3 s.
+
+## Offline voting (halls with no network): LATER
+
+> **First launch:** not used. Voting is switched **off** for auditorium competitions and used only for outdoor competitions with mobile signal. The database functions below stay in `schema_voting.sql` unused, ready for a later event.
+
+
+Our auditorium has a mobile-signal blocker and no Wi-Fi, so phones have **no network** inside. Voting still works:
+
+| Step | Who | What happens |
+| --- | --- | --- |
+| Before the show (with signal) | Students | Open **Vote → the competition** once, signed in. The page, the contestants and the sign-in are saved on the phone. Best: Add to Home Screen first |
+| Before the show (with signal) | Stage-screen volunteer | Open the stage screen for the competition. It downloads **all the codes for the show** (`get_vote_codes`, one per 30 s) and checks the laptop clock against the server |
+| During the show (no network) | Stage screen | Keeps showing the rotating 6-character code from the downloaded list, with "Results after the show" instead of live bars |
+| During the show (no network) | Students | Pick a contestant, type the code. The phone saves `{contestant, code, time, client_ref}` and shows **"Vote saved on your phone"** |
+| After the show (signal again) | Phones | Send saved votes automatically: on Android in the background or on opening; **on iPhone when the app is opened again**. The student then sees "Your vote … was counted" or the reason it wasn't |
+| After voting closes | Organiser | Waits ~20 minutes for votes to arrive (accepted up to **2 hours** after closing), checks fraud review, announces results |
+
+**Why it's still fair** (enforced by `cast_vote_offline()`, tested):
+- the typed code must belong to the 30-second window of the time the vote was made (±1 minute for phone clocks), so the voter must have seen the stage screen at that time;
+- the vote time must be inside the voting window and not in the future;
+- one vote per person (offline votes are final), retries don't double count (`client_ref`);
+- college-email rule still applies;
+- **fraud review:** `offline_vote_windows` shows votes per code window. A real audience spreads across many windows; a spike on one window means a photo of the code was shared outside. Organisers can remove those votes.
+
+**Known limit:** someone who photographs the code and shares it can let a friend outside vote with that time, until 2 hours after closing. The college-email rule, one vote per person and the fraud review keep this small. Ask hosts to announce "the code is only valid in the hall".
+
+**Set for offline competitions:** Show results = **After close**, Must be at the venue = **on**.

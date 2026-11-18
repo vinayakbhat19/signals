@@ -12,6 +12,8 @@ export default async function HomePage() {
     next: [],
     announcements: [],
     urgent: null,
+    changes: [],
+    changedEventIds: [],
     serverTime: new Date().toISOString(),
   };
 

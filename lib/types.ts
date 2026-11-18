@@ -24,6 +24,15 @@ export type EventStatus = (typeof EVENT_STATUSES)[number];
 export const ANNOUNCEMENT_PRIORITIES = ['normal', 'urgent'] as const;
 export type AnnouncementPriority = (typeof ANNOUNCEMENT_PRIORITIES)[number];
 
+export const EVENT_CHANGE_KINDS = [
+  'time',
+  'venue',
+  'time_venue',
+  'cancelled',
+  'restored',
+] as const;
+export type EventChangeKind = (typeof EVENT_CHANGE_KINDS)[number];
+
 export const SIGNAL_TYPES = [
   'need_teammate',
   'open_to_connect',
@@ -116,6 +125,18 @@ export interface Announcement {
   event_id: string | null;
   priority: AnnouncementPriority;
   created_by: string | null;
+  created_at: string;
+}
+
+export interface EventChange {
+  id: string;
+  event_id: string;
+  kind: EventChangeKind;
+  old_starts_at: string | null;
+  new_starts_at: string | null;
+  old_venue: string | null;
+  new_venue: string | null;
+  message: string;
   created_at: string;
 }
 
@@ -306,6 +327,20 @@ export interface Database {
             columns: ['created_by'];
             isOneToOne: false;
             referencedRelation: 'profiles';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
+      event_changes: {
+        Row: EventChange;
+        Insert: never;
+        Update: never;
+        Relationships: [
+          {
+            foreignKeyName: 'event_changes_event_id_fkey';
+            columns: ['event_id'];
+            isOneToOne: false;
+            referencedRelation: 'events';
             referencedColumns: ['id'];
           },
         ];

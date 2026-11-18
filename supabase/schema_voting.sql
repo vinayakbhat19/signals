@@ -235,3 +235,128 @@ create policy votes_delete on public.votes for delete to authenticated
 revoke execute on function public.cast_vote(uuid, uuid, text), public.get_vote_code(uuid) from public, anon;
 grant execute on function public.cast_vote(uuid, uuid, text), public.get_vote_code(uuid) to authenticated;
 grant execute on function public.poll_open(public.polls), public.vote_window() to anon, authenticated;
+
+-- ================================================================ offline voting
+-- For halls with no network (e.g. a mobile-signal blocker and no Wi-Fi):
+--   1. Before the show, the stage-screen laptop downloads the codes for the whole
+--      show with get_vote_codes() (one 6-character code per 30-second window), so it
+--      can keep showing the rotating code with no network.
+--   2. Phones that opened the vote page beforehand vote with no network: the app
+--      saves { contestant, code typed, time, client_ref } and sends it later.
+--   3. cast_vote_offline() checks that the code belongs to the 30-second window of
+--      the vote's time (proof the voter saw the stage screen), that this time is
+--      inside the voting window, and that the vote arrives within 2 hours of closing.
+--   Offline votes are final (no changes) and idempotent by client_ref.
+
+alter table public.votes add column if not exists source text not null default 'online'
+  check (source in ('online', 'offline'));
+alter table public.votes add column if not exists cast_at timestamptz;
+alter table public.votes add column if not exists code_window bigint;
+alter table public.votes add column if not exists client_ref uuid unique;
+
+-- All codes for the next p_hours (volunteers and organisers only), for the stage screen.
+create or replace function public.get_vote_codes(p_poll uuid, p_hours int default 6)
+returns jsonb
+language plpgsql stable security definer set search_path = public, extensions
+as $$
+declare
+  w0 bigint := public.vote_window() - 20;              -- from 10 minutes ago
+  w1 bigint := public.vote_window() + least(greatest(p_hours, 1), 12) * 120;
+begin
+  if not public.is_volunteer() then
+    raise exception 'Not allowed';
+  end if;
+  return (select jsonb_agg(jsonb_build_object('w', w, 'code', public.vote_code(p_poll, w)) order by w)
+          from generate_series(w0, w1) as w);
+end;
+$$;
+
+create or replace function public.cast_vote_offline(p_poll uuid, p_contestant uuid, p_code text,
+                                                     p_cast_at timestamptz, p_client_ref uuid)
+returns jsonb
+language plpgsql volatile security definer set search_path = public, extensions
+as $$
+declare
+  uid  uuid := auth.uid();
+  p    public.polls;
+  c    public.contestants;
+  v    public.votes;
+  prof public.profiles;
+  w    bigint;
+  ok   boolean := false;
+  k    int;
+begin
+  if uid is null then
+    return jsonb_build_object('ok', false, 'reason', 'sign_in', 'message', 'Sign in to send your saved vote');
+  end if;
+  if p_client_ref is null or p_cast_at is null or p_code is null then
+    return jsonb_build_object('ok', false, 'reason', 'invalid', 'message', 'This saved vote is incomplete');
+  end if;
+  -- retry of a vote we already stored
+  select * into v from public.votes where client_ref = p_client_ref;
+  if v.poll_id is not null then
+    return jsonb_build_object('ok', true, 'reason', 'same', 'message', 'Already counted');
+  end if;
+  select * into p from public.polls where id = p_poll;
+  if p.id is null or not p.enabled then
+    return jsonb_build_object('ok', false, 'reason', 'closed', 'message', 'Voting is not on for this competition');
+  end if;
+  if p_cast_at > now() + interval '2 minutes' then
+    return jsonb_build_object('ok', false, 'reason', 'clock', 'message', 'Your phone clock looks wrong; the vote could not be checked');
+  end if;
+  if (p.opens_at is not null and p_cast_at < p.opens_at - interval '1 minute')
+     or (p.closes_at is not null and p_cast_at > p.closes_at + interval '1 minute') then
+    return jsonb_build_object('ok', false, 'reason', 'outside', 'message', 'This vote was made outside the voting time');
+  end if;
+  if p_cast_at < now() - interval '12 hours'
+     or (p.closes_at is not null and now() > p.closes_at + interval '2 hours') then
+    return jsonb_build_object('ok', false, 'reason', 'late', 'message', 'This saved vote arrived too late to count');
+  end if;
+  select * into c from public.contestants where id = p_contestant and poll_id = p.id and active;
+  if c.id is null then
+    return jsonb_build_object('ok', false, 'reason', 'unknown', 'message', 'That contestant is not in this vote');
+  end if;
+  if p.college_only then
+    select * into prof from public.profiles where id = uid;
+    if not coalesce(prof.college_verified, false) then
+      return jsonb_build_object('ok', false, 'reason', 'college_only',
+                                'message', 'Only college email accounts can vote in this competition');
+    end if;
+  end if;
+  -- the code must belong to the time the vote was made (±1 minute for phone clocks)
+  w := floor(extract(epoch from p_cast_at) / 30)::bigint;
+  for k in -2..2 loop
+    if upper(p_code) = public.vote_code(p.id, w + k) then
+      ok := true; w := w + k; exit;
+    end if;
+  end loop;
+  if not ok then
+    return jsonb_build_object('ok', false, 'reason', 'code',
+                              'message', 'The stage code does not match the time of your vote');
+  end if;
+  if exists (select 1 from public.votes where poll_id = p.id and user_id = uid) then
+    return jsonb_build_object('ok', false, 'reason', 'already', 'message', 'You already voted in this competition');
+  end if;
+  insert into public.votes (poll_id, user_id, contestant_id, source, cast_at, code_window, client_ref)
+  values (p.id, uid, c.id, 'offline', p_cast_at, w, p_client_ref)
+  on conflict do nothing;
+  if not found then
+    return jsonb_build_object('ok', false, 'reason', 'already', 'message', 'You already voted in this competition');
+  end if;
+  return jsonb_build_object('ok', true, 'reason', 'voted', 'contestant', c.name);
+end;
+$$;
+
+revoke execute on function public.get_vote_codes(uuid, int), public.cast_vote_offline(uuid, uuid, text, timestamptz, uuid)
+  from public, anon;
+grant execute on function public.get_vote_codes(uuid, int), public.cast_vote_offline(uuid, uuid, text, timestamptz, uuid)
+  to authenticated;
+
+-- Fraud review helper (organisers): how many offline votes used each 30-second code.
+-- A normal hall spreads votes over many windows; hundreds on one old window means a
+-- photo of the code was shared outside.
+create view public.offline_vote_windows with (security_invoker = true) as
+select poll_id, code_window, to_timestamp(code_window * 30) as window_start, count(*)::int as votes
+from public.votes where source = 'offline'
+group by poll_id, code_window;
+grant select on public.offline_vote_windows to authenticated;   -- RLS on votes: organisers see all, others only their own

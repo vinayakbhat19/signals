@@ -32,7 +32,7 @@ const DESKTOP_LINKS = [
   { href: '/hunt', label: 'Hunt' },
   { href: '/venues', label: 'Venues' },
   { href: '/results', label: 'Results' },
-  { href: '/announcements', label: 'Updates' },
+  { href: '/updates', label: 'Updates' },
   { href: '/admin', label: 'Organiser' },
 ] as const;
 

@@ -107,6 +107,14 @@
   50% { opacity: 1; }
 }
 
+@keyframes ring {
+  0%, 100% { transform: rotate(0deg); }
+  10% { transform: rotate(14deg); }
+  20% { transform: rotate(-12deg); }
+  30% { transform: rotate(8deg); }
+  40% { transform: rotate(0deg); }
+}
+
 .m-bob {
   animation: bob 2.6s ease-in-out infinite;
 }
@@ -146,6 +154,11 @@
   animation: twinkle 1.8s ease-in-out infinite;
 }
 
+.bell-ring {
+  transform-origin: 50% 10%;
+  animation: ring 2.4s ease-in-out infinite;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .m-bob,
   .m-blink,
@@ -154,7 +167,8 @@
   .live-dot,
   .ticker-track,
   .beam,
-  .twinkle {
+  .twinkle,
+  .bell-ring {
     animation: none !important;
   }
 }

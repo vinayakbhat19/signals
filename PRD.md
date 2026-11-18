@@ -26,7 +26,8 @@ The first launch is the **campus fest on 25 Nov** only.
 | In | Later (after the fest) |
 | --- | --- |
 | Home (live now, up next, ticker), fest schedule, event pages, venues, announcements, results | **Football** live scores (`schema_sports.sql`, Track S) |
-| **Audience voting** for selected competitions (`VOTING.md`) | **Signals** (F11, F14) and **My schedule / stars** (F10) |
+| **Audience voting** for selected **outdoor** competitions (`VOTING.md`); switched off for auditorium competitions (no network inside) | **Signals** (F11, F14) and **My schedule / stars** (F10) |
+| **Change alerts:** every delay, time change, venue change or cancellation appears automatically at the top of Home and on an Updates page (`schema_changes.sql`) | |
 | Organiser panel, CSV import, **event editor with cover photos and hosts**, **QR generator**, PWA with an **install bar** | Nearby, personal QR connect, communities, workshops |
 | **Accounts:** Google or email + password (email confirmed, check-email and verified screens), cookie notice, My account page, **in-app QR scanner** (raised SCAN button in the bottom bar) | |
 | **Hosts and line-ups:** event hosts upload registrations (CSV/Excel), check people in, export; students see the public line-up | |
@@ -88,7 +89,7 @@ On fest day, students don't know what's happening, where, and when. The schedule
 | F6 | **Results:** winners and scores per event; "live" flag for ongoing matches | Must |
 | F7 | **Organiser panel:** create, edit and delete events, venues, announcements and results from a phone | Must |
 | F8 | **CSV import** of the schedule (from Google Sheets) | Must |
-| F9 | **Google sign-in** (Supabase Auth); a "Verified student" badge when the email ends with `@sdmcet.ac.in` | Must |
+| F9 | **Google sign-in** (Supabase Auth); a "Verified student" badge when the email ends with `@{{COLLEGE_DOMAIN}}` | Must |
 | F10 | **My schedule:** star/unstar events, personal timeline, clash warning | Should |
 | F11 | **Signals board:** post a Signal (type, text, up to 3 tags, optional event, expiry); "I'm interested"; poster accepts; contacts revealed only after acceptance | Should |
 | F12 | **QR codes:** one for the app, one per event and per venue; printable poster page | Must |
@@ -146,7 +147,7 @@ Native apps, push notifications, chat, nearby/location matching, personal QR con
 
 ### F9 Sign-in
 - "Continue with Google." Browsing never needs sign-in; starring and Signals do.
-- On first sign-in a profile is created. `college_verified = true` if the email domain is `sdmcet.ac.in`.
+- On first sign-in a profile is created. `college_verified = true` if the email domain is `{{COLLEGE_DOMAIN}}`.
 - Roles: student (default), organiser, admin. Roles are set only in the Supabase dashboard (or by an admin), never by the user.
 
 ### F10 My schedule (`/my`)
@@ -168,7 +169,7 @@ Native apps, push notifications, chat, nearby/location matching, personal QR con
 - QR targets use the production URL plus `?src=qr-<type>-<id>` for analytics.
 
 ### F13 PWA
-- `manifest.webmanifest` with name, short name, icons 192/512, theme colour `#0B0A12`, `display: standalone`.
+- `manifest.webmanifest` with name, short name, icons 192/512, theme colour `{{BRAND_COLOR}}`, `display: standalone`.
 - "Add to home screen" hint on the second visit (dismissible).
 
 ### F15 Analytics

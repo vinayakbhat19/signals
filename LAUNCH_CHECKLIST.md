@@ -118,6 +118,11 @@
 
 ---
 
+## Voting plan for the fest
+- [ ] With the committee, list the competitions that get audience voting: **outdoor only** (where phones have signal).
+- [ ] Leave voting **off** for every auditorium competition (signal blocker, no Wi-Fi). Results there come from the judges as usual.
+- [ ] Test voting on a phone at each outdoor venue the day before.
+
 ## After the fest (26 Nov)
 
 - [ ] Run Prompt 7.1 (metrics report) and compare with PRD section 3.

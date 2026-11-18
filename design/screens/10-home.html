@@ -21,6 +21,10 @@ a{color:#C6FF3D}a:hover{color:#E3FF9A}
 .m-wiggle{transform-origin:50% 90%;animation:wiggle .9s ease-in-out infinite}
 .live-dot{animation:pulse 1.4s ease-out infinite}
 .ticker{animation:ticker 16s linear infinite}
+@keyframes ring{0%,100%{transform:rotate(0)}10%{transform:rotate(14deg)}20%{transform:rotate(-12deg)}30%{transform:rotate(8deg)}40%{transform:rotate(0)}}
+@keyframes alertpulse{0%{box-shadow:0 0 0 0 rgba(255,79,94,.8)}100%{box-shadow:0 0 0 8px rgba(255,79,94,0)}}
+.bell{transform-origin:50% 10%;animation:ring 2.4s ease-in-out infinite}
+.alert-dot{animation:alertpulse 1.4s ease-out infinite}
 @media (prefers-reduced-motion: reduce){*{animation:none!important}}
 </style>
 <style>body{display:flex;justify-content:center;min-height:100vh}</style>
@@ -39,12 +43,15 @@ a{color:#C6FF3D}a:hover{color:#E3FF9A}
     <a href="14-account.html" aria-label="My account" style="width: 42px; height: 42px; border-radius: 14px; background: #FF4FA3; color: #0B0A12; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 16px; text-decoration: none; transform: rotate(4deg)">A</a>
   </header>
 
-  <div aria-label="Latest update: Flutter workshop moved to Seminar Hall 1" style="background: #C6FF3D; color: #0B0A12; height: 36px; overflow: hidden; display: flex; align-items: center; transform: rotate(-1.2deg); margin: 2px -6px 0">
-    <div class="ticker" aria-hidden="true" style="display: flex; gap: 22px; white-space: nowrap; font-size: 13px; font-weight: 800; letter-spacing: 0.04em">
-      <span>FLUTTER WORKSHOP MOVED TO SEMINAR HALL 1</span><span>✦</span><span>CRICKET FINAL AT 6:50 PM</span><span>✦</span><span>FREE CHAI AT GATE 2 TILL 6</span><span>✦</span>
-      <span>FLUTTER WORKSHOP MOVED TO SEMINAR HALL 1</span><span>✦</span><span>CRICKET FINAL AT 6:50 PM</span><span>✦</span><span>FREE CHAI AT GATE 2 TILL 6</span><span>✦</span>
-    </div>
-  </div>
+  <a href="15-notices.html" aria-label="2 important updates. Intro to Flutter Workshop now 6:15 PM in Seminar Hall 1. See all updates" style="margin: 2px 16px 0; text-decoration: none; color: #0B0A12; background: #FFE14D; border-radius: 20px; padding: 12px 14px; display: flex; gap: 12px; align-items: center; box-shadow: 4px 4px 0 #FF4F5E">
+    <span style="width: 42px; height: 42px; border-radius: 13px; background: #0B0A12; display: flex; align-items: center; justify-content: center; flex: none"><svg class="bell" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#FFE14D" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"></path><path d="M10 21a2 2 0 0 0 4 0"></path></svg></span>
+    <span style="flex: 1; display: flex; flex-direction: column; gap: 2px; min-width: 0">
+      <span style="display: flex; align-items: center; gap: 6px; font-size: 11px; font-weight: 800; letter-spacing: 0.1em"><span class="alert-dot" style="width: 8px; height: 8px; border-radius: 4px; background: #FF4F5E"></span>IMPORTANT · 2 UPDATES</span>
+      <span style="font-size: 14px; font-weight: 800; line-height: 19px">Flutter Workshop: now 6:15 PM, Seminar Hall 1</span>
+      <span style="font-size: 12px; font-weight: 600">Was 6:00 PM, Seminar Hall 2 · + Treasure Hunt cancelled</span>
+    </span>
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#0B0A12" stroke-width="2.6" stroke-linecap="round" aria-hidden="true" style="flex: none"><path d="M9 6l6 6-6 6"></path></svg>
+  </a>
 
   <section style="padding: 22px 16px 0; display: flex; flex-direction: column; gap: 12px">
     <h2 style="margin: 0; font-family: 'Bricolage Grotesque', sans-serif; font-size: 26px; font-weight: 800; letter-spacing: -0.02em; display: flex; align-items: center; gap: 10px"><span class="live-dot" style="width: 12px; height: 12px; border-radius: 6px; background: #FF4FA3"></span>Happening now</h2>
@@ -75,13 +82,8 @@ a{color:#C6FF3D}a:hover{color:#E3FF9A}
     </div>
     <a href="12-event.html" style="text-decoration: none; color: inherit; display: flex; gap: 12px; align-items: center; padding: 12px 14px; border-radius: 20px; background: #16141F; border: 1.5px solid #2E2A3D">
       <span style="width: 62px; height: 52px; border-radius: 14px; background: #C6FF3D; color: #0B0A12; display: flex; flex-direction: column; align-items: center; justify-content: center; line-height: 1"><span style="font-family: 'Bricolage Grotesque', sans-serif; font-size: 22px; font-weight: 800">25</span><span style="font-size: 10px; font-weight: 800; letter-spacing: 0.08em">MIN</span></span>
-      <div style="flex: 1; display: flex; flex-direction: column; gap: 3px"><span style="font-size: 16px; font-weight: 700">Intro to Flutter Workshop</span><span style="font-size: 13px; color: #9C97B0">6:15 PM · Seminar Hall 1</span></div>
+      <div style="flex: 1; display: flex; flex-direction: column; gap: 3px"><span style="font-size: 16px; font-weight: 700">Intro to Flutter Workshop</span><span style="font-size: 13px; color: #9C97B0">6:15 PM · Seminar Hall 1 · <span style="color: #FFE14D; font-weight: 700">changed</span></span></div>
       <span style="width: 10px; height: 10px; border-radius: 5px; background: #FF9F43" aria-label="Workshop"></span>
-    </a>
-    <a href="12-event.html" style="text-decoration: none; color: inherit; display: flex; gap: 12px; align-items: center; padding: 12px 14px; border-radius: 20px; background: #16141F; border: 1.5px solid #2E2A3D">
-      <span style="width: 62px; height: 52px; border-radius: 14px; background: #24212F; color: #F4F2FA; display: flex; flex-direction: column; align-items: center; justify-content: center; line-height: 1"><span style="font-family: 'Bricolage Grotesque', sans-serif; font-size: 22px; font-weight: 800">1</span><span style="font-size: 10px; font-weight: 800; letter-spacing: 0.08em">HR</span></span>
-      <div style="flex: 1; display: flex; flex-direction: column; gap: 3px"><span style="font-size: 16px; font-weight: 700">Inter-college Cricket Final</span><span style="font-size: 13px; color: #9C97B0">6:50 PM · Sports Ground</span></div>
-      <span style="width: 10px; height: 10px; border-radius: 5px; background: #C6FF3D" aria-label="Sports"></span>
     </a>
   </section>
 

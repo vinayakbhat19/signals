@@ -19,6 +19,7 @@ Everything needed to build **Fest Live** (the live fest guide plus the Signals "
 | `supabase/schema_stamps.sql` | Stamp Hunt tables, rotating codes, claim checks, leaderboard (tested on Postgres 16) | Run after `schema.sql`, only if you build the hunt |
 | `supabase/schema_participants.sql` | Event hosts, participants (private emails/phones), public line-up view (tested on Postgres 16) | Run after `storage.sql` |
 | `templates/participants_template.csv` | Columns for hosts' registration sheets (CSV or Excel) | Send to event hosts |
+| `supabase/schema_changes.sql` | Automatic change alerts: a trigger logs every time, venue or status change with a ready-made message (tested on Postgres 16) | Run right after `schema.sql` |
 | `supabase/storage.sql` | Public buckets for event covers and contestant photos; only organisers can upload | Run after `schema.sql` |
 | `supabase/seed.sql` | Sample venues, events, announcements and a live score | During building; deleted on 24 Nov |
 | `templates/schedule_template.csv` | Columns for the committee's schedule sheet | Send to the committee today |
@@ -77,3 +78,14 @@ On a local Postgres 16 that copies Supabase's default permissions, installed in 
 - Hosts see and edit only their own event's participants; students can't add participants or make themselves hosts.
 - The same email can't be added twice to one event (case-insensitive), so re-uploads update instead of duplicating.
 - The public line-up shows name, team, college, department, order and status only; hidden people and unpublished events don't appear; emails and phones are never exposed.
+
+## What was tested for offline voting
+- Volunteers can download the codes for the whole show; students can't.
+- A vote made 10 minutes earlier with no network is counted when it syncs; a retry doesn't double count; a second vote is refused.
+- Refused: an old code claimed as "now" (no backdating), a wrong code, a vote time in the future, a vote from before voting opened, and anything arriving more than 2 hours after closing.
+- Results include offline votes; organisers can see offline votes per code window for fraud review.
+
+## What was tested for change alerts
+- Delaying an event logs "… now starts at 6:15 PM (was 6:00 PM)"; moving it logs "… moved to Main Stage (was Seminar Hall 1)"; changing both logs one combined message; cancelling and restoring log "… is cancelled" and "… is back on at …" (India time).
+- Editing a description or marking an event done creates no alert.
+- Everyone can read alerts; students can't add or delete them.

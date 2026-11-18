@@ -9,6 +9,8 @@ const EMPTY_LIVE: LiveData = {
   next: [],
   announcements: [],
   urgent: null,
+  changes: [],
+  changedEventIds: [],
   serverTime: new Date(0).toISOString(),
 };
 

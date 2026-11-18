@@ -13,8 +13,8 @@ Replace `{{FEST_NAME}}`, `{{COLLEGE_NAME}}`, `{{COLLEGE_DOMAIN}}`, `{{BRAND_COLO
 
 > **Build order for the first launch (fest only):**
 > Phase 0 → Phase 1 → **Track R** (reliability) → Phase 2 → Phase 3 → **Track A** (accounts, install, scanner, QR generator, event covers) → **Track V** (voting) → Prompt 4.3 → Phase 5 → Phase 6, then **Track H** (Stamp Hunt) only if everything else is tested by 23 Nov.
-> **Skip** Prompts 4.1 (My schedule), 4.2 (Signals) and **Track S** (football) for now. Read PRD section 0 first, and paste this line at the top of every prompt: *"Scope: follow PRD section 0. Fest only: no football, no Signals, no stars; sign-in only for organisers, volunteers, voters and hunt players."*
-> Database order: `schema.sql` → `storage.sql` → `schema_participants.sql` → `schema_voting.sql` → `schema_stamps.sql` (if you build the hunt). `seed.sql` any time during building.
+> **Skip** Prompts 4.1 (My schedule), 4.2 (Signals), **V.3** (offline voting) and **Track S** (football) for now. Read PRD section 0 first, and paste this line at the top of every prompt: *"Scope: follow PRD section 0. Fest only: no football, no Signals, no stars; sign-in only for organisers, volunteers, voters and hunt players."*
+> Database order: `schema.sql` → `schema_changes.sql` → `storage.sql` → `schema_participants.sql` → `schema_voting.sql` → `schema_stamps.sql` (if you build the hunt). `seed.sql` any time during building.
 > **Design:** read `APP_FLOW.md` first. Attach the matching PNGs from `design/png/` to every prompt (IDs 01–46), and tell the agent: *"Match the attached screens exactly; the standalone HTML for each is in design/screens/."*
 
 ## Phase 1: Foundation (19 Nov)
@@ -360,6 +360,17 @@ Read APP_FLOW.md (sections 1, 2, 5 and 7) and PROJECT_RULES.md. Match design PNG
 Test: upload templates/participants_template.csv, then re-upload with one changed name (must update, not duplicate), upload an .xlsx copy, check a student account sees the line-up but no emails (check the network response), and a non-host gets 404 on the host page. Run lint and build; report.
 ```
 
+### Prompt A.5: Change alerts on the first page
+```
+Read APP_FLOW.md section 3.6 and supabase/schema_changes.sql (event_changes is filled automatically by a trigger when a published event's start time, venue or status changes). Match design PNGs 10 (Home alert), 11 (Events tags) and 15 (Updates page).
+1. Add to getLiveData()/api/live: `changes` = event_changes from the last 3 hours (newest first, with event title) and `urgent` = urgent announcements from the last 3 hours. Every organiser save already revalidates /api/live, so alerts appear within seconds.
+2. Home: an "Important updates" alert at the very top, under the header: bell icon (rings, off under reduced motion), "IMPORTANT · N UPDATES", the newest message as the title, the old value as the second line, "+ N more" when there are more; tap opens /updates. Dismiss "×" hides it until a newer change arrives (store the newest seen id in localStorage, in try/catch). Urgent organiser notices show first, in red.
+3. /updates (design 15): tabs All / Changes / Notices; change cards coloured by kind (time = yellow, venue = cyan, cancelled = red, restored = lime) with the new value in bold and the old value crossed out; tap opens the event. Notices list with pinned urgent ones on top.
+4. Events list and event page: chips TIME CHANGED / MOVED / TIME + VENUE CHANGED / CANCELLED when the event has a change in the last 3 hours, with the old time/venue crossed out next to the new one.
+5. Organiser panel: after "+15 min", "Cancel" or a venue/time edit, show a toast with the exact message students will see ("Students now see: …") and an "Undo" for 10 seconds (restores the old values, which logs a matching change).
+Test: delay an event by 15 min, move another to a new venue, cancel and restore a third; each must appear on a phone's Home within about 15 s with the right wording, and description edits must not create alerts. Run lint and build; report.
+```
+
 ## Track V: Audience voting (after Phase 3)
 
 Before starting: run `supabase/schema_voting.sql` (after `schema.sql`). Read `VOTING.md`.
@@ -387,6 +398,19 @@ Read VOTING.md. Build /admin/voting (organiser only, checked on the server):
 Test: switch voting on, vote from a phone, change visibility to Hidden and confirm students no longer see counts within 5 s, close voting and confirm votes are refused. Run lint and build; report.
 ```
 **You check:** a full rehearsal with 10 friends voting for a test competition while the stage screen runs on a laptop connected to a projector or TV.
+
+### Prompt V.3: Offline voting for the auditorium (LATER: skip for the first launch; voting is switched off for auditorium competitions)
+```
+Read VOTING.md ("Offline voting") and supabase/schema_voting.sql (get_vote_codes, cast_vote_offline). Match design PNGs 32 (vote saved offline) and 33 (stage screen offline).
+1. Network detection: navigator.onLine is not reliable behind a signal blocker. Use a 4-second fetch of /api/health; if it fails, switch the vote page and stage screen to offline mode and show the "No network · offline voting is on" banner. Re-check every 15 s.
+2. Make the vote page work offline: the service worker precaches the vote page shell, fonts, mascots and /api/vote/<eventId> (contestants) whenever a signed-in user opens it online. Home shows "Going to the auditorium? Open the vote now so it works inside" when a poll with an offline-friendly setup (results after close + must be at venue) starts within 2 hours.
+3. Offline vote: the user picks a contestant and types the 6-character code; save { pollId, contestantId, code (upper case), cast_at = new Date().toISOString(), client_ref = crypto.randomUUID() } in IndexedDB (a small wrapper like idb-keyval; ask before adding). Show design 32. One saved vote per poll per device (replace only if the user explicitly changes it before it is sent).
+4. Sending: on 'online', on app open, on visibilitychange and every 30 s while the app is open, send each queued vote with rpc('cast_vote_offline', …) after refreshing the Supabase session. On ok or reason 'same' remove it and show "Your vote for X was counted"; on a definitive refusal (code, outside, late, already, college_only, unknown) remove it and show the message; on network errors keep it and retry with backoff. Use Background Sync where supported (Android Chrome); iPhones send when the app is opened again (say so in the UI).
+5. Stage screen offline mode (design 33): when opened online, call rpc('get_vote_codes', { p_poll, p_hours: 6 }), store the list in localStorage, compare Date.now() with serverTime and refuse to start if the laptop clock is off by more than 10 s ("Fix the laptop clock, then reload"). Offline, show the code for floor(Date.now()/30000) from the stored list with the countdown ring, the 3 steps, and "Results after the show". Show a warning when fewer than 30 minutes of codes remain.
+6. Organiser voting control: an "Offline votes" panel per poll with counts by source, a chart of offline votes per code window (offline_vote_windows), and "Remove votes from window …" for suspicious spikes (confirm first).
+Test with airplane mode: open the vote page online, switch to airplane mode, vote with the code shown on a laptop stage screen that was also switched offline, turn airplane mode off, and confirm the vote counts within 30 s (Android) or on reopening (iPhone). Also try: a wrong code, a code typed 5 minutes after it was shown, and sending the same queued vote twice. Run lint and build; report.
+```
+**You check:** a rehearsal inside the auditorium itself with 10 phones (Android and iPhone) and the real stage laptop.
 
 ## Track H: Stamp Hunt (bonus: only after everything else is tested)
 
