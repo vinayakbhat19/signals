@@ -49,7 +49,7 @@ supabase/             schema.sql, seed.sql (already written; do not rewrite)
 - `SUPABASE_SERVICE_ROLE_KEY` is used **only** in `lib/supabase/admin.ts`, only in server code (`import 'server-only'`), and only for "delete my account." Never prefix it with `NEXT_PUBLIC_`.
 - Validate every form with zod on the server. Escape nothing by hand: render text as text, never `dangerouslySetInnerHTML`.
 - Do not store or ask for phone numbers, Aadhaar, location or anything not in the PRD.
-- Never select `secret` or `print_code` from `stamp_points`; stamps are added only through `rpc('claim_stamp')`.
+- Never read the `stamp_points` table from the client (it holds hidden place names, clues and codes); the passport comes from `rpc('my_hunt')`; stamps are added only through `rpc('claim_stamp')`.
 - Students read participants only through `participants_public`; emails and phones are for hosts and organisers only.
 
 ## Time

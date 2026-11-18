@@ -103,3 +103,60 @@ export async function cancelHostInviteAction(inviteId: string) {
   revalidatePath('/admin/hosts');
   return { ok: true as const };
 }
+
+export async function inviteVolunteerAction(email: string) {
+  await requireOrganiser();
+  const parsed = z.string().trim().email('Enter a valid email address.').max(120).safeParse(email);
+  if (!parsed.success) {
+    return { ok: false as const, error: parsed.error.issues[0]?.message || 'Invalid email.' };
+  }
+
+  const supabase = await createClient();
+  const { data, error } = await (
+    supabase as unknown as {
+      rpc: (
+        fn: string,
+        args: { p_email: string }
+      ) => Promise<{
+        data: { ok?: boolean; status?: 'active' | 'invited'; message?: string } | null;
+        error: { code?: string; message?: string } | null;
+      }>;
+    }
+  ).rpc('invite_volunteer', { p_email: parsed.data.toLowerCase() });
+
+  if (error) {
+    return {
+      ok: false as const,
+      error: mapDbError(
+        error,
+        'Run supabase/UPGRADE_HUNT_AND_HOSTS.sql first to enable volunteer invites.'
+      ),
+    };
+  }
+  if (!data?.ok) {
+    return { ok: false as const, error: data?.message || 'Could not invite volunteer.' };
+  }
+
+  revalidatePath('/admin/hosts');
+  return { ok: true as const, status: data.status || 'invited' };
+}
+
+export async function cancelVolunteerInviteAction(email: string) {
+  await requireOrganiser();
+  const supabase = await createClient();
+  const { error } = await (
+    supabase as unknown as {
+      from: (t: string) => {
+        delete: () => {
+          eq: (k: string, v: string) => Promise<{ error: { message?: string } | null }>;
+        };
+      };
+    }
+  )
+    .from('staff_invites')
+    .delete()
+    .eq('email', email);
+  if (error) return { ok: false as const, error: error.message || 'Cancel failed' };
+  revalidatePath('/admin/hosts');
+  return { ok: true as const };
+}

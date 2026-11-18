@@ -25,15 +25,15 @@ This extends `SPORTS_AND_RELIABILITY.md` Part B (caching, snapshots, emergency m
 | **Blob snapshot store down** | Nothing visible | Snapshots skipped (logged); the database is still the source | Fix later; backup mode would have no snapshot, so watch the Safety panel |
 | **Push service slow / device unreachable** | No phone alert | In-app alert on Home + `/updates` is the source of truth; alerts retried from `push_queue` | Use **Resend alerts**; announce on stage/WhatsApp |
 | **Push permission blocked** | "Alerts are off" with how to turn on | Home alert + Updates page | — |
-| **Camera blocked / no camera / old browser** | Steps to allow it; "Enter a code"; "Take a photo of the QR" | Manual code entry | Volunteer reads the code aloud |
-| **QR won't scan (glare, damage)** | — | Enter a code; printed backup standee at stamp stations | Keep spare printouts |
-| **Volunteer phone (Stamp Station) dies** | Scan says "code expired" | Printed backup standee (5 points, only during the event) | Move to a spare phone; sign in as volunteer |
+| **Camera blocked / no camera / old browser** | Steps to allow it; "Take a photo of the QR" | Open the sticker link from the phone's own camera app | Volunteer helps |
+| **QR sticker damaged or missing** | Students can't scan that place | Volunteer reprints that one sticker (same link) | Check stickers each morning; keep spares |
+| **A hunt QR leaks online** | Others can scan without finding the place | Organiser rotates that code and reprints one sticker | Watch the winners list for fast finishers |
 | **Stage laptop/projector fails** | Voting QR missing | Open the stage screen on any volunteer phone | Spare laptop signed in as volunteer |
 | **Phone offline** | Last data + "Offline" badge; stamps/votes can't be sent | App shell cached | — |
 | **No mobile signal in the auditorium** | — | Voting is **off** for auditorium competitions (decision); schedule and line-up cached on phones that opened them before | Judges decide there |
-| **Power cut** | — | Stamp stations on power banks | Keep power banks charged |
+| **Power cut** | — | Nothing depends on a powered screen (static stickers) | — |
 | **Traffic spike / bot flood** | Slower pages at worst | Edge cache, rate limits, Vercel firewall; **Attack Challenge Mode** | Turn on Attack Challenge Mode; **pause writes** if needed |
-| **Someone abuses votes/stamps** | — | One vote/stamp per person, rate limits, college-email rule | Fraud review; remove votes; pause writes |
+| **Someone abuses votes/stamps** | — | One vote/stamp per person, rate limits, 45 s gap between stamps, fast-finisher check on the winners list | Fraud review; remove votes; pause writes |
 | **Wrong data published** | Wrong time/venue | Every change is logged and alerts students automatically | Fix it; the correction alerts students too; **Undo** within 10 s |
 | **Database full / quota hit** | Writes fail | Reads still served from cache | Pause writes; upgrade plan for the month |
 
@@ -43,17 +43,19 @@ Fallback chain for every limit: **Upstash Redis → database `rate_hit()` → in
 
 | Endpoint | Limit | Key | If all limiters fail |
 | --- | --- | --- | --- |
-| Sign-up | 5 per 10 min | IP | closed |
-| Login | 10 per 10 min | IP + email | open |
-| Password reset | 3 per hour | email (and IP) | closed |
+| Sign-up | 5 per 10 min | **email** (plus a generous IP flood guard of 600 per 10 min) | closed |
+| Login | 10 per 10 min | **email** (IP flood guard 600 per 10 min) | open |
+| Password reset | 3 per hour | email (IP flood guard 300 per hour) | closed |
 | Resend confirmation | 1 per 60 s | email | open |
-| Push subscribe | 10 per hour | IP | open |
+| Push subscribe | 10 per hour | user or device id | open |
 | Stamp claim | 10 per min (database: 6 per min) | user | open |
 | Vote / change vote | 10 per min (database: 3 changes, 10 s apart) | user | open |
 | Uploads | 20 per hour | user | open |
 | Participants import | 10 per hour | host | open |
 | Organiser/host writes | 60 per min | user | open |
-| Any `/api/*` | 120 per min | IP (Vercel Firewall rule) | n/a |
+| Any write `/api/*` | **3,000 per min per IP** flood guard only (Vercel Firewall). Never on reads | IP | n/a |
+
+**Shared IP rule:** on campus Wi-Fi and mobile carriers hundreds of students share one public IP, so a low per-IP limit would lock out the whole campus. Real limits are per account, email or device. IP limits are only high flood guards. Sign-in, sign-up and reset calls run **from the browser** so Supabase sees each student's own IP. See `PEAK_LOAD.md` section 3.
 
 A blocked request gets HTTP 429, a `Retry-After` header and a friendly message ("Too many tries. Try again in 40 seconds").
 

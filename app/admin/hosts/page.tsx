@@ -104,5 +104,42 @@ export default async function AdminHostsPage() {
     pendingInvites: invitesByEvent.get(ev.id) ?? [],
   }));
 
-  return <AdminHostsClient events={rows} hostsUntil={hostsUntil} />;
+  let volunteers: Array<{ id: string; full_name: string | null; email: string | null }> = [];
+  let pendingVolunteers: Array<{ email: string; created_at: string }> = [];
+
+  try {
+    const [volRes, staffInvRes] = await Promise.all([
+      admin
+        .from('profiles')
+        .select('id, full_name, email')
+        .eq('role', 'volunteer'),
+      (
+        admin as unknown as {
+          from: (t: string) => {
+            select: (c: string) => {
+              is: (k: string, v: null) => Promise<{
+                data: Array<{ email: string; created_at: string }> | null;
+              }>;
+            };
+          };
+        }
+      )
+        .from('staff_invites')
+        .select('email, created_at')
+        .is('accepted_at', null),
+    ]);
+    volunteers = volRes.data ?? [];
+    pendingVolunteers = staffInvRes.data ?? [];
+  } catch {
+    // Graceful if staff_invites not yet applied
+  }
+
+  return (
+    <AdminHostsClient
+      events={rows}
+      hostsUntil={hostsUntil}
+      volunteers={volunteers}
+      pendingVolunteers={pendingVolunteers}
+    />
+  );
 }

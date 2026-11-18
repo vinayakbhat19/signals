@@ -11,10 +11,11 @@ Students vote for their favourite performer or team in selected competitions (so
 | Contestants | Name, subtitle (college, department or team members), optional photo, order | — |
 | Opens / closes | A time, or "when switched on" and "when switched off" | Opens when switched on |
 | Show results | **Live** · **After voting closes** · **Hidden** (organisers only, e.g. when votes are part of the judges' score) | Live |
-| Who can vote | **College email only** or any signed-in Google account | College email only |
-| Must be at the venue | Off / on: voters type the 6-character code shown on the stage screen, which changes every 30 s | Off |
+| Who can vote | **Anyone signed in** (Google or email). No verification, no code, no QR | Anyone signed in |
 
-Recommendation: for big crowd events, turn **"Must be at the venue" on.** It stops hostel rooms voting from a forwarded link, and it makes people watch the performance.
+**No QR for voting.** The **Vote button is on the event page**. A student opens the event, taps **Vote**, picks a team or person and is done. If they are signed out the app asks them to sign in and then brings them straight back to the vote. (The database still has optional switches for "verified only" and "venue code"; they are off and the app does not show them.)
+
+**Voting is only for outdoor competitions** (the auditorium has no signal). Hosts and organisers switch it on for the competitions that need it.
 
 ## Rules for voters (show on the voting screen)
 - Sign in with Google to vote (browsing the app never needs sign-in).
@@ -27,17 +28,17 @@ Recommendation: for big crowd events, turn **"Must be at the venue" on.** It sto
 | Trick | Why it fails |
 | --- | --- |
 | Voting many times | One vote per account per competition (database key) |
-| Fake Gmail accounts | "College email only" (on by default) |
-| Forwarded link, voting from far away | "Must be at the venue": code changes every 30 s, shown only on the stage screen |
+| Fake accounts | One vote per account, rate limits, and the fraud review. Anyone with many email addresses could vote several times: that is the price of open voting, so use results for fun and the judges for prizes |
+| Forwarded link, voting from far away | Voting is open only during the window the organiser sets; open it when the performance ends and close it a few minutes later |
 | Rapid flip-flopping or scripts | At most 3 changes, 10 s apart; rate limits on the server |
 | Inserting votes directly | Students can't write votes; only `cast_vote()` can, after all checks |
 | Peeking at hidden results | `poll_results` returns counts only when visibility allows (organisers always) |
 
 ## Screens (see the design canvas)
-- **Event page:** a "Vote now" banner when voting is on for that competition.
-- **Vote** (`/vote/[eventId]`): contestant cards with a vote button and "Your vote" tag, live percentage bars (if results are live), total votes, closing countdown, the code box when required, and messages for every result (voted, changed, locked, college only, wrong code, closed).
+- **Event page:** a **Vote** button on the voting card: "Voting opens at 8:00 PM" before, "Vote now" while open. This is the only way in.
+- **Vote** (`/vote/[eventId]`): contestant cards with a vote button and "Your vote" tag, live percentage bars (if results are live), total votes, closing countdown, and messages for every result (voted, same, changed, locked, closed, sign in first).
 - **Live votes hub** (in Home and the More menu): all competitions currently voting.
-- **Stage screen** (`/screen/vote/[eventId]`, 16:9 for a projector): huge animated bars, leader highlighted, QR to vote, and the rotating venue code when that setting is on.
+- **Stage screen** (`/screen/vote/[eventId]`, 16:9 for a projector): huge animated bars, leader highlighted, and a QR that opens the **event page** (a plain link, nothing secret) with the line "Tap Vote".
 - **Organiser** (`/admin/voting`): every competition with an on/off switch, settings, contestants, live counts (always visible to organisers), "Close now", "Export results CSV", and fraud review (remove a vote).
 
 ## Data (written and tested: `supabase/schema_voting.sql`)
@@ -74,9 +75,9 @@ Our auditorium has a mobile-signal blocker and no Wi-Fi, so phones have **no net
 - the typed code must belong to the 30-second window of the time the vote was made (±1 minute for phone clocks), so the voter must have seen the stage screen at that time;
 - the vote time must be inside the voting window and not in the future;
 - one vote per person (offline votes are final), retries don't double count (`client_ref`);
-- college-email rule still applies;
+- the verified-only rule still applies when it is on;
 - **fraud review:** `offline_vote_windows` shows votes per code window. A real audience spreads across many windows; a spike on one window means a photo of the code was shared outside. Organisers can remove those votes.
 
-**Known limit:** someone who photographs the code and shares it can let a friend outside vote with that time, until 2 hours after closing. The college-email rule, one vote per person and the fraud review keep this small. Ask hosts to announce "the code is only valid in the hall".
+**Known limit:** someone who photographs the code and shares it can let a friend outside vote with that time, until 2 hours after closing. One vote per account, the stage code and the fraud review keep this small. Ask hosts to announce "the code is only valid in the hall".
 
 **Set for offline competitions:** Show results = **After close**, Must be at the venue = **on**.

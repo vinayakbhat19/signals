@@ -47,7 +47,7 @@ Alert wording examples:
 
 - Provider configured as in `SECURITY.md` section 1; the button sends `prompt=select_account` so students can pick the right account.
 - **In-app browsers block it** (Instagram, WhatsApp, Facebook, Snapchat, LinkedIn, Telegram: error `disallowed_useragent`). Detect them from the user agent and show "Open in Chrome or Safari", a Copy link button, and the email + password form.
-- Students from outside the college can sign in with Google, but only a **confirmed college email** gets the Verified badge and can vote in college-only competitions.
+- Anyone can sign in with Google or an email and vote; nothing is verified.
 
 ## Where permissions are offered in the flow
 - After email confirmation (screen 05): "Get alerts for delays and changes" link → screen 08.

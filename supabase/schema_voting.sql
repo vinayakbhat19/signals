@@ -7,7 +7,8 @@
 --       - whether results are shown live, only after closing, or hidden,
 --       - whether only verified college emails can vote,
 --       - whether voters must be at the venue (they type or scan a code shown
---         on the stage screen that changes every 30 seconds).
+--         on the stage screen that changes every 30 seconds). Fiesta'26 keeps these two OFF:
+--         anyone signed in votes from the Vote button on the event page.
 --   * One vote per person per competition. A voter may change their mind up to
 --     3 times before voting closes, then the vote is locked.
 --   * Votes are added only through cast_vote(), which runs every check.
@@ -42,7 +43,7 @@ create table public.polls (
   opens_at           timestamptz,                 -- null = opens as soon as enabled
   closes_at          timestamptz,                 -- null = stays open until disabled
   results_visibility text not null default 'live' check (results_visibility in ('live', 'after_close', 'hidden')),
-  college_only       boolean not null default true,
+  college_only       boolean not null default false,   -- 'verified students only' (ID checked); off by default
   require_code       boolean not null default false,
   secret             bytea not null default gen_random_bytes(32),   -- never readable by clients
   created_at         timestamptz not null default now(),
@@ -141,7 +142,7 @@ begin
     select * into prof from public.profiles where id = uid;
     if not coalesce(prof.college_verified, false) then
       return jsonb_build_object('ok', false, 'reason', 'college_only',
-                                'message', 'Only college email accounts can vote in this competition');
+                                'message', 'Only verified students can vote in this competition. Get your ID checked at the help desk');
     end if;
   end if;
   if p.require_code and (p_code is null or upper(p_code) not in (public.vote_code(p.id, w), public.vote_code(p.id, w - 1))) then
@@ -320,7 +321,7 @@ begin
     select * into prof from public.profiles where id = uid;
     if not coalesce(prof.college_verified, false) then
       return jsonb_build_object('ok', false, 'reason', 'college_only',
-                                'message', 'Only college email accounts can vote in this competition');
+                                'message', 'Only verified students can vote in this competition. Get your ID checked at the help desk');
     end if;
   end if;
   -- the code must belong to the time the vote was made (±1 minute for phone clocks)

@@ -33,7 +33,7 @@ Sample names and numbers in the designs are placeholders.
 | 02 | Cookie notice (sheet) | over 01/10 | Everyone, first visit | localStorage choice | Got it → closes · Privacy policy |
 | 03 | Create account | `/signup` | Signed out | `auth.signUp` (name, email, password) | Create account → 04 · Google → 10 · Log in → 07 |
 | 04 | Check your email | `/signup/check-email` | Just signed up | — | Open email app · Resend (60 s) · Change email → 03 |
-| 05 | You're verified | `/auth/callback?next=/verified` | After clicking the link | `profiles.college_verified` | Add to Home Screen → 06 · Go to the fest → 10 |
+| 05 | You're in | `/auth/callback?next=/verified` | After clicking the link | `profiles.college_verified` | Add to Home Screen → 06 · Go to the fest → 10 |
 | 06 | Add to Home Screen | sheet / `/install` | Browser visitors | `beforeinstallprompt`, display-mode | Add to Home Screen (Android) · iPhone steps · Maybe later |
 | 07 | Log in | `/login` | Signed out | `auth.signInWithPassword`, Google | Log in → previous page or 10 · Forgot password → `/reset` · Create account → 03 |
 | 10 | Home | `/` | Everyone | `/api/live` (now, next, **latest event changes + urgent notices**), open polls, my hunt summary | **Important updates alert (top) → 15** · Live card → 30 or 12 · Up next → 12 · Hunt card → 22 · Avatar → 14 · Add bar → 06 |
@@ -46,7 +46,7 @@ Sample names and numbers in the designs are placeholders.
 | 21 | Stamp collected | `/stamp/[pointId]?c=…` | Signed in | `rpc claim_stamp` | See my passport → 22 · What's on now → 10 |
 | 22 | Stamp Hunt | `/hunt` | Everyone (passport when signed in) | stamp points, my stamps, top 10 | Full leaderboard → 23 · Scan → 20 |
 | 23 | Leaderboard | `/hunt/leaderboard` | Everyone | `stamp_leaderboard` | Scan → 20 · Back → 22 |
-| 30 | Audience vote | `/vote/[eventId]` | Everyone views; signed in votes | `poll_results`, my vote | Vote · stage code box · Back |
+| 30 | Audience vote | `/vote/[eventId]` | Everyone views; signed in votes | `poll_results`, my vote | Vote · Back (the Vote button is on the event page) |
 | 31 | Stage screen | `/screen/vote/[eventId]` | Volunteer/organiser device, projector | `poll_results`, `rpc get_vote_code` | — (display only) |
 | 32 (later) | Vote saved offline | `/vote/[eventId]` (offline state) | Signed-in voters with no network | IndexedDB queue → `rpc cast_vote_offline` | Back to the fest → 10 |
 | 33 (later) | Stage screen, offline mode | `/screen/vote/[eventId]` (offline state) | Stage laptop with no network | codes from `rpc get_vote_codes` stored in advance | — (display only) |
@@ -56,7 +56,7 @@ Sample names and numbers in the designs are placeholders.
 | 43 | Voting control | `/admin/voting` | Organiser | polls, contestants, counts | On/off per competition · Settings · Stage screen → 31 · Close now · Fraud review · Export |
 | 44 | QR generator | `/admin/qr` | Organiser | events, venues, polls, stamp points | Print · PNG · Copy link · All events |
 | 45 | QR poster (A4) | `/admin/qr/print` | Organiser | — | Print |
-| 46 | Stamp Station | `/admin/station/[pointId]` | Volunteer/organiser | `rpc get_live_code`, stamps count | — (display only, keeps screen on) |
+| 46 | Hunt stickers | `/admin/hunt/qr` | Volunteer, host, organiser | `rpc list_stamp_qrs` | Print · Print all 10 · Back |
 | 08 | Alerts and camera | `/account/permissions` | Everyone | Notification and camera state, push subscription | Turn on alerts · Not now · Try scanning → 20 · Enter a code · Back → 14 |
 | 47 | Manage hosts | `/admin/hosts` | Organiser | `event_hosts`, `host_invites`, `rpc invite_host` | Invite · Remove · Cancel invite · Back → 40 |
 | 48 | Safety panel | `/admin/safety` | Organiser | health, `app_config`, `audit_log` | Pause writes · Banner · Mode (Automatic/Force) · Preview campus mode → 60 · Archive and purge · Emergency mode |
@@ -117,7 +117,7 @@ flowchart LR
 flowchart LR
   SS[31 Stage screen: QR + code] -->|scan| VO[30 Vote]
   VO -->|signed out| LI[07 Log in → back]
-  VO -->|enter stage code, tap Vote| OK[Vote counted · 3 changes left]
+  VO -->|pick team, tap Vote| OK[Vote counted · 3 changes left]
   OK -->|change mind ≤3 times| VO
   ORG[43 Voting control] -->|switch on, settings| VO
   ORG --> SS
@@ -130,7 +130,7 @@ flowchart LR
   LAP[Stage laptop online] -->|download codes for the show| SO[33 Stage screen offline]
   SAVE --> IN[Inside: no network]
   SO --> IN
-  IN -->|pick + type stage code| Q[32 Vote saved on phone]
+  IN -->|pick team| Q[32 Vote saved on phone]
   Q -->|walk out, signal back / reopen app| SYNC[rpc cast_vote_offline]
   SYNC -->|ok| C[Counted]
   SYNC -->|refused| R[Reason shown]
@@ -143,7 +143,7 @@ flowchart LR
   CR --> P[42 Participants]
   CR --> VC[43 Voting control]
   CR --> QG[44 QR generator] --> QP[45 Print]
-  CR --> STN[46 Stamp Station]
+  CR --> STN[46 Hunt stickers]
   P -->|upload CSV/Excel → check → import| P
   P -->|Show line-up| L[13 Line-up for students]
   P -->|Export| X[(CSV / Excel)]
@@ -179,9 +179,9 @@ flowchart LR
 | Role | How they get it | Can do |
 | --- | --- | --- |
 | Visitor | Nobody signs in | Everything public: home, events, line-up, results, leaderboard, live vote results (when visible), scanner |
-| Student | Signs up or logs in | + vote, Stamp Hunt, My account; **Verified** badge after confirming a college email |
+| Student | Signs up or logs in | + vote, Stamp Hunt, My account; no verification, no badge |
 | Host | Organiser invites them by email (`invite_host`); active once that email is confirmed; expires at `hosts_until` | + manage that event's participants (upload, check in, order, export, show/hide line-up) |
-| Volunteer | Organiser sets `role = volunteer` | + run Stamp Stations and stage screens |
+| Volunteer | Organiser invites their email | + print hunt QR stickers, see winners |
 | Organiser | Admin sets `role = organiser` | + everything in the control room |
 | Admin | Set in the Supabase dashboard | + make people organisers |
 

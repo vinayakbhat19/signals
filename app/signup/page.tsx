@@ -3,14 +3,11 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { ArrowLeft, CheckCircle2, Eye, EyeOff, Loader2 } from 'lucide-react';
+import { ArrowLeft, Eye, EyeOff, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { AlienMascot } from '@/components/mascots';
 import { InAppBrowserSheet } from '@/components/in-app-browser-sheet';
 import { createClient } from '@/lib/supabase/client';
-
-const COLLEGE_DOMAIN =
-  process.env.NEXT_PUBLIC_COLLEGE_DOMAIN || 'sdmcet.ac.in';
 
 export default function SignUpPage() {
   const router = useRouter();
@@ -23,7 +20,6 @@ export default function SignUpPage() {
   const [loadingGoogle, setLoadingGoogle] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
-  const isCollegeEmail = email.trim().toLowerCase().endsWith(`@${COLLEGE_DOMAIN}`);
   const hasMinLen = password.length >= 8;
   const hasDigit = /\d/.test(password);
   const strength =
@@ -182,16 +178,9 @@ export default function SignUpPage() {
               autoComplete="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              placeholder={`you@${COLLEGE_DOMAIN}`}
+              placeholder="you@gmail.com"
               className="h-12 w-full rounded-[14px] border-[1.5px] border-[#3B2758] bg-[#1F1230] px-4 text-sm text-[#F4F2FA] placeholder:text-[#8A8599] focus:border-[#FFD60A] outline-none"
             />
-            {isCollegeEmail && (
-              <p className="flex items-center gap-1.5 text-xs font-bold text-[#FFD60A]">
-                <CheckCircle2 className="size-3.5" />
-                You&apos;ll get the Verified SDMCET Student badge after
-                confirming!
-              </p>
-            )}
           </div>
 
           <div className="space-y-1.5">

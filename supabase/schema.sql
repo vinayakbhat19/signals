@@ -1,6 +1,9 @@
 -- Fest Live: database schema for Supabase (Postgres).
 -- Run once in Supabase: SQL Editor -> New query -> paste -> Run.
--- Before running, replace {{COLLEGE_DOMAIN}} below (e.g. coeptech.ac.in).
+-- No college email domain is needed. 'college_domain' below is OPTIONAL: leave it empty unless
+-- the college gives you an email domain. In the Fiesta'26 setup nobody is verified: anyone
+-- signed in can vote and play. The college_verified/verify_* columns are unused leftovers
+-- (see ADDRESS_AND_PEOPLE.md).
 --
 -- Security model
 --   * Row Level Security (RLS) is on for every table.
@@ -18,7 +21,7 @@ create table public.app_settings (
   key   text primary key,
   value text not null
 );
-insert into public.app_settings (key, value) values ('college_domain', '{{COLLEGE_DOMAIN}}');
+insert into public.app_settings (key, value) values ('college_domain', '');
 
 -- ---------------------------------------------------------------- profiles
 create table public.profiles (
@@ -27,7 +30,10 @@ create table public.profiles (
   avatar_url       text,
   email            text,
   role             text not null default 'student' check (role in ('student', 'organiser', 'admin')),
-  college_verified boolean not null default false,
+  college_verified boolean not null default false,       -- 'verified student': ID checked, on the roster, or college email
+  verified_by      uuid references public.profiles (id) on delete set null,
+  verified_at      timestamptz,
+  verify_method    text check (verify_method in ('email_domain', 'roster', 'id_check')),
   created_at       timestamptz not null default now()
 );
 
@@ -50,7 +56,7 @@ declare
   domain text;
 begin
   select value into domain from public.app_settings where key = 'college_domain';
-  insert into public.profiles (id, full_name, avatar_url, email, college_verified)
+  insert into public.profiles (id, full_name, avatar_url, email, college_verified, verify_method, verified_at)
   values (
     new.id,
     coalesce(new.raw_user_meta_data ->> 'full_name', new.raw_user_meta_data ->> 'name'),
@@ -58,8 +64,12 @@ begin
     new.email,
     -- Verified only once the email is confirmed (Google sign-ins arrive confirmed;
     -- email/password sign-ups are confirmed by the link Supabase emails them).
-    new.email_confirmed_at is not null
-      and lower(split_part(coalesce(new.email, ''), '@', 2)) = lower(coalesce(domain, ''))
+    coalesce(domain, '') <> '' and new.email_confirmed_at is not null
+      and lower(split_part(coalesce(new.email, ''), '@', 2)) = lower(domain),
+    case when coalesce(domain, '') <> '' and new.email_confirmed_at is not null
+          and lower(split_part(coalesce(new.email, ''), '@', 2)) = lower(domain) then 'email_domain' end,
+    case when coalesce(domain, '') <> '' and new.email_confirmed_at is not null
+          and lower(split_part(coalesce(new.email, ''), '@', 2)) = lower(domain) then now() end
   );
   return new;
 end;
@@ -78,9 +88,12 @@ declare
   domain text;
 begin
   select value into domain from public.app_settings where key = 'college_domain';
-  update public.profiles
-     set college_verified = lower(split_part(coalesce(new.email, ''), '@', 2)) = lower(coalesce(domain, ''))
-   where id = new.id;
+  if coalesce(domain, '') <> '' and lower(split_part(coalesce(new.email, ''), '@', 2)) = lower(domain) then
+    update public.profiles
+       set college_verified = true, verify_method = coalesce(verify_method, 'email_domain'),
+           verified_at = coalesce(verified_at, now())
+     where id = new.id;
+  end if;
   return new;
 end;
 $$;

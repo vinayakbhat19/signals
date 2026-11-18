@@ -77,7 +77,7 @@ Phone ──► Vercel CDN (cached copy, 5–30 s) ──► Next.js function �
   - organiser edits: 30 per minute per user
   - Signals: 5 per hour per user; "I'm interested": 30 per hour per user
   - emergency PIN attempts: 5 per 15 minutes per IP
-- **Vercel Firewall:** a rate-limit rule on `/api/*` (for example 120 requests per minute per IP) and **Attack Challenge Mode** ready to switch on if someone floods the site.
+- **Vercel Firewall:** a rate-limit rule on `/api/*` (writes only, a high flood guard such as 3,000 requests per minute per IP; never a low per-IP limit, because many students share one campus IP) and **Attack Challenge Mode** ready to switch on if someone floods the site.
 - **Double-tap and retry safety:** `client_ref` on match events; the "+15 min" and "Mark done" buttons are disabled until the save finishes.
 
 ### B3. If the database is down: Emergency mode

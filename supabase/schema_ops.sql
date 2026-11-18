@@ -418,3 +418,235 @@ create policy config_update on public.app_config for update to authenticated
   using (public.is_organiser()) with check (public.is_organiser());
 
 grant execute on function public.current_mode(), public.app_status() to anon, authenticated;
+
+-- ================================================================ volunteers by email, hunt QR tools, winners
+-- Anyone can sign in with an email or Google and vote; nobody is "verified". Volunteers (who make the
+-- hunt QR stickers and read the winners list) are added by an organiser by EMAIL, like hosts.
+create table public.staff_invites (
+  email       text primary key check (email = lower(email) and char_length(email) <= 120),
+  role        text not null default 'volunteer' check (role in ('volunteer')),
+  invited_by  uuid references public.profiles (id) on delete set null default auth.uid(),
+  accepted_by uuid references public.profiles (id) on delete set null,
+  accepted_at timestamptz,
+  created_at  timestamptz not null default now()
+);
+revoke all on public.staff_invites from anon, authenticated;
+grant select, delete on public.staff_invites to authenticated;
+alter table public.staff_invites enable row level security;
+create policy staff_invites_read on public.staff_invites for select to authenticated using (public.is_organiser());
+create policy staff_invites_delete on public.staff_invites for delete to authenticated using (public.is_organiser());
+
+create or replace function public.invite_volunteer(p_email text)
+returns jsonb
+language plpgsql volatile security definer set search_path = public
+as $$
+declare e text := lower(trim(p_email)); uid uuid;
+begin
+  if not public.is_organiser() then raise exception 'Not allowed'; end if;
+  if e !~ '^[^@\s]+@[^@\s]+\.[^@\s]+$' or char_length(e) > 120 then
+    return jsonb_build_object('ok', false, 'reason', 'invalid_email', 'message', 'That email address does not look right');
+  end if;
+  select u.id into uid from auth.users u where lower(u.email) = e and u.email_confirmed_at is not null limit 1;
+  if uid is not null and exists (select 1 from public.profiles where id = uid) then
+    update public.profiles set role = 'volunteer' where id = uid and role = 'student';
+    insert into public.staff_invites (email, accepted_by, accepted_at) values (e, uid, now())
+      on conflict (email) do update set accepted_by = uid, accepted_at = now();
+    return jsonb_build_object('ok', true, 'status', 'active');
+  end if;
+  insert into public.staff_invites (email) values (e) on conflict (email) do nothing;
+  return jsonb_build_object('ok', true, 'status', 'invited');
+end;
+$$;
+
+-- Only a CONFIRMED email turns an invite into a role, so nobody becomes staff by typing someone else's address.
+create or replace function public.accept_staff_invites()
+returns trigger
+language plpgsql security definer set search_path = public
+as $$
+begin
+  if exists (select 1 from public.staff_invites where email = lower(new.email) and accepted_at is null) then
+    update public.profiles set role = 'volunteer' where id = new.id and role = 'student';
+    update public.staff_invites set accepted_by = new.id, accepted_at = now()
+     where email = lower(new.email) and accepted_at is null;
+  end if;
+  return new;
+end;
+$$;
+create trigger z_accept_staff_invites after insert or update of email_confirmed_at on auth.users
+  for each row when (new.email_confirmed_at is not null) execute function public.accept_staff_invites();
+
+-- Who may make hunt QR stickers: volunteers, organisers, and hosts (of any event, while host access lasts).
+create or replace function public.can_make_qr()
+returns boolean
+language sql stable security definer set search_path = public
+as $$
+  select public.is_volunteer()
+      or (exists (select 1 from public.event_hosts where user_id = auth.uid())
+          and now() <= (select hosts_until from public.app_config where id = 1));
+$$;
+grant execute on function public.can_make_qr() to authenticated;
+
+-- The sticker details for one hunt place: the link to put in the QR. One-time: it never changes
+-- unless an organiser rotates it.
+create or replace function public.get_stamp_qr(p_point uuid)
+returns jsonb
+language plpgsql stable security definer set search_path = public
+as $$
+declare sp public.stamp_points;
+begin
+  if not public.can_make_qr() then raise exception 'Not allowed'; end if;
+  select * into sp from public.stamp_points where id = p_point;
+  if sp.id is null then return jsonb_build_object('ok', false, 'reason', 'unknown'); end if;
+  return jsonb_build_object('ok', true, 'path', '/s/' || sp.id::text || '.' || sp.code, 'name', sp.name,
+                            'sort', sp.sort, 'mascot', sp.mascot);
+end;
+$$;
+
+-- All places (name, clue, hint, path) for the generator page and the organiser's hunt editor.
+create or replace function public.list_stamp_qrs()
+returns table (point_id uuid, sort int, name text, clue text, hint text, path text, active boolean)
+language plpgsql stable security definer set search_path = public
+as $$
+begin
+  if not public.can_make_qr() then raise exception 'Not allowed'; end if;
+  return query select p.id, p.sort, p.name, p.clue, p.hint, '/s/' || p.id::text || '.' || p.code, p.active
+                 from public.stamp_points p order by p.sort, p.created_at;
+end;
+$$;
+
+-- If a code leaks (someone posts it online), rotate it and reprint that one sticker.
+create or replace function public.rotate_stamp_code(p_point uuid)
+returns jsonb
+language plpgsql volatile security definer set search_path = public, extensions
+as $$
+begin
+  if not public.is_organiser() then raise exception 'Not allowed'; end if;
+  update public.stamp_points set code = encode(gen_random_bytes(8), 'hex') where id = p_point;
+  if not found then return jsonb_build_object('ok', false, 'reason', 'unknown'); end if;
+  perform public._audit('rotate_stamp_code', p_point::text, '{}'::jsonb);
+  return jsonb_build_object('ok', true);
+end;
+$$;
+
+-- Winners list (volunteers and organisers): top players with contact details to hand over prizes,
+-- and how long each one took (first to last stamp) so impossible speed is easy to spot.
+create or replace function public.hunt_winners(p_limit int default 20)
+returns table (rank int, user_id uuid, full_name text, email text, stamps int, score int,
+               minutes_taken int, hidden boolean)
+language plpgsql stable security definer set search_path = public
+as $$
+begin
+  if not public.is_volunteer() then raise exception 'Not allowed'; end if;
+  perform public._audit('winners_view', 'stamp_leaderboard', jsonb_build_object('limit', p_limit));
+  return query
+  with ac as (select count(*)::int as n from public.stamp_points where active),
+  per as (
+    select s.user_id, count(*)::int as stamps, sum(s.points)::int as pts,
+           min(s.scanned_at) as first_scan, max(s.scanned_at) as last_scan
+      from public.stamps s join public.stamp_points sp on sp.id = s.point_id and sp.active group by s.user_id
+  ), scored as (
+    select per.*, per.pts + case when per.stamps >= ac.n and ac.n > 0 then h.complete_bonus else 0 end as score
+      from per cross join ac cross join public.stamp_hunt h
+  )
+  select (row_number() over (order by sc.score desc, sc.last_scan))::int, sc.user_id, pr.full_name, pr.email,
+         sc.stamps, sc.score, (extract(epoch from (sc.last_scan - sc.first_scan)) / 60)::int, pr.leaderboard_hidden
+    from scored sc join public.profiles pr on pr.id = sc.user_id
+   order by 1 limit least(greatest(p_limit, 1), 100);
+end;
+$$;
+
+revoke execute on function public.invite_volunteer(text), public.get_stamp_qr(uuid), public.list_stamp_qrs(),
+  public.rotate_stamp_code(uuid), public.hunt_winners(int), public.can_make_qr() from public, anon;
+grant execute on function public.invite_volunteer(text), public.get_stamp_qr(uuid), public.list_stamp_qrs(),
+  public.rotate_stamp_code(uuid), public.hunt_winners(int), public.can_make_qr() to authenticated;
+
+-- ================================================================ hosts update their own event
+-- Hosts (not only organisers) change the time, venue and status of THEIR events. Every change goes
+-- through this function, so title, category, publishing and other events stay out of reach, and
+-- the automatic change alerts (event_changes + push) fire as for any other change.
+alter table public.events add column if not exists registration_opens_at  timestamptz;
+alter table public.events add column if not exists registration_closes_at timestamptz;
+alter table public.events add constraint events_description_len check (description is null or char_length(description) <= 2000);
+alter table public.events add constraint events_registration_window check
+  (registration_opens_at is null or registration_closes_at is null or registration_closes_at > registration_opens_at);
+
+create or replace function public.host_update_event(
+  p_event uuid,
+  p_starts_at timestamptz default null, p_ends_at timestamptz default null,
+  p_venue_id uuid default null, p_status text default null,
+  p_description text default null, p_registration_url text default null,
+  p_registration_opens_at timestamptz default null, p_registration_closes_at timestamptz default null,
+  p_contact_info text default null, p_cover_url text default null, p_host_coordinator text default null)
+returns jsonb
+language plpgsql volatile security definer set search_path = public
+as $$
+declare
+  ev public.events; cfg public.app_config;
+  ns timestamptz; ne timestamptz; changed text[] := '{}';
+begin
+  if not public.is_event_host(p_event) then raise exception 'Not allowed'; end if;
+  select * into cfg from public.app_config where id = 1;
+  select * into ev from public.events where id = p_event;
+  if ev.id is null then return jsonb_build_object('ok', false, 'reason', 'unknown_event', 'message', 'That event does not exist'); end if;
+  if (select count(*) from public.audit_log where action = 'host_event_update' and target = p_event::text
+        and at > now() - interval '1 hour') >= 20 then
+    return jsonb_build_object('ok', false, 'reason', 'too_many', 'message', 'Too many changes in the last hour. Ask an organiser');
+  end if;
+  ns := coalesce(p_starts_at, ev.starts_at); ne := coalesce(p_ends_at, ev.ends_at);
+  if ne <= ns or ne - ns > interval '48 hours' then
+    return jsonb_build_object('ok', false, 'reason', 'bad_times', 'message', 'The end must be after the start (and within 48 hours)');
+  end if;
+  if ns < cfg.fest_starts_at - interval '3 days' or ns > cfg.campus_from then
+    return jsonb_build_object('ok', false, 'reason', 'outside_fest', 'message', 'That time is outside the fest dates');
+  end if;
+  if p_status is not null and p_status not in ('scheduled', 'delayed', 'cancelled', 'done') then
+    return jsonb_build_object('ok', false, 'reason', 'bad_status', 'message', 'Unknown status');
+  end if;
+  if p_venue_id is not null and not exists (select 1 from public.venues where id = p_venue_id) then
+    return jsonb_build_object('ok', false, 'reason', 'unknown_venue', 'message', 'Pick a venue from the list');
+  end if;
+  if p_registration_url is not null and p_registration_url <> ''
+     and (p_registration_url !~ '^https://[^\s]+$' or char_length(p_registration_url) > 300) then
+    return jsonb_build_object('ok', false, 'reason', 'bad_url', 'message', 'The registration link must start with https://');
+  end if;
+  if p_cover_url is not null and p_cover_url <> '' and (p_cover_url !~ '^https://[^\s]+$' or char_length(p_cover_url) > 500) then
+    return jsonb_build_object('ok', false, 'reason', 'bad_url', 'message', 'The cover link must start with https://');
+  end if;
+  if p_description is not null and char_length(p_description) > 2000 then
+    return jsonb_build_object('ok', false, 'reason', 'too_long', 'message', 'Description is too long (2,000 characters)');
+  end if;
+  if p_contact_info is not null and char_length(p_contact_info) > 200 then
+    return jsonb_build_object('ok', false, 'reason', 'too_long', 'message', 'Contact info is too long');
+  end if;
+  if coalesce(p_registration_opens_at, ev.registration_opens_at) is not null
+     and coalesce(p_registration_closes_at, ev.registration_closes_at) is not null
+     and coalesce(p_registration_closes_at, ev.registration_closes_at) <= coalesce(p_registration_opens_at, ev.registration_opens_at) then
+    return jsonb_build_object('ok', false, 'reason', 'bad_window', 'message', 'Registration must close after it opens');
+  end if;
+
+  if p_starts_at is not null and p_starts_at is distinct from ev.starts_at then changed := array_append(changed, 'starts_at'); end if;
+  if p_ends_at is not null and p_ends_at is distinct from ev.ends_at then changed := array_append(changed, 'ends_at'); end if;
+  if p_venue_id is not null and p_venue_id is distinct from ev.venue_id then changed := array_append(changed, 'venue'); end if;
+  if p_status is not null and p_status is distinct from ev.status then changed := array_append(changed, 'status'); end if;
+  if p_description is not null then changed := array_append(changed, 'description'); end if;
+  if p_registration_url is not null then changed := array_append(changed, 'registration_url'); end if;
+  if p_registration_opens_at is not null or p_registration_closes_at is not null then changed := array_append(changed, 'registration_window'); end if;
+
+  update public.events set
+    starts_at = ns, ends_at = ne,
+    venue_id = coalesce(p_venue_id, venue_id),
+    status = coalesce(p_status, status),
+    description = coalesce(p_description, description),
+    registration_url = case when p_registration_url is null then registration_url else nullif(p_registration_url, '') end,
+    registration_opens_at = coalesce(p_registration_opens_at, registration_opens_at),
+    registration_closes_at = coalesce(p_registration_closes_at, registration_closes_at),
+    contact_info = coalesce(p_contact_info, contact_info),
+    cover_url = case when p_cover_url is null then cover_url else nullif(p_cover_url, '') end,
+    host_coordinator = coalesce(p_host_coordinator, host_coordinator)
+  where id = p_event;
+  perform public._audit('host_event_update', p_event::text, jsonb_build_object('changed', changed));
+  return jsonb_build_object('ok', true, 'changed', to_jsonb(changed));
+end;
+$$;
+revoke execute on function public.host_update_event(uuid, timestamptz, timestamptz, uuid, text, text, text, timestamptz, timestamptz, text, text, text) from public, anon;
+grant execute on function public.host_update_event(uuid, timestamptz, timestamptz, uuid, text, text, text, timestamptz, timestamptz, text, text, text) to authenticated;

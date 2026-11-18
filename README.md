@@ -23,7 +23,7 @@ Everything needed to build **Fest Live** (the live fest guide plus the Signals "
 | `VOTING.md` | Audience voting for selected competitions: organiser settings, voter rules, anti-cheat, screens | Before Track V |
 | `supabase/schema_voting.sql` | Voting tables, cast_vote checks, private votes, results visibility, volunteer role (tested on Postgres 16) | Run after `schema.sql` |
 | `STAMP_HUNT.md` | The bonus game: rules, anti-cheat, screens, volunteers | Only after everything else is tested |
-| `supabase/schema_stamps.sql` | Stamp Hunt tables, rotating codes, claim checks, leaderboard (tested on Postgres 16) | Run after `schema.sql`, only if you build the hunt |
+| `supabase/schema_stamps.sql` | Treasure hunt: hidden places with clues, static QR codes, claim checks, 45 s gap, leaderboard (tested on Postgres 16) | Run after `schema.sql`, only if you build the hunt |
 | `supabase/schema_participants.sql` | Event hosts, participants (private emails/phones), public line-up view (tested on Postgres 16) | Run after `storage.sql` |
 | `templates/participants_template.csv` | Columns for hosts' registration sheets (CSV or Excel) | Send to event hosts |
 | `supabase/schema_changes.sql` | Automatic change alerts: a trigger logs every time, venue or status change with a ready-made message (tested on Postgres 16) | Run right after `schema.sql` |
@@ -35,14 +35,23 @@ Everything needed to build **Fest Live** (the live fest guide plus the Signals "
 | `templates/schedule_template.csv` | Columns for the committee's schedule sheet | Send to the committee today |
 
 ## Order
-1. Fill in the placeholders: `{{FEST_NAME}}`, `{{COLLEGE_NAME}}`, `{{COLLEGE_DOMAIN}}`, `{{BRAND_COLOR}}`.
+1. Fill in the placeholders: `{{FEST_NAME}}`, `{{COLLEGE_NAME}}`, `{{BRAND_COLOR}}` (there is no college domain).
 2. `LAUNCH_CHECKLIST.md` → Phase 0 (committee, GitHub, Supabase, Google sign-in).
 3. Read **PRD section 0**: the first launch is the **fest only** (schedule, announcements, results, audience voting; Stamp Hunt as a bonus). Football, Signals and stars come later.
 4. `PROMPTS.md` → Phase 1 → Track R → Phases 2, 3 → **Track A (A.1–A.4)** → Track V → Prompt 4.3 → Phases 5, 6 → Track H (H.0–H.2). Attach the matching `design/png` screens to every prompt. Check each step on your phone before the next.
 
+## New in this version: 2,000 people, free address, simple hunt and voting, host timing
+| File | What it is |
+| --- | --- |
+| `PEAK_LOAD.md` | When the load comes (registration, voting, competitions), what breaks first, the rules, measured results, fest-week scaling checklist |
+| `ADDRESS_AND_PEOPLE.md` | Free vercel.app address, sign-in without a domain, who can do what (hosts and volunteers by email) |
+| `loadtest/` | k6 scripts for 2,000 readers, sign-ins, 1,200 votes in a minute, registration rush (run on staging only) |
+| `supabase/tests/` | `run_tests.sh` runs the SQL tests for the treasure hunt, volunteers by email, who can make QR stickers, winners, open voting and host timing edits on a throw-away Postgres 16 |
+Hosts now update their own event time, venue, status and registration window (`host_update_event`, screen 50); students see it on Home at once. Measured on the database alone: 2,000 distinct votes all counted once at about 5,100 per second; 2,000 stamps at about 4,400 per second; reads 1-4 ms. This does not prove the whole stack: run `loadtest/` on staging.
+
 ## What was tested in the schema
 On a local Postgres 16 with stand-ins for Supabase's auth:
-- profiles are created on sign-in, with the verified-student flag from the email domain;
+- profiles are created on sign-in (the optional email-domain flag is unused);
 - visitors can read but not write fest data; only organisers can write it;
 - users can't change their own role;
 - Signal author names come from the profile, not the client;
@@ -64,9 +73,8 @@ On a local Postgres 16, with the same stand-ins:
 
 ## What was tested in the Stamp Hunt schema
 On a local Postgres 16 that copies Supabase's default "grant everything" permissions:
-- students can't read the secret or printed codes, can't get a live code, and can't insert stamps directly;
-- a live code during the bonus window gives 15 points; the same stamp twice, a wrong code and a stamp for a competition that isn't on are refused;
-- the printed backup code gives 5 points;
+- students can't read the hunt table (names, clues, codes) and can't insert stamps directly; clues come only through `my_hunt()` and place names appear only after a stamp;
+- a stamp is worth 10; the same place twice, a wrong code, a second scan within 45 s and a closed hunt are refused; rotating a code kills the old sticker;
 - the leaderboard shows "Asha K." style names, adds the complete-collection bonus (25 → 45), and hides people who opted out;
 - nothing can be claimed after the hunt closes.
 
@@ -75,12 +83,12 @@ On a local Postgres 16 that copies Supabase's default permissions, installed in 
 - students can't read the secret, insert votes directly, or get the venue code;
 - one vote per person; same vote again is fine; changing too fast is refused; 3 changes, then locked;
 - a contestant from another competition, a switched-off competition and a closed competition are refused;
-- Gmail accounts are refused when "college email only" is on; the venue code is required when that setting is on (and works in lower case);
+- any signed-in account can vote with no code (the optional verified-only and venue-code switches stay off and are not shown in the app);
 - live results show counts and percentages; "after close" results stay hidden until closing (organisers always see them); nobody sees other people's votes;
-- volunteers can run stage screens and Stamp Stations; students can't.
+- volunteers and hosts can print hunt stickers; volunteers see the winners list; students can't.
 
 ## What was tested for accounts and covers
-- The Verified badge is granted only after the email is confirmed: a Google sign-in from the college domain is verified at once, an email/password sign-up only after clicking the link, a Gmail account never.
+- Volunteers and hosts get their role only when their invited email is confirmed.
 - Events have `cover_url`, `host_name` and `host_coordinator`, readable by everyone.
 - `storage.sql` was not tested locally (it needs Supabase's storage schema).
 

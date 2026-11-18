@@ -27,13 +27,15 @@ Legend: 🤖 the agent can check it · 📱 needs a person with a phone · 👥 
 - [ ] 🤖 `writes_paused = true` → votes and stamps show the paused message; browsing works; banner appears within 20 s.
 - [ ] 🤖 Emergency mode works with the database off (post an announcement; phone shows it).
 - [ ] 📱 Phone in airplane mode: installed app opens, shows last data and "Offline".
-- [ ] 📱 Block the camera permission: scanner shows the steps, "Take a photo" works, "Enter a code" works.
-- [ ] 📱 Stamp Station phone dies: printed standee works during the event and not after.
+- [ ] 📱 Block the camera permission: scanner shows the steps and "Take a photo" works.
+- [ ] 📱 A hunt sticker is torn: reprint it from `/admin/hunt/qr`; the new sticker works and the link is the same. Rotate a code: the old sticker is refused.
 - [ ] 👥 Instant Rollback in Vercel rehearsed once.
 
 ## D. Load
-- [ ] 🤖 k6 scenarios in `RESILIENCE.md` section 6 all pass; Supabase API stays under about 1 request per second for reads.
-- [ ] 🤖 500 votes in 60 s all counted once; no 5xx.
+- [ ] 🤖 All k6 scenarios in `loadtest/` pass for **2,000 people at once** (readers, signin, vote, registration) on staging: see `PEAK_LOAD.md` section 7. No 429 for legitimate users (no low per-IP limits).
+- [ ] 🤖 `supabase/tests/run_tests.sh` passes (hunt, volunteers by email, who can make QR, winners, open voting, host timing edits, limits, flood cap).
+- [ ] 📱 A host changes a start time from screen 50: Home banner and push alert appear within 20 s.
+- [ ] 🤖 1,200 votes in 60 s all counted once; no 5xx.
 
 ## E. Alerts and camera
 - [ ] 📱 Android Chrome (browser and installed): turn on alerts, organiser delays an event, alert arrives within 10 s, tapping opens that event.
@@ -60,8 +62,9 @@ Legend: 🤖 the agent can check it · 📱 needs a person with a phone · 👥 
 
 ## H. Fest data and people
 - [ ] 👥 Date, time and venue for all 21 competitions (see `FORMS_CHECK.md`); every Google Form fixed.
-- [ ] 👥 Competitions chosen for audience voting (outdoor only) and for Stamp Stations; volunteers and hosts named and invited.
-- [ ] 👥 College email domain set in `schema.sql` and `NEXT_PUBLIC_COLLEGE_DOMAIN`.
+- [ ] 👥 Competitions chosen for audience voting (outdoor only) and 10 hunt places with clues; hosts' and volunteers' emails given and invited.
+- [ ] 👥 Free vercel.app address chosen and final; Supabase Site URL and redirects updated; hunt stickers and posters printed from that address; custom SMTP sender working (`ADDRESS_AND_PEOPLE.md`).
+- [ ] 👥 Fest-week scaling checklist in `PEAK_LOAD.md` section 6 done (Supabase compute and Auth limits, Vercel Pro, email plan).
 - [ ] 👥 Committee knows the three emergency actions: delay an event, post an urgent notice, pause writes.
 - [ ] 👥 Owner's phone number is on the runbook; uptime alerts go to it.
 

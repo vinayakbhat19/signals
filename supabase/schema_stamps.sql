@@ -1,16 +1,16 @@
--- Fest Live: Stamp Hunt add-on. Run AFTER schema.sql (and schema_voting.sql if you use it; the order between them doesn't matter).
+-- Fest Live: Stamp Hunt (treasure hunt). Run AFTER schema.sql (and schema_voting.sql if you use it; the order between them doesn't matter).
 --
--- How it works
---   * Each competition venue has a stamp point. A volunteer's phone shows a QR
---     whose code changes every 30 seconds (HMAC of point id + time window with a
---     secret only the database knows). A photo shared on WhatsApp expires fast.
---   * Students sign in (only for the hunt) and claim a stamp through
---     claim_stamp(); they can never insert stamps directly.
---   * Checks inside the database: hunt open, point active, its competition
---     running (10 min before to 15 min after), valid code, one stamp per point,
---     max 6 claims a minute.
---   * Backup printed code (in case the volunteer phone dies): works only while
---     that competition runs, and is worth fewer points.
+-- How it works (simple version)
+--   * About 10 hidden places on campus. Each place has a printed QR sticker, made ONCE by a
+--     volunteer or host and stuck up. The QR never changes (nobody has to regenerate anything).
+--   * Students do NOT see the place name. They see a clue (and an optional extra hint). They work
+--     out the place, go there and scan the QR. The place name is revealed when they get the stamp.
+--   * The QR opens the app at /s/<point id>.<code>; the code is long and random (unguessable).
+--     The QR is open to everyone; the hunt is the fun part, not secrecy.
+--   * Checks inside the database: hunt open, point active, valid code, one stamp per place,
+--     a short gap between scans (default 45 s, so a bundle of shared photos can't be scanned at once),
+--     max 6 claims a minute. Organisers can rotate a leaked code (the old sticker stops working)
+--     and delete suspicious stamps. The winners list shows how long each player took.
 --   * Leaderboard shows first name + initial only; anyone can hide themselves.
 
 create extension if not exists pgcrypto;
@@ -34,29 +34,27 @@ grant execute on function public.is_volunteer() to anon, authenticated;
 -- ---------------------------------------------------------------- settings (one row)
 create table public.stamp_hunt (
   id              int primary key default 1 check (id = 1),
-  name            text not null default 'Fest Stamp Hunt',
+  name            text not null default 'Fiesta Treasure Hunt',
   opens_at        timestamptz not null,
   closes_at       timestamptz not null,
-  stamp_value     int not null default 10,   -- live (rotating) QR
-  bonus_value     int not null default 5,    -- extra during a point's bonus window (finals, results)
-  printed_value   int not null default 5,    -- backup printed QR
-  complete_bonus  int not null default 20,   -- all active stamps collected
+  stamp_value     int not null default 10,    -- points per place
+  complete_bonus  int not null default 20,    -- all active places found
+  min_gap_seconds int not null default 45,    -- minimum time between two scans by the same person
+  sequential      boolean not null default false,  -- true = show only the next clue after each stamp
   check (closes_at > opens_at)
 );
 
--- ---------------------------------------------------------------- stamp points
+-- ---------------------------------------------------------------- stamp points (the hidden places)
 create table public.stamp_points (
   id          uuid primary key default gen_random_uuid(),
-  name        text not null check (char_length(name) between 1 and 60),
-  event_id    uuid references public.events (id) on delete set null,
-  venue_id    uuid references public.venues (id) on delete set null,
+  name        text not null check (char_length(name) between 1 and 60),   -- the real place; hidden until found
+  clue        text not null default '' check (char_length(clue) <= 300),  -- the riddle
+  hint        text check (char_length(hint) <= 300),                      -- optional extra help
+  found_text  text check (char_length(found_text) <= 200),                -- fun line shown after the stamp
   mascot      text not null default 'spark' check (mascot in ('spark', 'zap', 'beat', 'kick', 'doodle', 'buzz')),
   sort        int not null default 0,
   active      boolean not null default true,
-  bonus_from  timestamptz,
-  bonus_to    timestamptz,
-  secret      bytea not null default gen_random_bytes(32),               -- never readable by clients
-  print_code  text not null default encode(gen_random_bytes(5), 'hex'),  -- never readable by clients
+  code        text not null default encode(gen_random_bytes(8), 'hex'),   -- 16 hex chars, never readable by clients
   created_at  timestamptz not null default now()
 );
 
@@ -64,7 +62,6 @@ create table public.stamps (
   user_id    uuid not null references public.profiles (id) on delete cascade,
   point_id   uuid not null references public.stamp_points (id) on delete cascade,
   points     int not null,
-  method     text not null check (method in ('live', 'printed')),
   scanned_at timestamptz not null default now(),
   primary key (user_id, point_id)
 );
@@ -75,114 +72,88 @@ create index stamps_recent_idx on public.stamps (user_id, scanned_at desc);
 alter table public.profiles add column if not exists leaderboard_hidden boolean not null default false;
 grant update (leaderboard_hidden) on public.profiles to authenticated;
 
--- ---------------------------------------------------------------- codes
--- Code for one point in one 30-second window.
-create or replace function public.stamp_code(p_point uuid, p_window bigint)
-returns text
-language sql stable security definer set search_path = public, extensions
-as $$
-  select substr(encode(hmac(convert_to(p_point::text || ':' || p_window::text, 'UTF8'), sp.secret, 'sha256'), 'hex'), 1, 12)
-  from public.stamp_points sp where sp.id = p_point;
-$$;
-revoke execute on function public.stamp_code(uuid, bigint) from public, anon, authenticated;
-
-create or replace function public.current_window()
-returns bigint language sql stable as $$
-  select floor(extract(epoch from now()) / 30)::bigint;
-$$;
-
--- For the volunteer's station screen: current code and seconds until it changes.
-create or replace function public.get_live_code(p_point uuid)
-returns jsonb
-language plpgsql stable security definer set search_path = public, extensions
-as $$
-begin
-  if not public.is_volunteer() then       -- volunteers, scorers, organisers, admins
-    raise exception 'Not allowed';
-  end if;
-  return jsonb_build_object(
-    'code', public.stamp_code(p_point, public.current_window()),
-    'expires_in', 30 - (floor(extract(epoch from now()))::bigint % 30)
-  );
-end;
-$$;
-
--- Printed backup code, for organisers printing standees.
-create or replace function public.get_print_code(p_point uuid)
-returns text
-language plpgsql stable security definer set search_path = public
-as $$
-begin
-  if not public.is_organiser() then
-    raise exception 'Not allowed';
-  end if;
-  return (select print_code from public.stamp_points where id = p_point);
-end;
-$$;
-
 -- ---------------------------------------------------------------- claiming
 create or replace function public.claim_stamp(p_point uuid, p_code text)
 returns jsonb
 language plpgsql volatile security definer set search_path = public, extensions
 as $$
 declare
-  uid     uuid := auth.uid();
-  hunt    public.stamp_hunt;
-  sp      public.stamp_points;
-  ev      public.events;
-  w       bigint := public.current_window();
-  method  text;
-  pts     int;
-  done    int;
-  total   int;
+  uid   uuid := auth.uid();
+  hunt  public.stamp_hunt;
+  sp    public.stamp_points;
+  pts   int;
+  done  int;
+  total int;
+  last_scan timestamptz;
+  wait_s int;
 begin
   if uid is null then
     return jsonb_build_object('ok', false, 'reason', 'sign_in', 'message', 'Sign in to join the hunt');
   end if;
   select * into hunt from public.stamp_hunt where id = 1;
   if hunt.id is null or now() < hunt.opens_at or now() > hunt.closes_at then
-    return jsonb_build_object('ok', false, 'reason', 'closed', 'message', 'The Stamp Hunt is not open right now');
+    return jsonb_build_object('ok', false, 'reason', 'closed', 'message', 'The treasure hunt is not open right now');
   end if;
   select * into sp from public.stamp_points where id = p_point;
   if sp.id is null or not sp.active then
     return jsonb_build_object('ok', false, 'reason', 'unknown', 'message', 'This stamp is not active');
   end if;
-  if sp.event_id is not null then
-    select * into ev from public.events where id = sp.event_id;
-    if ev.status = 'cancelled'
-       or now() < ev.starts_at - interval '10 minutes'
-       or now() > ev.ends_at + interval '15 minutes' then
-      return jsonb_build_object('ok', false, 'reason', 'not_live',
-                                'message', 'This stamp only works while the competition is on');
-    end if;
+  if p_code is null or p_code <> sp.code then
+    return jsonb_build_object('ok', false, 'reason', 'bad_code', 'message', 'This QR is not valid. Ask a volunteer');
+  end if;
+  if exists (select 1 from public.stamps where user_id = uid and point_id = sp.id) then
+    return jsonb_build_object('ok', false, 'reason', 'already', 'message', 'You already have this stamp', 'place', sp.name);
   end if;
   if (select count(*) from public.stamps where user_id = uid and scanned_at > now() - interval '1 minute') >= 6 then
     return jsonb_build_object('ok', false, 'reason', 'slow_down', 'message', 'Slow down a little and try again');
   end if;
-
-  if p_code is not null and (p_code = public.stamp_code(sp.id, w) or p_code = public.stamp_code(sp.id, w - 1)) then
-    method := 'live';
-    pts := hunt.stamp_value
-           + case when sp.bonus_from is not null and now() between sp.bonus_from and coalesce(sp.bonus_to, sp.bonus_from)
-                  then hunt.bonus_value else 0 end;
-  elsif p_code is not null and p_code = sp.print_code then
-    method := 'printed';
-    pts := hunt.printed_value;
-  else
-    return jsonb_build_object('ok', false, 'reason', 'expired', 'message', 'Code expired. Scan the screen again');
+  select max(scanned_at) into last_scan from public.stamps where user_id = uid;
+  if last_scan is not null and now() < last_scan + make_interval(secs => hunt.min_gap_seconds) then
+    wait_s := ceil(extract(epoch from (last_scan + make_interval(secs => hunt.min_gap_seconds) - now())))::int;
+    return jsonb_build_object('ok', false, 'reason', 'too_fast', 'wait', wait_s,
+                              'message', 'Nice, but you can scan the next place in ' || wait_s || ' seconds');
   end if;
 
-  insert into public.stamps (user_id, point_id, points, method)
-  values (uid, sp.id, pts, method)
+  pts := hunt.stamp_value;
+  insert into public.stamps (user_id, point_id, points) values (uid, sp.id, pts)
   on conflict (user_id, point_id) do nothing;
   if not found then
-    return jsonb_build_object('ok', false, 'reason', 'already', 'message', 'You already have this stamp');
+    return jsonb_build_object('ok', false, 'reason', 'already', 'message', 'You already have this stamp',
+                              'place', sp.name);
   end if;
 
   select count(*), coalesce(sum(points), 0) into done, total from public.stamps where user_id = uid;
-  return jsonb_build_object('ok', true, 'points', pts, 'method', method, 'mascot', sp.mascot,
-                            'stamps', done, 'total', total,
+  return jsonb_build_object('ok', true, 'points', pts, 'mascot', sp.mascot, 'place', sp.name,
+                            'found_text', sp.found_text, 'stamps', done, 'total', total,
                             'of', (select count(*) from public.stamp_points where active));
+end;
+$$;
+
+-- ---------------------------------------------------------------- the player's passport
+-- Clues for everybody (also when signed out); place names only for places the player has found.
+create or replace function public.my_hunt()
+returns table (sort int, point_id uuid, mascot text, found boolean, found_at timestamptz,
+               points int, clue text, hint text, place text, found_text text, locked boolean)
+language plpgsql stable security definer set search_path = public
+as $$
+declare uid uuid := auth.uid(); seq boolean; nfound int;
+begin
+  select h.sequential into seq from public.stamp_hunt h where h.id = 1;
+  select count(*) into nfound from public.stamps s join public.stamp_points p on p.id = s.point_id and p.active
+   where s.user_id = uid;
+  return query
+  with pts as (
+    select p.*, row_number() over (order by p.sort, p.created_at)::int as rn
+      from public.stamp_points p where p.active
+  )
+  select pts.rn, pts.id, pts.mascot, (s.user_id is not null), s.scanned_at, s.points,
+         case when coalesce(seq, false) and pts.rn > nfound + 1 and s.user_id is null then null else pts.clue end,
+         case when coalesce(seq, false) and pts.rn > nfound + 1 and s.user_id is null then null else pts.hint end,
+         case when s.user_id is not null then pts.name end,
+         case when s.user_id is not null then pts.found_text end,
+         (coalesce(seq, false) and pts.rn > nfound + 1 and s.user_id is null)
+    from pts left join public.stamps s on s.point_id = pts.id and s.user_id = uid
+   order by pts.rn;
 end;
 $$;
 
@@ -198,7 +169,6 @@ per_user as (
 select u.user_id,
        trim(split_part(coalesce(p.full_name, 'Student'), ' ', 1) || ' ' ||
             coalesce(nullif(left(split_part(coalesce(p.full_name, ''), ' ', 2), 1), '') || '.', '')) as display_name,
-       p.college_verified as verified,
        u.stamps,
        u.points + case when u.stamps >= ac.n and ac.n > 0 then h.complete_bonus else 0 end as score,
        u.last_scan
@@ -217,17 +187,17 @@ alter table public.stamps       enable row level security;
 -- Supabase grants every new table to anon/authenticated by default: take that back first.
 revoke all on public.stamp_points, public.stamps from anon, authenticated;
 grant select on public.stamp_hunt, public.stamp_leaderboard to anon, authenticated;
-grant insert, update, delete on public.stamp_hunt, public.stamp_points to authenticated;
-grant select (id, name, event_id, venue_id, mascot, sort, active, bonus_from, bonus_to)
-  on public.stamp_points to anon, authenticated;            -- secret and print_code stay hidden
+grant insert, update, delete on public.stamp_hunt to authenticated;
+-- Clients cannot read stamp_points at all (clues, names and codes come only through my_hunt() and
+-- the organiser/volunteer functions); organisers manage them through the table with the grants below.
+grant select, insert, update, delete on public.stamp_points to authenticated;
 grant select, delete on public.stamps to authenticated;    -- no insert: only claim_stamp() adds stamps
 
 create policy hunt_read on public.stamp_hunt for select to anon, authenticated using (true);
 create policy hunt_write on public.stamp_hunt for all to authenticated
   using (public.is_organiser()) with check (public.is_organiser());
 
-create policy points_read on public.stamp_points for select to anon, authenticated using (true);
-create policy points_write on public.stamp_points for all to authenticated
+create policy points_organiser on public.stamp_points for all to authenticated
   using (public.is_organiser()) with check (public.is_organiser());
 
 create policy stamps_read on public.stamps for select to authenticated
@@ -235,8 +205,6 @@ create policy stamps_read on public.stamps for select to authenticated
 create policy stamps_delete on public.stamps for delete to authenticated
   using (public.is_organiser());                            -- organisers remove suspicious stamps
 
-revoke execute on function public.get_live_code(uuid), public.get_print_code(uuid), public.claim_stamp(uuid, text)
-  from public, anon;
-grant execute on function public.get_live_code(uuid), public.get_print_code(uuid), public.claim_stamp(uuid, text)
-  to authenticated;
-grant execute on function public.current_window() to anon, authenticated;
+revoke execute on function public.claim_stamp(uuid, text) from public, anon;
+grant execute on function public.claim_stamp(uuid, text) to authenticated;
+grant execute on function public.my_hunt() to anon, authenticated;

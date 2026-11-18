@@ -8,12 +8,18 @@
 - [ ] Get the fest name, logo (square PNG, at least 512×512) and brand colour.
 - [ ] Get names and Google emails of the organisers who will post updates.
 
+### 0.1b Free web address and people (do today, before anything is printed)
+- [ ] Pick the Vercel project name (it becomes `https://<name>.vercel.app`). Follow `ADDRESS_AND_PEOPLE.md` Part 1. **Print hunt stickers and posters only after the address is final.**
+- [ ] Give the organiser the **emails of hosts and volunteers** (`ADDRESS_AND_PEOPLE.md` Part 2). They must sign in with exactly those emails (Google is easiest).
+- [ ] Write the 10 hunt places, clues and hints (`STAMP_HUNT.md`).
+- [ ] Hosts update their own event timings (screen 50); tell each host how.
+
 ### 0.2 GitHub
 - [ ] Create a free account (if needed) and a new **private** repository `fest-live`.
 
 ### 0.3 Supabase (database and login)
 - [ ] Sign up at supabase.com → New project → name `fest-live`, region **Mumbai (ap-south-1)**, generate a strong database password and save it.
-- [ ] SQL Editor → New query → paste `supabase/schema.sql` **after replacing `{{COLLEGE_DOMAIN}}`** (e.g. `coeptech.ac.in`) → Run. It should say "Success."
+- [ ] SQL Editor → New query → paste `supabase/schema.sql` (the college domain stays empty: there is none) → Run. It should say "Success."
 - [ ] Run `supabase/seed.sql` the same way (sample data for building; deleted on 24 Nov).
 - [ ] Project Settings → API (or "API keys"): copy the **Project URL**, the **anon / publishable key** and the **service_role / secret key**. Keep the secret key private: never paste it in chat, WhatsApp or GitHub.
 
@@ -29,7 +35,7 @@
 
 ### 0.4b Email sign-up (email + password accounts)
 - [ ] Supabase → Authentication → Providers → **Email**: enabled, **Confirm email: ON**, minimum password length 8.
-- [ ] **Custom SMTP** (Authentication → Emails → SMTP settings): Supabase's built-in sender is for testing only and allows very few emails per hour. A transactional email service with a free tier (e.g. Resend or Brevo) is enough; verify a sender address or domain first. Check current free limits.
+- [ ] **Custom SMTP** (Authentication → Emails → SMTP settings): Supabase's built-in sender is for testing only and allows very few emails per hour. Without our own domain use a service that verifies a single sender address (for example Brevo) or a Gmail account with an app password. Their daily limits are small (a few hundred), so **Google sign-in is the main button**. Keep "Confirm email" ON. Check current limits.
 - [ ] Edit the confirmation and reset-password email templates: fest name, one line, the button.
 - [ ] Storage: run `supabase/storage.sql` (or create public buckets `event-covers` and `contestants` in the dashboard).
 

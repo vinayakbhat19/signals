@@ -14,7 +14,7 @@ Replace these placeholders everywhere before you start:
 | --- | --- |
 | `{{FEST_NAME}}` | **Fiesta'26** (official name: Fiesta 2026) |
 | `{{COLLEGE_NAME}}` | **SDM College of Engineering and Technology, Dharwad (SDMCET)**: confirm |
-| `{{COLLEGE_DOMAIN}}` | coeptech.ac.in |
+| Web address | **Free** `https://<project>.vercel.app` (no domain bought; the college gives none). See `ADDRESS_AND_PEOPLE.md` |
 | `{{BRAND_COLOR}}` | #FFD60A (Fiesta yellow; full palette in BRAND.md) |
 
 ---
@@ -36,10 +36,10 @@ The first launch is **Fiesta'26** (Fiesta 2026, intra college cultural fest, SDM
 | **Hosts and line-ups:** event hosts upload registrations (CSV/Excel), check people in, export; students see the public line-up | |
 | **Add to Home Screen** (PWA, never an app store) with a bar on every browser visit | |
 | Reliability: caching, fallbacks, emergency mode, rate limits, monitoring (`SPORTS_AND_RELIABILITY.md` part B) | "Here Now" opt-in presence |
-| **Stamp Hunt** (part of the launch): scan stamp QRs at competitions, passport, live leaderboard (`STAMP_HUNT.md`) | |
+| **Treasure Hunt** (part of the launch): about 10 hidden places with static QR stickers; clues and hints; scan to collect; leaderboard (`STAMP_HUNT.md`) | |
 
 Consequences:
-- **Students never need to sign in to browse.** Accounts (Google, or email + password with a confirmation email) are only needed to vote and play the Stamp Hunt, and for organisers and volunteers. The Verified badge needs a **confirmed** college email.
+- **Students never need to sign in to browse.** Accounts (Google, or email + password with a confirmation email) are only needed to vote and play the Treasure Hunt, and for organisers and volunteers. Anyone with an email or Google account can sign in and vote: there is no verification.
 - "Schedule" is called **Events** in the app.
 - The full screen list, routes, flows and app structure are in `APP_FLOW.md`; designs are in `design/`.
 - No star buttons, no Signal buttons, no football pages. Bottom bar: **Home · Events · SCAN · Vote · Hunt** (account from the avatar) (show "Results" instead of "Hunt" if the hunt isn't built).
@@ -92,7 +92,7 @@ On fest day, students don't know what's happening, where, and when. The schedule
 | F6 | **Results:** winners and scores per event; "live" flag for ongoing matches | Must |
 | F7 | **Organiser panel:** create, edit and delete events, venues, announcements and results from a phone | Must |
 | F8 | **CSV import** of the schedule (from Google Sheets) | Must |
-| F9 | **Google sign-in** (Supabase Auth); a "Verified student" badge when the email ends with `@{{COLLEGE_DOMAIN}}` | Must |
+| F9 | **Google sign-in** (Supabase Auth); no verification badge: anyone signed in can vote and play | Must |
 | F10 | **My schedule:** star/unstar events, personal timeline, clash warning | Should |
 | F11 | **Signals board:** post a Signal (type, text, up to 3 tags, optional event, expiry); "I'm interested"; poster accepts; contacts revealed only after acceptance | Should |
 | F12 | **QR codes:** one for the app, one per event and per venue; printable poster page | Must |
@@ -150,7 +150,7 @@ Native apps, push notifications, chat, nearby/location matching, personal QR con
 
 ### F9 Sign-in
 - "Continue with Google." Browsing never needs sign-in; starring and Signals do.
-- On first sign-in a profile is created. `college_verified = true` if the email domain is `{{COLLEGE_DOMAIN}}`.
+- On first sign-in a profile is created. No verification is used.
 - Roles: student (default), organiser, admin. Roles are set only in the Supabase dashboard (or by an admin), never by the user.
 
 ### F10 My schedule (`/my`)

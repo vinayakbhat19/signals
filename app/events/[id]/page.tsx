@@ -17,6 +17,7 @@ import {
   EventShareIconButton,
 } from '@/components/event-detail-client';
 import { getEvent, listEvents } from '@/lib/data/events';
+import { getPollByEvent } from '@/lib/data/voting';
 import {
   formatDay,
   formatRange,
@@ -94,7 +95,10 @@ export default async function EventDetailPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const event = await getEvent(id);
+  const [event, poll] = await Promise.all([
+    getEvent(id),
+    getPollByEvent(id).catch(() => null),
+  ]);
 
   if (!event) {
     notFound();
@@ -104,6 +108,25 @@ export default async function EventDetailPage({
   const live = isLive(event, now);
   const soon = isUpNext(event, now);
   const isCancelled = event.status === 'cancelled';
+
+  const extEvent = event as unknown as {
+    registration_opens_at?: string | null;
+    registration_closes_at?: string | null;
+  };
+  const regOpensAt = extEvent.registration_opens_at
+    ? new Date(extEvent.registration_opens_at)
+    : null;
+  const regClosesAt = extEvent.registration_closes_at
+    ? new Date(extEvent.registration_closes_at)
+    : null;
+  const regNotOpenYet = Boolean(regOpensAt && now < regOpensAt);
+  const regClosed = Boolean(regClosesAt && now > regClosesAt);
+  const pollOpen = Boolean(
+    poll &&
+      poll.enabled &&
+      (!poll.opens_at || now >= new Date(poll.opens_at)) &&
+      (!poll.closes_at || now <= new Date(poll.closes_at))
+  );
 
   const dayStr = formatDay(event.starts_at);
   const rangeStr = formatRange(event.starts_at, event.ends_at);
@@ -271,31 +294,60 @@ export default async function EventDetailPage({
           />
         </Link>
 
-        {/* Primary CTA: Registration (before event starts) or Audience Voting (when live / started) */}
+        {/* Direct Audience Voting button when voting is open for this competition */}
+        {pollOpen && (
+          <Link
+            href={`/vote/${event.id}`}
+            className="flex items-center gap-3 rounded-[20px] bg-[#FF4FD8] px-4 py-3.5 text-[#12091E] shadow-[5px_5px_0_#FFD60A] active:translate-y-0.5 transition-transform"
+          >
+            <Vote className="size-8 shrink-0 stroke-[2.2]" aria-hidden="true" />
+            <div className="space-y-0.5">
+              <span className="block text-base font-extrabold">
+                Vote now for {event.title}
+              </span>
+              <span className="block text-[13px] font-semibold">
+                Tap to cast your live audience vote — open to everyone!
+              </span>
+            </div>
+          </Link>
+        )}
+
+        {/* Primary CTA: Registration (respecting host registration window) */}
         {soon && !isCancelled ? (
           <div className="space-y-2">
-            <a
-              href={
-                isSafeHttpUrl(event.registration_url)
-                  ? event.registration_url
-                  : OFFICIAL_REGISTRATION_HUB
-              }
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex items-center justify-between gap-3 rounded-[20px] bg-[#FFD60A] px-4 py-3.5 text-[#12091E] shadow-[5px_5px_0_#FF4FD8] active:translate-y-0.5 transition-transform"
-            >
-              <div className="space-y-0.5">
-                <span className="block text-base font-extrabold">
-                  Register for {event.title}
-                </span>
-                <span className="block text-[13px] font-semibold">
-                  {isSafeHttpUrl(event.registration_url)
-                    ? "Opens official Fiesta'26 registration form"
-                    : "Opens official Fiesta'26 Linktree registration hub"}
-                </span>
+            {regNotOpenYet && regOpensAt ? (
+              <div className="rounded-[20px] border-[1.5px] border-[#FFD60A]/50 bg-[#1F1230] px-4 py-3.5 text-sm font-bold text-[#FFD60A]">
+                Registration opens at {formatTime(regOpensAt)} IST (
+                {formatDay(regOpensAt)})
               </div>
-              <ExternalLink className="size-6 shrink-0" aria-hidden="true" />
-            </a>
+            ) : regClosed ? (
+              <div className="rounded-[20px] border-[1.5px] border-[#3B2758] bg-[#1F1230] px-4 py-3.5 text-sm font-bold text-[#9C97B0]">
+                Registration closed
+              </div>
+            ) : (
+              <a
+                href={
+                  isSafeHttpUrl(event.registration_url)
+                    ? event.registration_url
+                    : OFFICIAL_REGISTRATION_HUB
+                }
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center justify-between gap-3 rounded-[20px] bg-[#FFD60A] px-4 py-3.5 text-[#12091E] shadow-[5px_5px_0_#FF4FD8] active:translate-y-0.5 transition-transform"
+              >
+                <div className="space-y-0.5">
+                  <span className="block text-base font-extrabold">
+                    Register for {event.title}
+                  </span>
+                  <span className="block text-[13px] font-semibold">
+                    {isSafeHttpUrl(event.registration_url)
+                      ? "Opens official Fiesta'26 registration form"
+                      : "Opens official Fiesta'26 Linktree registration hub"}
+                  </span>
+                </div>
+                <ExternalLink className="size-6 shrink-0" aria-hidden="true" />
+              </a>
+            )}
             <a
               href={OFFICIAL_REGISTRATION_HUB}
               target="_blank"
@@ -309,7 +361,7 @@ export default async function EventDetailPage({
               </span>
             </a>
           </div>
-        ) : (
+        ) : !pollOpen ? (
           <Link
             href={`/vote/${event.id}`}
             className="flex items-center gap-3 rounded-[20px] bg-[#FFD60A] px-4 py-3.5 text-[#12091E] shadow-[5px_5px_0_#FF4FD8] active:translate-y-0.5 transition-transform"
@@ -322,11 +374,11 @@ export default async function EventDetailPage({
                   : `Audience voting opens at ${formatTime(event.starts_at)}`}
               </span>
               <span className="block text-[13px] font-semibold">
-                Be at the venue: you&apos;ll need the stage code if voting is enabled
+                Check live audience voting for this competition
               </span>
             </div>
           </Link>
-        )}
+        ) : null}
 
         {/* Side-by-side Calendar & Directions buttons */}
         <div className="grid grid-cols-2 gap-2.5">

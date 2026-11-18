@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { ChevronRight, Users } from 'lucide-react';
+import { CalendarCog, QrCode, Users } from 'lucide-react';
 import { requireRole } from '@/lib/auth';
 import { createClient } from '@/lib/supabase/server';
 
@@ -44,7 +44,11 @@ export default async function HostHubPage() {
   for (const p of participantRows ?? []) {
     const c = counts.get(p.event_id) ?? { total: 0, checkedIn: 0 };
     c.total += 1;
-    if (p.status === 'checked_in' || p.status === 'on_stage' || p.status === 'performed') {
+    if (
+      p.status === 'checked_in' ||
+      p.status === 'on_stage' ||
+      p.status === 'performed'
+    ) {
       c.checkedIn += 1;
     }
     counts.set(p.event_id, c);
@@ -52,25 +56,35 @@ export default async function HostHubPage() {
 
   return (
     <div className="mx-auto max-w-2xl space-y-5">
-      <header className="space-y-1">
-        <h1 className="font-display text-3xl text-[#F4F2FA]">MY HOSTED EVENTS</h1>
-        <p className="text-xs text-[#9C97B0]">
-          Upload Google Forms registrations, check teams in, and publish the
-          live performing line-up.
-        </p>
+      <header className="flex flex-wrap items-center justify-between gap-3">
+        <div className="space-y-1">
+          <h1 className="font-display text-3xl text-[#F4F2FA]">
+            MY HOSTED EVENTS
+          </h1>
+          <p className="text-xs text-[#9C97B0]">
+            Update your event time, venue, registration window, and manage
+            participants.
+          </p>
+        </div>
+        <Link
+          href="/staff/stickers"
+          className="inline-flex h-10 items-center gap-1.5 rounded-xl bg-[#FFD60A] px-3.5 text-xs font-extrabold text-[#12091E]"
+        >
+          <QrCode className="size-4" />
+          Hunt QR Stickers
+        </Link>
       </header>
 
       <div className="space-y-3">
         {(events ?? []).map((ev) => {
           const stat = counts.get(ev.id) ?? { total: 0, checkedIn: 0 };
           return (
-            <Link
+            <div
               key={ev.id}
-              href={`/host/events/${ev.id}/participants`}
-              className="flex items-center justify-between gap-3 rounded-[20px] border-[1.5px] border-[#3B2758] bg-[#1F1230] px-4 py-4 hover:border-[#FFD60A]"
+              className="rounded-[20px] border-[1.5px] border-[#3B2758] bg-[#1F1230] p-4 space-y-3"
             >
-              <div className="min-w-0 space-y-1">
-                <p className="truncate font-heading text-lg font-extrabold text-[#F4F2FA]">
+              <div className="space-y-1">
+                <p className="font-heading text-lg font-extrabold text-[#F4F2FA]">
                   {ev.code ? `${ev.code} · ` : ''}
                   {ev.title}
                 </p>
@@ -78,11 +92,28 @@ export default async function HostHubPage() {
                   <Users className="size-3.5 text-[#FFD60A]" />
                   <span>{stat.total} registered</span>
                   <span>·</span>
-                  <span className="text-[#FFD60A]">{stat.checkedIn} checked in</span>
+                  <span className="text-[#FFD60A]">
+                    {stat.checkedIn} checked in
+                  </span>
                 </p>
               </div>
-              <ChevronRight className="size-5 shrink-0 text-[#9C97B0]" />
-            </Link>
+              <div className="grid grid-cols-2 gap-2">
+                <Link
+                  href={`/host/events/${ev.id}`}
+                  className="flex h-10 items-center justify-center gap-1.5 rounded-xl bg-[#FFD60A] text-xs font-extrabold text-[#12091E]"
+                >
+                  <CalendarCog className="size-4" />
+                  Edit Event &amp; Window
+                </Link>
+                <Link
+                  href={`/host/events/${ev.id}/participants`}
+                  className="flex h-10 items-center justify-center gap-1.5 rounded-xl border border-[#3B2758] bg-[#12091E] text-xs font-bold text-[#F4F2FA] hover:border-[#FFD60A]"
+                >
+                  <Users className="size-4 text-[#22D3EE]" />
+                  Participants ({stat.total})
+                </Link>
+              </div>
+            </div>
           );
         })}
       </div>

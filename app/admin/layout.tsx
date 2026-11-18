@@ -2,6 +2,7 @@ import Link from 'next/link';
 import {
   BarChart3,
   CalendarCog,
+  Compass,
   FileSpreadsheet,
   QrCode,
   ShieldAlert,
@@ -13,7 +14,8 @@ import { requireOrganiser } from '@/lib/auth';
 const ADMIN_TABS = [
   { href: '/admin', label: 'Control Room', icon: CalendarCog },
   { href: '/admin/import', label: 'Import CSV', icon: FileSpreadsheet },
-  { href: '/admin/hosts', label: 'Hosts', icon: Users },
+  { href: '/admin/hosts', label: 'Hosts & Staff', icon: Users },
+  { href: '/admin/hunt', label: 'Treasure Hunt', icon: Compass },
   { href: '/admin/voting', label: 'Voting', icon: Vote },
   { href: '/admin/qr', label: 'QR Posters', icon: QrCode },
   { href: '/admin/safety', label: 'Safety', icon: ShieldAlert },

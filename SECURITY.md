@@ -1,6 +1,6 @@
 # Security guide: Fiesta'26 Live
 
-What we protect: students' names and college emails, host registration lists (emails and phone numbers), votes (private), organiser access. What we don't collect: location, contacts, Aadhaar, payment details.
+What we protect: students' names and emails, host registration lists (emails and phone numbers), votes (private), organiser access. What we don't collect: location, contacts, Aadhaar, payment details.
 
 Rule of thumb: **the database enforces every rule; the app is just the front door.** Row Level Security (RLS) is on for every table, and the tests in `README.md` prove it. This guide covers everything around that.
 
@@ -34,7 +34,7 @@ Configuration checklist (Supabase dashboard unless noted):
 | visitor (no account) | — | read public pages, scan, see results that are visible |
 | student | sign-up | vote, collect stamps, own profile |
 | host | organiser invite (`invite_host`); active only after the invited email is **confirmed** | manage participants of **their** events until `hosts_until` |
-| volunteer | dashboard / admin | run Stamp Stations and stage screens |
+| volunteer | organiser invites their email (`invite_volunteer`); active after the email is confirmed | print hunt QR stickers, see the winners list |
 | organiser | dashboard / admin | everything in the control room |
 | admin | dashboard | make organisers |
 
@@ -45,7 +45,7 @@ Configuration checklist (Supabase dashboard unless noted):
 
 ## 3. Rate limiting and abuse
 
-Full table and fallback chain in `RESILIENCE.md` section 3. Summary of what's protected: sign-up, login, password reset, confirmation resend, push subscribe, stamps, votes, uploads, imports, admin writes, and a general per-IP limit at the Vercel firewall. Auth endpoints use CAPTCHA too.
+Full table and fallback chain in `RESILIENCE.md` section 3. Summary of what's protected: sign-up, login, password reset, confirmation resend, push subscribe, stamps, votes, uploads, imports, admin writes, and a high per-IP flood guard (thousands per minute, writes only) at the Vercel firewall. Real limits are per account/email, never low per-IP limits, because many students share one campus IP. Sign-in calls run from the browser. Auth endpoints use CAPTCHA too.
 
 ## 4. Web hardening
 
@@ -96,7 +96,7 @@ Replace `$URL` and `$ANON` with your Supabase project URL and anon key.
 | --- | --- | --- | --- |
 | 1 | Anonymous user can't write events | `curl -s -X POST "$URL/rest/v1/events" -H "apikey: $ANON" -H "Content-Type: application/json" -d '{"title":"x","category":"fun","starts_at":"2026-11-25T10:00:00Z","ends_at":"2026-11-25T11:00:00Z"}'` | error `42501` / row-level security |
 | 2 | Anonymous user can't read private tables | `curl -s "$URL/rest/v1/participants?select=*" -H "apikey: $ANON"` and the same for `votes`, `push_subscriptions`, `push_queue`, `audit_log`, `rate_limits`, `host_invites` | `[]` or permission denied, never rows |
-| 3 | Secrets are not readable | `curl -s "$URL/rest/v1/stamp_points?select=secret,print_code" -H "apikey: $ANON"` and `polls?select=secret` | permission denied |
+| 3 | Secrets are not readable | `curl -s "$URL/rest/v1/stamp_points?select=name,clue,code" -H "apikey: $ANON"` (must return nothing or permission denied) and `polls?select=secret` | permission denied |
 | 4 | Public line-up has no emails | `curl -s "$URL/rest/v1/participants_public?select=email" -H "apikey: $ANON"` | column does not exist |
 | 5 | Student can't make themselves admin | signed in as a student: `PATCH profiles?id=eq.<me>` with `{"role":"admin"}` | permission denied |
 | 6 | Student can't vote twice or stamp directly | `POST /rest/v1/votes`, `POST /rest/v1/stamps` | permission denied |

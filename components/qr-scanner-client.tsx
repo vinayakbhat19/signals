@@ -46,6 +46,22 @@ function parseFestQr(raw: string): ParsedQrTarget {
   if (url) {
     const path = url.pathname;
 
+    // /s/<pointId>.<code> (static Treasure Hunt QR sticker)
+    const staticStampMatch = path.match(
+      /^\/s\/([0-9a-f-]{36})\.([a-zA-Z0-9_-]{4,64})$/i
+    );
+    if (staticStampMatch) {
+      return {
+        kind: 'stamp',
+        label: 'FOUND · TREASURE HUNT STICKER',
+        title: 'Hidden Spot QR Sticker',
+        subtitle: 'Tap below to unlock this place & claim points',
+        ctaLabel: 'Collect stamp',
+        href: `/s/${staticStampMatch[1]}.${staticStampMatch[2]}`,
+        rawUrl: trimmed,
+      };
+    }
+
     // /stamp/<pointId>?c=<code>
     const stampMatch = path.match(/^\/stamp\/([0-9a-f-]{36})$/i);
     if (stampMatch) {

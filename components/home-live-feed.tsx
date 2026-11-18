@@ -75,12 +75,21 @@ interface HomeLiveFeedProps {
 
 export function HomeLiveFeed({ festName, initialData }: HomeLiveFeedProps) {
   const router = useRouter();
+  // ±30% polling jitter (14–26 s) to prevent thundering herd at 2,000 phones (PEAK_LOAD.md)
+  const [pollIntervalMs, setPollIntervalMs] = useState(20_000);
+  useEffect(() => {
+    const raf = window.requestAnimationFrame(() => {
+      setPollIntervalMs(14_000 + Math.floor(Math.random() * 12_000));
+    });
+    return () => window.cancelAnimationFrame(raf);
+  }, []);
+
   const { data, error, isValidating, mutate } = useSWR<LiveApiResponse>(
     '/api/live',
     fetchLive,
     {
       fallbackData: initialData,
-      refreshInterval: 20_000,
+      refreshInterval: pollIntervalMs,
       refreshWhenHidden: false,
       revalidateOnFocus: true,
       keepPreviousData: true,

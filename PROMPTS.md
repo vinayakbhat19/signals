@@ -7,12 +7,12 @@ How to use:
 4. Paste **one prompt at a time**. Review the plan the agent proposes before it starts. After each prompt, check the "You check" list yourself on your phone.
 5. If something breaks, use the **Fix prompt** at the end. Don't paste the next phase until the current one works.
 
-Replace `{{FEST_NAME}}`, `{{COLLEGE_NAME}}`, `{{COLLEGE_DOMAIN}}`, `{{BRAND_COLOR}}` before pasting.
+Replace `{{FEST_NAME}}`, `{{COLLEGE_NAME}}`, `{{BRAND_COLOR}}` before pasting. There is **no college email domain**: read `ADDRESS_AND_PEOPLE.md` (free vercel.app address, no student verification; hosts and volunteers are added by email). Read `PEAK_LOAD.md` too: the app must handle 2,000 people at once.
 
 ---
 
 > **Build order (Fiesta'26 launch):**
-> Phase 0 → Phase 1 → **Track R** (R.1–R.4: reliability, rate limits, safety panel) → Phase 2 → Phase 3 → **Track A** (A.1–A.5) → **Track SEC** (SEC.1–SEC.2: sign-in and security) → **Track HOST** → **Track N** (permissions and notifications) → **Track V** (V.1–V.2) → **Track H** (H.0–H.2) → **Track END** (END.1: mode switch and fest-over) → Prompt 4.3 → **Track TEST** → Phase 5 → Phase 6. **Track END.2** (the Signals app for 28 Nov) after the fest starts, or earlier if time allows.
+> Phase 0 (**choose the free address name first**) → Phase 1 → **Track R** (R.1–R.4: reliability, rate limits, safety panel) → Phase 2 → Phase 3 → **Track A** (A.1–A.5) → **Track SEC** (SEC.1–SEC.2: sign-in and security) → **Track HOST** → **Track N** (permissions and notifications) → **Track V** (V.1–V.2) → **Track P** (P.1 peak load) → **Track STAFF** (STAFF.1) → **Track H** (H.0–H.2) → **Track END** (END.1: mode switch and fest-over) → Prompt 4.3 → **Track TEST** → Phase 5 → Phase 6. **Track END.2** (the Signals app for 28 Nov) after the fest starts, or earlier if time allows.
 > **Skip** Prompts 4.1 and 4.2 here (they are END.2), **V.3** (offline voting) and **Track S** (football). Read PRD section 0 first, and paste this line at the top of every prompt: *"Scope: follow PRD section 0. Fest mode until 27 Nov, campus mode after. No football."*
 > Database order: `schema.sql` → `schema_changes.sql` → `storage.sql` → `schema_participants.sql` → `schema_voting.sql` → `schema_stamps.sql` → **`schema_ops.sql` (last)**. `seed.sql` and `seed_hunt.sql` only during building.
 > **Design:** read `APP_FLOW.md` and `BRAND.md` first. Attach the matching PNGs from `design/png/` to every prompt (IDs 01–60), and tell the agent: *"Match the attached screens exactly; the standalone HTML for each is in design/screens/."*
@@ -22,7 +22,7 @@ Replace `{{FEST_NAME}}`, `{{COLLEGE_NAME}}`, `{{COLLEGE_DOMAIN}}`, `{{BRAND_COLO
 
 ### Prompt 1.1: Project setup
 ```
-Read PROJECT_RULES.md and PRD.md fully before doing anything.
+Read PROJECT_RULES.md, PRD.md, PEAK_LOAD.md and ADDRESS_AND_PEOPLE.md fully before doing anything.
 
 Set up the project "fest-live" in this folder:
 1. Create a Next.js app (latest stable, App Router, TypeScript, Tailwind, ESLint, src dir NO, import alias @/*). Initialise shadcn/ui and add: button, card, badge, input, textarea, select, tabs, dialog, sheet, sonner (toast), skeleton, switch, label, dropdown-menu.
@@ -117,12 +117,12 @@ Then give me step-by-step instructions to push to GitHub and import into Vercel,
 Read PROJECT_RULES.md and PRD F9.
 1. /login page with "Continue with Google" (supabase.auth.signInWithOAuth, provider google, redirectTo = NEXT_PUBLIC_SITE_URL + /auth/callback?next=<page>). Explain in one line why we ask (to save your schedule and post signals) and that browsing needs no login.
 2. app/auth/callback/route.ts: exchange the code for a session and redirect to "next" (only allow relative paths starting with "/").
-3. lib/auth.ts (server): getUser() and getProfile() (id, full_name, avatar_url, role, college_verified) using the cookie client; requireUser(next) redirects to /login; requireOrganiser() returns 404 for non-organisers.
-4. Header avatar menu: name, "Verified student" badge if college_verified, My schedule, Sign out.
+3. lib/auth.ts (server): getUser() and getProfile() (id, full_name, avatar_url, role) using the cookie client; requireUser(next) redirects to /login; requireOrganiser() returns 404 for non-organisers.
+4. Header avatar menu: name, role label only if volunteer/host/organiser, Sign out.
 5. Show the "Organiser panel" link in More only for organiser/admin.
 Test sign-in and sign-out on localhost. Then tell me exactly which redirect URLs must be in Supabase (localhost and Vercel). Run lint and build; report.
 ```
-**You check:** sign in with your college Google account → "Verified student" badge. Then in Supabase → Table editor → profiles, set your `role` to `admin`.
+**You check:** sign in with your Google account (there are no verification badges). Then in Supabase → Table editor → profiles, set your `role` to `admin`.
 
 ### Prompt 3.2: Organiser panel
 ```
@@ -331,20 +331,20 @@ Before starting: run `supabase/storage.sql`. In Supabase → Authentication → 
 Scope: follow PRD section 0. Read PROJECT_RULES.md. Match the attached designs "1 Welcome", "2 Cookie notice", "3 Create account", "4 Log in", "My account".
 1. /welcome: shown on the first visit only (localStorage flag in try/catch); buttons Create account, Log in, Just look around, and "Scan a QR" (opens /scan).
 2. Cookie notice: a bottom sheet on the first visit. Only essential cookies (Supabase session) and an optional "Preferences" switch that controls whether we use localStorage for dismissed banners and last tab. Store the choice in localStorage; re-open it from My account. Vercel Analytics is cookie-free, so no analytics consent is needed; say so in the privacy page.
-3. /signup: full name, email, password (min 8 chars with a number; strength meter; show/hide), terms checkbox, "Continue with Google". supabase.auth.signUp with options.data.full_name and emailRedirectTo NEXT_PUBLIC_SITE_URL/auth/callback?next=/account. After submit show "Check your email" with a resend button (rate-limited 1 per 60 s). Show a hint when the email domain matches NEXT_PUBLIC_COLLEGE_DOMAIN: "You'll get the Verified badge after confirming".
+3. /signup: full name, email, password (min 8 chars with a number; strength meter; show/hide), terms checkbox, "Continue with Google". supabase.auth.signUp with options.data.full_name and emailRedirectTo NEXT_PUBLIC_SITE_URL/auth/callback?next=/account. After submit show "Check your email" with a resend button (rate-limited 1 per 60 s). Show NO college-email hint. The email field is just "Email". After submit say "Check your email".
 4. /login: email + password, Google, "Keep me signed in" (default on), clear error messages, "Forgot password?" → /reset (resetPasswordForEmail) → /reset/new (updateUser password).
-5. /account (requireUser): profile card (initials or photo, name, email, Verified badge from profiles.college_verified, role), stats (stamps, hunt rank, votes cast; hide the hunt parts if the hunt isn't built), edit name/department (zod), change password, "Hide me from the leaderboard", Cookies and privacy, Install the app, Help, Sign out, Delete my account (service role, server-only).
+5. /account (requireUser): profile card (initials or photo, name, email, role (only for staff)), stats (stamps, hunt rank, votes cast; hide the hunt parts if the hunt isn't built), edit name/department (zod), change password, "Hide me from the leaderboard", Cookies and privacy, Install the app, Help, Sign out, Delete my account (service role, server-only).
 6. The avatar on Home and the "More" tab open /account (or /welcome when signed out).
-7. Validate every form with zod on the server; rate-limit signup, login and reset with Upstash (5 per 10 min per IP).
-Test: sign up with a college email (no badge until you click the link, then badge), a Gmail address (never a badge), wrong password, password reset. Run lint and build; report.
+7. Validate every form with zod on the server; rate-limit signup, login and reset per email (5 per 10 min) with a high IP flood guard only.
+Test: sign up with a Gmail address (plain student account, no badge), wrong password, password reset. Run lint and build; report.
 ```
 
 ### Prompt A.2: Install banner, scanner and QR generator
 ```
 Read PROJECT_RULES.md. Match the attached designs "Home" (install bar), "5 Install the web app", "QR scanner" and "Organiser: QR generator".
 1. Install bar: shown at the bottom (above the tab bar) on every visit while the site runs in a browser tab (not when window.matchMedia('(display-mode: standalone)') matches or navigator.standalone is true). "Install" uses the saved beforeinstallprompt event on Android/desktop Chrome; on iOS Safari it opens the sheet with the Share → Add to Home Screen steps. "×" hides it for the current session only.
-2. /scan: camera QR scanner. Use the native BarcodeDetector when available, otherwise the "qr-scanner" npm package (ask before adding it). Rear camera, torch toggle if supported, a sweeping scan line, and a result sheet that recognises our own URLs: /stamp/... → "Collect stamp", /vote/... → "Open vote", /events/... → "Open event"; any other URL shows the address and asks before opening. "Enter a code instead" (for stamp and vote codes) and a clear message when camera permission is denied, with steps to allow it.
-3. /admin/qr generator (replaces the simple QR page): type (App home, Event, Venue, Vote page, Stamp standee, Custom link), pick the item, live preview card with title/time/venue and optional cover, mascot logo in the middle (use error-correction level H so the logo doesn't break scanning), size presets (sticker, A5 standee, A4 poster) with print CSS, PNG download, copy link, "All events" batch print, and a scan count per code from the ?src= parameter (count page views with that src in a small qr_scans table or from Vercel Analytics; your choice, write it in DECISIONS.md).
+2. /scan: camera QR scanner. Use the native BarcodeDetector when available, otherwise the "qr-scanner" npm package (ask before adding it). Rear camera, torch toggle if supported, a sweeping scan line, and a result sheet that recognises our own URLs: /s/... → "Collect stamp", /events/... → "Open event", /hunt → "Open the hunt"; any other URL shows the address and asks before opening. A clear message when camera permission is denied, with steps to allow it.
+3. /admin/qr generator (replaces the simple QR page): type (App home, Event page, Venue, Hunt place (uses rpc list_stamp_qrs; same sticker as /admin/hunt/qr), Custom link). There is no separate vote QR: the Vote button is on the event page, pick the item, live preview card with title/time/venue and optional cover, mascot logo in the middle (use error-correction level H so the logo doesn't break scanning), size presets (sticker, A5 standee, A4 poster) with print CSS, PNG download, copy link, "All events" batch print, and a scan count per code from the ?src= parameter (count page views with that src in a small qr_scans table or from Vercel Analytics; your choice, write it in DECISIONS.md).
 Test: install on an Android phone and an iPhone, scan printed codes of each type, and deny camera permission once to see the message. Run lint and build; report.
 ```
 
@@ -355,7 +355,7 @@ Read PROJECT_RULES.md. Match the attached designs "Events", "Event page (coming 
 2. Event page: full-width cover (16:9) with back/share over it, status chips, title, time and venue link, countdown when coming soon (from serverTime), host card (name, coordinator, Contact = contact_info), description, voting card (opens at / vote now), add to calendar, directions, stamp hint.
 3. Organiser event editor: cover upload (accept images, resize client-side to max 1600 px WebP at quality 0.8 with a canvas, then upload to the event-covers bucket at <eventId>/<timestamp>.webp; save the public URL to cover_url; replace and remove; simple 16:9 crop), title, date/start/end (IST), venue, category, host, coordinator, description, registration link, switches for audience voting (creates/enables the poll), stamp station (creates/activates the stamp point if the hunt is built) and published; Preview and "Save and publish" (revalidate the public paths).
 4. CSV import: add optional columns host_name and host_coordinator (update templates/schedule_template.csv). The real Fiesta'26 list is templates/fiesta26_events.csv (21 competitions with their Google Form links; venue, start and end must be filled in before importing).
-5. Event page and Events list: a big "Register" button when registration_url is set (opens the Google Form in a new tab), hidden after the event starts; "Registration closed" when the host turns it off.
+5. Event page and Events list: a big Register button when registration_url is set. Use events.registration_opens_at / registration_closes_at (set by the HOST): before opening show a disabled "Opens at 6:00 PM" with a countdown (from serverTime), inside the window "Register" (opens the Google Form in a new tab), after closing or after the event starts "Registration closed". The page is static/ISR; compute the state in a small client component from serverTime so 2,000 people never cause extra server work.
 Test: upload a large phone photo (it must end up under 400 KB), check the list and event page on a slow 3G throttle, and an event without a cover. Run lint and build; report.
 ```
 
@@ -394,8 +394,8 @@ Read SECURITY.md sections 1–3, PERMISSIONS_NOTIFICATIONS.md ("Continue with Go
 4. Sessions: @supabase/ssr cookies (httpOnly, Secure, SameSite=Lax), refreshed in middleware; never put tokens in localStorage; "Sign out" and "Sign out on all devices" on My account.
 5. Roles: lib/auth.ts requireRole('organiser' | 'host' | 'volunteer', eventId?) used in EVERY admin/host page and server action. It reads profiles.role / is_event_host() from the database, never from client data or JWT metadata. Unauthorised visits to /admin and /host return notFound().
 6. Organisers and admins: /account/security to enrol TOTP MFA (QR code + 6-digit confirm); admin pages require the aal2 level once enrolled.
-7. Rate limit with lib/ratelimit.ts (see R.4): sign-up 5/10 min/IP, login 10/10 min per IP+email, reset 3/hour/email, resend 1/min.
-Test: college email sign-up (badge only after the link), Gmail (never a badge), 11 wrong passwords (429), Instagram in-app browser (sheet appears), /admin as a student (404). Report with evidence.
+7. Rate limit with lib/ratelimit.ts (see R.4): sign-up 5/10 min per EMAIL, login 10/10 min per EMAIL (never low per-IP limits: hundreds of students share one campus IP; IP is only a flood guard of 600/10 min), call supabase.auth from the BROWSER, reset 3/hour/email, resend 1/min.
+Test: Gmail sign-up (confirmation needed; no badge), 11 wrong passwords for one email, 11 wrong passwords (429), Instagram in-app browser (sheet appears), /admin as a student (404). Report with evidence.
 ```
 
 ### Prompt SEC.2: Hardening, uploads, secrets
@@ -419,7 +419,7 @@ Read HOSTS_AND_AFTER_FEST.md (Part 1) and supabase/schema_ops.sql (host_invites,
 1. /admin/hosts (organiser only): list every event with its hosts (event_hosts joined to profiles) and pending invites (host_invites); "Invite a host" form (event + email) calling rpc('invite_host'), showing status active or invited and the friendly error messages; remove a host (delete from event_hosts); cancel an invite (delete from host_invites); "No host yet" rows; show app_config.hosts_until ("Access ends …").
 2. After an invite is stored, email the person (the app's SMTP/Resend) with a link to /login?next=/host and the line "Sign in with THIS email address". If the email fails show "Invite saved, but the email could not be sent: share this link".
 3. /host: events I host with counts (registered, checked in) and links to /host/events/[id]/participants. Use requireRole('host', eventId); the database function is_event_host also enforces hosts_until.
-4. Participants page as in Prompt A.4. Hosts cannot change an event's time, venue or status. Every export creates an audit entry.
+4. Participants page as in Prompt A.4. Hosts CAN update their own event's time, venue, status, description, contact, form link and registration window: add /host/events/[id] (match PNG 50) calling rpc('host_update_event') with quick actions +15 min, +30 min, Cancel, Done, a "Students will see" preview and the alert count; map the errors (outside_fest, too_many, bad_url, bad_window) to friendly messages. Hosts cannot change the title, category or publishing. The alerts and the Home banner happen automatically from the database trigger. Every export creates an audit entry.
 5. After hosts_until the host pages return 404; signed-in hosts see "Host access has ended".
 Test: invite an email with no account (status invited); sign up with it WITHOUT confirming (no host access); confirm (host access appears); open another event's participants (404); set hosts_until in the past (404); remove the host (access ends at once). Report with evidence.
 ```
@@ -448,18 +448,18 @@ Before starting: run `supabase/schema_voting.sql` (after `schema.sql`). Read `VO
 Scope: follow PRD section 0. Read PROJECT_RULES.md, VOTING.md and supabase/schema_voting.sql. Match the attached designs ("Vote", "Stage screen").
 1. lib/data/voting.ts (PUBLIC cookie-less client for public parts): listOpenPolls() (enabled, with event title/venue/time and closes_at; select only the public columns of polls, never secret), getPollByEvent(eventId), getResults(pollId) from poll_results ordered by votes desc nulls last, sort, name. getMyVote(pollId) uses the cookie client.
 2. app/api/vote/[eventId]/route.ts: GET returns { poll, contestants/results, serverTime }; revalidate 5; Cache-Control "public, s-maxage=5, stale-while-revalidate=60, stale-if-error=86400"; tag "votes:<eventId>".
-3. /vote (hub): competitions currently voting, each with leader (if visible), total votes and closing countdown. Home shows a "Vote now" card while any poll is open; the event page shows a "Vote now" banner for its poll.
-4. /vote/[eventId]: contestant cards (photo or initials, name, subtitle), "Vote" button, "Your vote" tag, live percentage bars when results are visible, otherwise "Results after voting closes" or "Results announced on stage". If require_code, a 6-character code box with "Enter the code on the stage screen". Signed out: the Vote button goes to /login?next=<this page>. Call rpc('cast_vote', { p_poll, p_contestant, p_code }) and show a friendly message for each reason (voted, same, changed with changes left, locked, college_only, code, closed, slow_down, sign_in). Optimistic UI for my own vote; results refresh via SWR every 5 s while visible.
-5. /screen/vote/[eventId] (16:9 stage screen, no nav): huge animated bars (CSS transitions only), leader highlighted, total votes, QR to /vote/[eventId], and if require_code the current code from rpc('get_vote_code') with a 30 s countdown (requires a volunteer/organiser signed in on that device). Polls every 3 s; Screen Wake Lock.
+3. /vote (hub): competitions currently voting, each with leader (if visible), total votes and closing countdown. Home shows a "Vote now" card while any poll is open. **The event page has the Vote button** (no QR to scan): the voting card shows "Voting opens at <time>" before and a big **Vote** button while open, linking to /vote/[eventId].
+4. /vote/[eventId]: contestant cards (photo or initials, name, subtitle), "Vote" button, "Your vote" tag, live percentage bars when results are visible, otherwise "Results after voting closes" or "Results announced on stage". There is NO code box and NO verification (anyone signed in can vote). Signed out: the Vote button goes to /login?next=<this page> and brings the person straight back. Call rpc('cast_vote', { p_poll, p_contestant }) and show a friendly message for each reason (voted, same, changed with changes left, locked, closed, slow_down, sign_in). Optimistic UI for my own vote; results refresh via SWR every 5 s while visible.
+5. /screen/vote/[eventId] (16:9 stage screen, no nav): huge animated bars (CSS transitions only), leader highlighted, total votes, and a QR that opens /events/[id] (a plain link) with the line "Open the app and tap Vote". No rotating code. Polls every 3 s; Screen Wake Lock.
 6. Rate limit cast_vote calls with Upstash (10 per minute per user) on top of the database rules. After a successful vote, revalidateTag("votes:<eventId>") at most once every 5 s (debounce).
-Test with three accounts (two college, one gmail) on a test competition: vote, same vote, change, lock after 3 changes, gmail refused when college-only, code required when on, results hidden until close when set. Run lint and build; report.
+Test with three accounts on a test competition: vote, same vote, change, lock after 3 changes, results hidden until close when set, signed-out tap on Vote returns to the vote after login. Run lint and build; report.
 ```
 
 ### Prompt V.2: Organiser voting controls
 ```
 Read VOTING.md. Build /admin/voting (organiser only, checked on the server):
 1. List of competitions (events) with a big on/off switch each, status (Off / Open / Scheduled / Closed), total votes and leader (organisers always see counts).
-2. Settings sheet per competition: title, opens/closes (IST date-time pickers or "when switched on/off"), Show results (Live / After close / Hidden), College email only, Must be at the venue. Validate with zod; save; revalidateTag("votes:<eventId>").
+2. Settings sheet per competition: title, opens/closes (IST date-time pickers or "when switched on/off"), Show results (Live / After close / Hidden). No verification or venue-code switches. Validate with zod; save; revalidateTag("votes:<eventId>").
 3. Contestants editor: add/edit/reorder/deactivate, optional photo upload to Supabase Storage (public bucket "contestants", max 1 MB, resized client-side).
 4. "Close voting now" (sets closes_at = now()), "Reopen", "Open stage screen" link, "Export results CSV" (contestant, votes, percent), and fraud review: list of votes changed 3 times or cast within the same second as many others, with "Remove vote".
 5. Add "Voting" to the control room.
@@ -480,44 +480,38 @@ Test with airplane mode: open the vote page online, switch to airplane mode, vot
 ```
 **You check:** a rehearsal inside the auditorium itself with 10 phones (Android and iPhone) and the real stage laptop.
 
-## Track H: Stamp Hunt (part of the launch)
+## Track H: Treasure Hunt (part of the launch)
 
-Before starting: run `supabase/schema_stamps.sql` (after `schema.sql` and `schema_sports.sql`). Read `STAMP_HUNT.md`.
+Before starting: run `supabase/schema_stamps.sql` (after `schema.sql`). Read `STAMP_HUNT.md`. The hunt has about 10 hidden places. Each place has a static QR sticker (made once by a volunteer or host); students read a clue and a hint, find the place and scan. There is no rotating code, no Stamp Station screen and no time window per competition.
 
-### Prompt H.0: Replace the Stamp Hunt placeholder (use this if /hunt shows "launches in Track H")
+### Prompt H.0: Replace the hunt placeholder (use this if /hunt shows "launches in Track H" or "Explore events")
 ```
-The /hunt page is a placeholder ("Your Fest Passport launches in Track H", "Explore events"). Remove it and build the real Stamp Hunt now. Read STAMP_HUNT.md, APP_FLOW.md (screens 20–23 and flow 3.3) and supabase/schema_stamps.sql. Match the attached PNGs 20 (scanner), 21 (stamp collected), 22 (hunt), 23 (leaderboard) exactly.
-First give me the SQL steps: run supabase/schema_stamps.sql if the stamp tables don't exist, then supabase/seed_hunt.sql for test data.
-1. /hunt, signed in: points / rank / stamps card; passport grid with one mascot tile per stamp point (collected in colour with time; LIVE pulsing border when its competition is on now; missing ones greyed with the competition name and time); "Full leaderboard" link; top-5 leaderboard preview with my row highlighted; rules line; "Hide me from the leaderboard" switch; closing countdown.
-2. /hunt, signed out: the same passport tiles (all missing), the live leaderboard preview, and a big "Join the hunt" button (sign in, then come back). Never show "launches in Track H" or "Explore events".
-3. Call-to-action everywhere on the hunt pages: a "Scan to collect" button that opens /scan, and a "LIVE NOW: <competition> stamp" card linking to that event when a stamp point's competition is running. Empty leaderboard: "No stamps yet. Scan at a competition to be #1."
-4. /hunt/leaderboard (design 23): podium top 3 with mascots, table from rank 4, my row highlighted, "N points to pass <name>" hint, Scan button.
-5. /scan must recognise every Fest Live QR: /stamp/<pointId>?c=<code> → "Collect stamp" (then /stamp/... claims it and shows design 21), /vote/<eventId> → "Open vote", /events/<id> → "Open event", /hunt → "Open Stamp Hunt". Unknown links show the address and ask before opening.
-6. /stamp/[pointId]: claim once with rpc('claim_stamp'); success = design 21 (+N, progress, new rank, next live stamp nearby); friendly messages for already / expired / not_live / closed / slow_down; signed out → login → back here automatically.
-7. Home: the Stamp Hunt card shows my stamps and rank (or "Join the hunt" when signed out) and the next live stamp.
-Test with seed_hunt.sql: open /admin/station/<pointId> on a laptop, scan its QR from a phone via /scan, see the stamp appear on /hunt and the leaderboard within 15 s. Run lint and build; report.
+The /hunt page is a placeholder. Remove it and build the real Treasure Hunt now. Read STAMP_HUNT.md, APP_FLOW.md (screens 20-23) and supabase/schema_stamps.sql. Match the attached PNGs 20 (scanner), 21 (stamp collected), 22 (hunt), 23 (leaderboard) exactly. First give me the SQL steps: run supabase/schema_stamps.sql if the stamp tables don't exist, then supabase/seed_hunt.sql for 10 sample places.
+Then do Prompts H.1 and H.2 below. Never show "launches in Track H" or "Explore events".
 ```
 
 ### Prompt H.1: Hunt pages and claiming
 ```
-Scope: follow PRD section 0. Read PROJECT_RULES.md, STAMP_HUNT.md and supabase/schema_stamps.sql. Match the attached designs ("Stamp Hunt", "Stamp collected").
-1. lib/data/hunt.ts: getHunt(), listStampPoints() (only the public columns: never select secret or print_code), getLeaderboard(limit) ordered by score desc, last_scan asc, getMyStamps() (cookie client).
-2. /hunt: passport grid (one mascot tile per stamp point: collected in colour with time, missing greyed with competition name and time), my points and rank, top 10 leaderboard with my row highlighted, rules, closing countdown, "Hide me from the leaderboard" switch (updates profiles.leaderboard_hidden). Signed-out users see the leaderboard and a "Join the hunt" sign-in button. Public parts cached (revalidate 15, tag "hunt").
-3. /stamp/[pointId] (the URL inside the QR, with ?c=<code>): if signed out, send to /login?next=<this URL> and come back automatically. If signed in, call supabase.rpc('claim_stamp', { p_point, p_code }) ONCE (guard against React double-invoke), then show: success (mascot animation, "+N!", stamps x of y, new rank) or the friendly message for already / expired / not_live / closed / slow_down. After success revalidateTag('hunt').
-4. /hunt/board: fullscreen leaderboard for a TV (big type, auto-refresh 15 s, top 15, QR to /hunt in the corner).
-5. Rate limit /stamp claims with Upstash (10 per minute per user) in addition to the database limit.
-Test with two accounts: claim, claim again, wrong code, scan a stamp whose competition isn't on. Run lint and build; report.
+Scope: follow PRD section 0. Read PROJECT_RULES.md, STAMP_HUNT.md and supabase/schema_stamps.sql. Match the attached designs ("Treasure hunt: clues", "Scan", "Stamp collected", "Leaderboard").
+1. lib/data/hunt.ts: getHunt() (stamp_hunt), getPassport() = rpc('my_hunt') (works signed out too: clues only), getLeaderboard(limit) from stamp_leaderboard ordered by score desc, last_scan asc. NEVER read the stamp_points table from the client: it has no client access.
+2. /hunt (design 22): points / rank / places found card; the clue list from my_hunt(): found places show their name, "+10" and the found_text; the first unfound clue is expanded with the clue text, the hint (always visible in a small box) and a "Scan it" button (opens /scan); later clues collapsed ("Clue 5 - tap to read"), or locked when `locked` is true (sequential mode); top hunters preview with my row; "Hide me from the leaderboard" switch (profiles.leaderboard_hidden); closing countdown. Signed out: clues visible, big "Join the hunt" sign-in button.
+3. /s/[token] (the URL inside every sticker): token = "<point id>.<code>" (split on the first dot). Signed out: go to /login?next=<this URL> and come back. Signed in: call rpc('claim_stamp', { p_point, p_code }) ONCE (guard against React double-invoke). Show design 21: "+10!", the found place name, found_text, progress "x of 10", rank, and the NEXT clue with "Next clue". Friendly messages for already, too_fast (show the wait seconds as a countdown), bad_code, closed, slow_down. After success revalidateTag('hunt').
+4. /scan must recognise our own links: /s/... -> "Collect stamp", /events/... -> "Open event", /hunt -> "Open the hunt"; anything else shows the address and asks before opening. No "enter a code" box.
+5. /hunt/board: fullscreen leaderboard for a TV (big type, auto-refresh 15 s, top 15, QR to /hunt in the corner).
+6. Rate limit /s claims per user (10 per minute) on top of the database rules; the database also keeps a 45 s gap between scans.
+Test with seed_hunt.sql on two accounts: read clues signed out, claim with the right QR link, claim again (already), wrong code (bad_code), scan two places within 45 s (too_fast), and confirm the place names are not in the network response before they are found.
 ```
 
-### Prompt H.2: Stamp Station and organiser tools
+### Prompt H.2: Hunt stickers, winners and the organiser editor
 ```
-Read STAMP_HUNT.md. Build:
-1. /admin/station/[pointId] (scorer/organiser): fullscreen, dark, huge QR encoding NEXT_PUBLIC_SITE_URL/stamp/<pointId>?c=<code>. Get the code from rpc('get_live_code') and refresh it when expires_in reaches 0 (plus every 30 s as a safety net); show a countdown ring, the competition name and time, "Stamps collected here: N" (refresh 15 s), and a warning banner if the page has been offline for more than 20 s. Ask for a Screen Wake Lock (navigator.wakeLock) so the screen stays on; show "Keep this screen on" if it is not supported.
-2. /admin/hunt (organiser): set hunt name, open/close time and point values; create/edit stamp points (name, competition, venue, mascot, bonus window, active); "Print backup standees" page (A5 standee with the printed-code QR NEXT_PUBLIC_SITE_URL/stamp/<pointId>?c=<print_code> from rpc('get_print_code'), competition name, "Use only if the station screen is down"); stamps list per point with "Remove" (delete) for suspicious ones; "Export winners" CSV (rank, name, email, stamps, score, last scan).
-3. Add "Stamp Hunt" to the organiser control room.
-Test the full loop on two phones: station shows the QR, the other phone scans, the stamp appears, the leaderboard updates within 15 s. Wait 90 s and scan a screenshot of the old QR: it must be refused. Run lint and build; report.
+Read STAMP_HUNT.md and ADDRESS_AND_PEOPLE.md. Build:
+1. /admin/hunt/qr (volunteers, hosts and organisers; use rpc('can_make_qr') on the server): list from rpc('list_stamp_qrs') with each place number, name, clue and a Print button; "Print all 10 (PDF)". A sticker shows: a QR encoding NEXT_PUBLIC_SITE_URL + path (path from the function, e.g. /s/<id>.<code>), the Fiesta'26 logo, the line "Scan to collect your stamp" and the place NUMBER only. NEVER print the place name or the clue on the sticker. QR error-correction level H, black on white, at least 5 cm for an A6 sticker. One-time: nothing on this page refreshes or rotates.
+2. /admin/hunt (organiser): hunt name, open/close time, points, min gap seconds, "one clue at a time" switch (sequential); places: add/edit (hidden name, clue, hint, found message, mascot, order), turn on or off, "Rotate code" button (rpc('rotate_stamp_code'), with a warning that the old sticker stops working and must be reprinted), per place the number of stamps; a list of stamps with "Delete" for suspicious ones.
+3. /admin/hunt/winners (volunteers and organisers): rpc('hunt_winners', { p_limit: 20 }) with search, rank, name, email, places, score, minutes taken (highlight under 15 minutes in orange), and "Export winners CSV". 
+4. Add "Hunt" (stickers, winners, editor) to the control room.
+Test: a volunteer prints a sticker, scans it from a phone, the stamp appears on /hunt and the leaderboard within 15 s; a student gets 404 on the sticker page; an organiser rotates a code and the old sticker is refused.
 ```
-**You check:** the screenshot test, and a printed standee scanned during and outside its competition time.
+**You check:** print one sticker on paper, scan it with a different phone in daylight, and walk the 10 clues once yourself.
 
 ## Track END: Back to the Signals app after the fest (before testing)
 
@@ -538,6 +532,33 @@ Test on a COPY of the database: set campus_from to 2 minutes ahead and watch a p
 ### Prompt END.2: The Signals app for 28 Nov (Level B)
 ```
 Build the minimum campus (original) app that shows in campus mode: run Prompts 4.1 and 4.2 above (My schedule, Signals: board, Raise a Signal, "I'm interested", accept, report, organiser moderation) with these differences: they appear only in campus mode; use the existing tables from supabase/schema.sql (signals, signal_responses, reports, stars); restyle with the brand tokens in BRAND.md (or the campus brand when I send it); contacts stay hidden until the poster accepts (get_signal_contact); apply the same security rules (SECURITY.md) and rate limits (3 open Signals per user at most; 5 new Signals per hour). Match the existing PNGs 90, 91, 92.
+```
+
+## Track P: Peak load for 2,000 people (after Track V, before Track TEST)
+
+### Prompt P.1: Make the peaks cheap
+```
+Read PEAK_LOAD.md fully and loadtest/README.md. Scope: follow PRD section 0.
+1. Public pages (home shell, /events, /events/[id], line-up, results, archive) are static or ISR; organiser and host saves call revalidateTag/revalidatePath so changes show at once.
+2. /api/live: ONE combined endpoint (now, next, changes, urgent notices, app status, open polls) with s-maxage 15 and stale-while-revalidate 60. The app makes no other polling calls.
+3. lib/poll.ts: one poll loop per device every 20 s (10 s on live pages) with +/-30% jitter, paused when the tab is hidden, exponential backoff to 60 s on errors; retries also use jitter. No Supabase Realtime for students.
+4. Vote results cached 5 s and the leaderboard 15 s (route handlers with Cache-Control); never computed per request.
+5. All sign-up, sign-in, reset and resend calls run from the BROWSER client. Rate limits are per email/account; any IP limit is only a flood guard (600 per 10 min) because hundreds of students share one campus IP.
+6. Images: covers resized on upload (1600 px WebP), list uses thumbnails through next/image with long cache. Public pages under 200 KB gzip of JavaScript.
+7. /api/push/send: batches of about 50 concurrent sends, 5 s timeout each, maxDuration 60, continues from push_queue, max 6 alerts per device per hour.
+8. scripts/warm-cache.mjs: opens /, /events, every event page, /api/live and /api/vote/<id> (run 15 min before each peak).
+Test: run loadtest/k6-peaks.mjs scenarios readers, signin, vote, registration against the PREVIEW deployment with a STAGING Supabase project (never production). Paste the results and fix anything over the thresholds.
+```
+
+## Track STAFF: Volunteers and hosts by email (after Track HOST)
+
+### Prompt STAFF.1: Invite volunteers and hosts by email
+```
+Read ADDRESS_AND_PEOPLE.md Part 2 and supabase/schema_ops.sql (invite_host, invite_volunteer, staff_invites, accept_staff_invites). Match PNG 47.
+1. /admin/hosts gets a role switch "Host (one event)" / "Volunteer (all)". Host: pick the event and an email, call rpc('invite_host'). Volunteer: email only, call rpc('invite_volunteer'). Show status active or invited and friendly errors. A list of current volunteers (profiles.role = 'volunteer') and pending staff_invites with a remove action (remove = delete the invite; set role back to 'student' with a server action that writes the audit log).
+2. Tell the person to "Sign in with THIS email (Continue with Google is easiest)". Without a custom domain, show the invite link to copy and send on WhatsApp instead of emailing it.
+3. Everywhere the app shows a badge or the text "verified", "ID checked" or "college email": remove it. There is no verification; anyone signed in can vote and play.
+Test: invite an email with no account (invited), sign up with it WITHOUT confirming (still a student), confirm (volunteer appears); a student gets "Not allowed" from invite_volunteer and 404 on /admin/hunt/qr; a volunteer reaches the sticker page and the winners list but not the safety panel.
 ```
 
 ## Track TEST: Run the gates before we test

@@ -6,7 +6,9 @@ import { Copy, MailPlus, Trash2, Users } from 'lucide-react';
 import { toast } from 'sonner';
 import {
   cancelHostInviteAction,
+  cancelVolunteerInviteAction,
   inviteHostAction,
+  inviteVolunteerAction,
   removeHostAction,
 } from '@/app/admin/hosts/actions';
 
@@ -29,14 +31,36 @@ export interface HostEventRow {
 export function AdminHostsClient({
   events,
   hostsUntil,
+  volunteers = [],
+  pendingVolunteers = [],
 }: {
   events: HostEventRow[];
   hostsUntil: string;
+  volunteers?: Array<{ id: string; full_name: string | null; email: string | null }>;
+  pendingVolunteers?: Array<{ email: string; created_at: string }>;
 }) {
   const [isPending, startTransition] = useTransition();
   const [eventId, setEventId] = useState(events[0]?.id ?? '');
   const [email, setEmail] = useState('');
+  const [volEmail, setVolEmail] = useState('');
   const [lastShareLink, setLastShareLink] = useState<string | null>(null);
+
+  function handleInviteVolunteer(e: React.FormEvent) {
+    e.preventDefault();
+    if (!volEmail.trim()) return;
+    startTransition(async () => {
+      const res = await inviteVolunteerAction(volEmail.trim());
+      if (!res.ok) toast.error(res.error);
+      else {
+        setVolEmail('');
+        toast.success(
+          res.status === 'active'
+            ? 'Volunteer activated immediately!'
+            : 'Volunteer invite saved! They become a volunteer once they sign in with that email.'
+        );
+      }
+    });
+  }
 
   function handleInvite(e: React.FormEvent) {
     e.preventDefault();
@@ -159,6 +183,80 @@ export function AdminHostsClient({
               <Copy className="size-3" />
               Copy link
             </button>
+          </div>
+        )}
+      </form>
+
+      {/* Invite Volunteer Form */}
+      <form
+        onSubmit={handleInviteVolunteer}
+        className="rounded-[22px] border-[1.5px] border-[#3B2758] bg-[#1F1230] p-5 space-y-3"
+      >
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <div>
+            <h2 className="flex items-center gap-2 font-heading text-lg font-extrabold text-[#F4F2FA]">
+              <Users className="size-5 text-[#22D3EE]" />
+              Volunteers (Hunt QR Stickers &amp; Prize Desk Winners)
+            </h2>
+            <p className="text-xs text-[#9C97B0]">
+              Volunteers can print Treasure Hunt stickers (<code>/staff/stickers</code>) and view the winners list (<code>/staff/winners</code>).
+            </p>
+          </div>
+        </div>
+        <div className="flex flex-wrap gap-2">
+          <input
+            type="email"
+            required
+            value={volEmail}
+            onChange={(e) => setVolEmail(e.target.value)}
+            placeholder="volunteer@gmail.com"
+            className="h-11 flex-1 min-w-[220px] rounded-xl border border-[#3B2758] bg-[#12091E] px-3 text-sm text-[#F4F2FA] outline-none focus:border-[#22D3EE]"
+          />
+          <button
+            type="submit"
+            disabled={isPending}
+            className="h-11 rounded-xl bg-[#22D3EE] px-4 text-sm font-extrabold text-[#12091E] disabled:opacity-50 cursor-pointer"
+          >
+            Invite Volunteer
+          </button>
+        </div>
+
+        {(volunteers.length > 0 || pendingVolunteers.length > 0) && (
+          <div className="grid gap-2 sm:grid-cols-2 pt-1">
+            {volunteers.map((v) => (
+              <div
+                key={v.id}
+                className="flex items-center justify-between rounded-xl bg-[#12091E] px-3 py-2 text-xs"
+              >
+                <span className="truncate font-bold text-[#F4F2FA]">
+                  {v.full_name || v.email}
+                </span>
+                <span className="rounded-full bg-[#22D3EE]/20 px-2 py-0.5 text-[10px] font-extrabold text-[#22D3EE]">
+                  VOLUNTEER
+                </span>
+              </div>
+            ))}
+            {pendingVolunteers.map((inv) => (
+              <div
+                key={inv.email}
+                className="flex items-center justify-between rounded-xl border border-dashed border-[#3B2758] bg-[#12091E]/60 px-3 py-2 text-xs"
+              >
+                <span className="truncate text-[#CFCBDD]">{inv.email}</span>
+                <button
+                  type="button"
+                  onClick={() =>
+                    startTransition(async () => {
+                      const r = await cancelVolunteerInviteAction(inv.email);
+                      if (!r.ok) toast.error(r.error);
+                      else toast.success('Volunteer invite cancelled.');
+                    })
+                  }
+                  className="text-[#FF4F5E] hover:underline cursor-pointer"
+                >
+                  Cancel
+                </button>
+              </div>
+            ))}
           </div>
         )}
       </form>

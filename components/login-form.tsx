@@ -146,8 +146,8 @@ export function LoginForm({ nextPath, initialError }: LoginFormProps) {
         </button>
 
         <p className="text-center text-xs text-[#9C97B0]">
-          Use your <strong className="text-[#F4F2FA]">@sdmcet.ac.in</strong>{' '}
-          account for the Verified Student badge.
+          Fastest way in — any Google or email account can vote and play the
+          Treasure Hunt.
         </p>
 
         <div className="flex items-center gap-3 text-xs font-bold uppercase tracking-[0.08em] text-[#9C97B0]">
