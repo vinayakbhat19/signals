@@ -59,7 +59,7 @@ export function StampStationClient({
       width: 512,
       margin: 1,
       errorCorrectionLevel: 'M',
-      color: { dark: '#0B0A12', light: '#F4F2FA' },
+      color: { dark: '#12091E', light: '#F4F2FA' },
     }).then((url) => setQrDataUrl(url));
   }, [pointId, siteUrl, state.code]);
 
@@ -117,14 +117,14 @@ export function StampStationClient({
   const ringOffset = Math.round(((30 - secondsLeft) / 30) * ringTotal);
 
   return (
-    <div className="mx-auto flex min-h-dvh max-w-md flex-col items-center justify-between bg-[#0B0A12] px-5 py-5 text-[#F4F2FA]">
+    <div className="mx-auto flex min-h-dvh max-w-md flex-col items-center justify-between bg-[#12091E] px-5 py-5 text-[#F4F2FA]">
       <div className="w-full space-y-3">
         <div className="flex items-center justify-between">
-          <span className="text-xs font-extrabold uppercase tracking-[0.12em] text-[#A78BFA]">
+          <span className="text-xs font-extrabold uppercase tracking-[0.12em] text-[#9B6CFF]">
             STAMP STATION
           </span>
-          <span className="flex items-center gap-2 text-xs font-bold text-[#C6FF3D]">
-            <span className="size-2.5 rounded-full bg-[#C6FF3D]" />
+          <span className="flex items-center gap-2 text-xs font-bold text-[#FFD60A]">
+            <span className="size-2.5 rounded-full bg-[#FFD60A]" />
             {wakeLocked ? 'Online · screen stays on' : 'Keep this screen on'}
           </span>
         </div>
@@ -146,7 +146,7 @@ export function StampStationClient({
             {endsAt ? ` · live until ${formatTime(endsAt)}` : ''}
           </p>
           {bonusActive && (
-            <span className="mt-1 inline-block rounded-full bg-[#FFE14D] px-3 py-1 text-xs font-extrabold uppercase tracking-[0.06em] text-[#0B0A12]">
+            <span className="mt-1 inline-block rounded-full bg-[#FFE14D] px-3 py-1 text-xs font-extrabold uppercase tracking-[0.06em] text-[#12091E]">
               BONUS +5 ACTIVE · FINAL ROUND
             </span>
           )}
@@ -168,7 +168,7 @@ export function StampStationClient({
               height="360"
               rx="44"
               fill="none"
-              stroke="#2E2A3D"
+              stroke="#3B2758"
               strokeWidth="8"
             />
             <rect
@@ -178,7 +178,7 @@ export function StampStationClient({
               height="360"
               rx="44"
               fill="none"
-              stroke="#C6FF3D"
+              stroke="#FFD60A"
               strokeWidth="8"
               strokeDasharray={`${ringTotal} ${ringTotal}`}
               strokeDashoffset={ringOffset}
@@ -199,7 +199,7 @@ export function StampStationClient({
                 className="size-full object-contain"
               />
             ) : (
-              <span className="text-xs font-bold text-[#0B0A12]">
+              <span className="text-xs font-bold text-[#12091E]">
                 Generating QR…
               </span>
             )}
@@ -207,7 +207,7 @@ export function StampStationClient({
         </div>
 
         <p className="mt-4 font-heading text-[22px] font-extrabold">
-          New code in <span className="text-[#C6FF3D]">{secondsLeft} s</span>
+          New code in <span className="text-[#FFD60A]">{secondsLeft} s</span>
         </p>
         <p className="mt-1 text-center text-sm text-[#BDB8CF]">
           Point your camera here to collect the stamp
@@ -217,13 +217,13 @@ export function StampStationClient({
       {/* Live Stamp Counters */}
       <div className="w-full space-y-3">
         <div className="grid grid-cols-2 gap-2.5">
-          <div className="rounded-[18px] border-[1.5px] border-[#2E2A3D] bg-[#16141F] p-3.5">
-            <div className="font-heading text-3xl font-extrabold text-[#C6FF3D]">
+          <div className="rounded-[18px] border-[1.5px] border-[#3B2758] bg-[#1F1230] p-3.5">
+            <div className="font-heading text-3xl font-extrabold text-[#FFD60A]">
               {state.total_stamps}
             </div>
             <div className="text-xs font-bold text-[#BDB8CF]">stamps here</div>
           </div>
-          <div className="rounded-[18px] border-[1.5px] border-[#2E2A3D] bg-[#16141F] p-3.5">
+          <div className="rounded-[18px] border-[1.5px] border-[#3B2758] bg-[#1F1230] p-3.5">
             <div className="font-heading text-3xl font-extrabold text-[#F4F2FA]">
               {state.last_minute}
             </div>

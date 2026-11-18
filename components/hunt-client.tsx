@@ -118,11 +118,11 @@ export function HuntClient({
       {/* Header matching 22-hunt.png */}
       <header className="flex items-start justify-between gap-3 pt-1">
         <div className="space-y-1">
-          <span className="block text-[11px] font-extrabold uppercase tracking-[0.12em] text-[#A78BFA]">
+          <span className="block text-[11px] font-extrabold uppercase tracking-[0.12em] text-[#9B6CFF]">
             {eyebrow}
           </span>
-          <h1 className="font-heading text-[40px] font-extrabold leading-none tracking-[-0.03em] text-[#F4F2FA]">
-            {hunt?.name ?? 'Stamp Hunt'}
+          <h1 className="font-display text-[32px] leading-none tracking-[-0.01em] text-[#F4F2FA] sm:text-[38px]">
+            {hunt?.name ?? 'STAMP HUNT'}
           </h1>
         </div>
         <StampHeaderMascot size={64} />
@@ -132,7 +132,7 @@ export function HuntClient({
       {userId ? (
         <section
           aria-label="My hunt progress"
-          className="grid grid-cols-3 gap-2 rounded-[24px] bg-[#C6FF3D] px-[18px] py-4 text-[#0B0A12] shadow-[5px_5px_0_#FF4FA3]"
+          className="grid grid-cols-3 gap-2 rounded-[24px] bg-[#FFD60A] px-[18px] py-4 text-[#12091E] shadow-[5px_5px_0_#FF4FD8]"
         >
           <div className="flex flex-col">
             <span className="font-heading text-[34px] font-extrabold leading-none">
@@ -156,7 +156,7 @@ export function HuntClient({
           </div>
         </section>
       ) : (
-        <section className="rounded-[24px] bg-[#C6FF3D] p-5 text-[#0B0A12] shadow-[5px_5px_0_#FF4FA3] space-y-3">
+        <section className="rounded-[24px] bg-[#FFD60A] p-5 text-[#12091E] shadow-[5px_5px_0_#FF4FD8] space-y-3">
           <div className="space-y-1">
             <span className="text-[11px] font-extrabold uppercase tracking-[0.1em]">
               FREE TO PLAY · WIN FEST PRIZES
@@ -164,13 +164,13 @@ export function HuntClient({
             <h2 className="font-heading text-2xl font-extrabold leading-tight">
               Collect stamps across campus & climb the leaderboard
             </h2>
-            <p className="text-sm font-semibold text-[#0B0A12]/80">
+            <p className="text-sm font-semibold text-[#12091E]/80">
               Sign in to start collecting stamps at competitions. +{hunt?.stamp_value ?? 10} per stamp, +{hunt?.complete_bonus ?? 20} for completing your passport.
             </p>
           </div>
           <Link
             href="/login?next=/hunt"
-            className="inline-flex h-12 w-full items-center justify-center rounded-[14px] bg-[#0B0A12] px-5 text-sm font-extrabold text-[#C6FF3D]"
+            className="inline-flex h-12 w-full items-center justify-center rounded-[14px] bg-[#12091E] px-5 text-sm font-extrabold text-[#FFD60A]"
           >
             Join the hunt →
           </Link>
@@ -181,7 +181,7 @@ export function HuntClient({
       <div className="grid gap-2.5 sm:grid-cols-2">
         <Link
           href="/scan"
-          className="flex min-h-[54px] items-center justify-center gap-2.5 rounded-[18px] bg-[#FF4FA3] px-4 py-3 text-base font-extrabold text-[#0B0A12] shadow-[4px_4px_0_#A78BFA] active:translate-y-0.5 transition-transform"
+          className="flex min-h-[54px] items-center justify-center gap-2.5 rounded-[18px] bg-[#FF4FD8] px-4 py-3 text-base font-extrabold text-[#12091E] shadow-[4px_4px_0_#9B6CFF] active:translate-y-0.5 transition-transform"
         >
           <QrCode className="size-5 stroke-[2.5]" aria-hidden="true" />
           Scan to collect
@@ -194,13 +194,13 @@ export function HuntClient({
                 ? `/events/${anyLivePoint.event_id}`
                 : '/scan'
             }
-            className="flex items-center gap-3 rounded-[18px] border-[1.5px] border-[#FF4FA3] bg-[#16141F] px-3.5 py-2.5 text-[#F4F2FA] hover:bg-[#1E1B2B]"
+            className="flex items-center gap-3 rounded-[18px] border-[1.5px] border-[#FF4FD8] bg-[#1F1230] px-3.5 py-2.5 text-[#F4F2FA] hover:bg-[#1E1B2B]"
           >
-            <span className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-[#FF4FA3]/20 text-[#FF4FA3]">
+            <span className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-[#FF4FD8]/20 text-[#FF4FD8]">
               <Radio className="size-4" aria-hidden="true" />
             </span>
             <div className="min-w-0 flex-1">
-              <span className="block text-[10px] font-extrabold uppercase tracking-[0.08em] text-[#FF4FA3]">
+              <span className="block text-[10px] font-extrabold uppercase tracking-[0.08em] text-[#FF4FD8]">
                 LIVE NOW · STAMP OPEN
               </span>
               <span className="block truncate text-sm font-extrabold">
@@ -244,7 +244,7 @@ export function HuntClient({
                     <Link
                       href={tileHref}
                       title={`${point.name} — collected at ${formatTime(collected.scanned_at)} (+${collected.points} pts)`}
-                      className="flex h-full flex-col items-center justify-between gap-1 rounded-[14px] border-[1.5px] bg-[#16141F] px-1.5 py-2 text-center"
+                      className="flex h-full flex-col items-center justify-between gap-1 rounded-[14px] border-[1.5px] bg-[#1F1230] px-1.5 py-2 text-center"
                       style={{ borderColor: color }}
                     >
                       <StampMascotSvg mascot={point.mascot} size={40} />
@@ -265,9 +265,9 @@ export function HuntClient({
                     <Link
                       href={tileHref}
                       title={`${point.name} — LIVE right now!`}
-                      className="flex h-full flex-col items-center justify-between gap-1 rounded-[14px] border-2 border-[#FF4FA3] bg-[#FF4FA3]/10 px-1.5 py-2 text-center text-[#FF7DBB]"
+                      className="flex h-full flex-col items-center justify-between gap-1 rounded-[14px] border-2 border-[#FF4FD8] bg-[#FF4FD8]/10 px-1.5 py-2 text-center text-[#FF7DBB]"
                     >
-                      <span className="flex size-10 items-center justify-center rounded-full border-2 border-dashed border-[#FF4FA3] text-[10px] font-extrabold text-[#FF4FA3]">
+                      <span className="flex size-10 items-center justify-center rounded-full border-2 border-dashed border-[#FF4FD8] text-[10px] font-extrabold text-[#FF4FD8]">
                         LIVE
                       </span>
                       <span className="line-clamp-2 text-[10px] font-extrabold leading-tight text-[#F4F2FA]">
@@ -309,9 +309,9 @@ export function HuntClient({
             })}
           </ul>
         ) : (
-          <div className="rounded-[20px] border-[1.5px] border-dashed border-[#2E2A3D] bg-[#16141F]/60 p-6 text-center text-sm text-[#9C97B0]">
+          <div className="rounded-[20px] border-[1.5px] border-dashed border-[#3B2758] bg-[#1F1230]/60 p-6 text-center text-sm text-[#9C97B0]">
             No stamp stations are active yet. Run{' '}
-            <code className="text-[#C6FF3D]">supabase/seed_hunt.sql</code> in
+            <code className="text-[#FFD60A]">supabase/seed_hunt.sql</code> in
             Supabase SQL Editor to populate test stations.
           </div>
         )}
@@ -328,32 +328,32 @@ export function HuntClient({
           </h2>
           <Link
             href="/hunt/leaderboard"
-            className="py-1.5 text-sm font-bold text-[#C6FF3D] hover:text-[#E3FF9A]"
+            className="py-1.5 text-sm font-bold text-[#FFD60A] hover:text-[#E3FF9A]"
           >
             Full leaderboard
           </Link>
         </div>
 
         {topFive.length > 0 ? (
-          <ol className="overflow-hidden rounded-[20px] border-[1.5px] border-[#2E2A3D] bg-[#16141F] text-sm">
+          <ol className="overflow-hidden rounded-[20px] border-[1.5px] border-[#3B2758] bg-[#1F1230] text-sm">
             {topFive.map((row, idx) => {
               const isMe = row.user_id === userId;
               const badgeBg =
                 row.rank === 1
-                  ? 'bg-[#FFE14D] text-[#0B0A12]'
+                  ? 'bg-[#FFE14D] text-[#12091E]'
                   : row.rank === 2
-                    ? 'bg-[#DCD8E6] text-[#0B0A12]'
+                    ? 'bg-[#DCD8E6] text-[#12091E]'
                     : row.rank === 3
-                      ? 'bg-[#FF9F43] text-[#0B0A12]'
-                      : 'bg-[#24212F] text-[#CFCBDD]';
+                      ? 'bg-[#FF9F43] text-[#12091E]'
+                      : 'bg-[#2A1840] text-[#CFCBDD]';
 
               return (
                 <li
                   key={row.user_id}
                   className={cn(
                     'flex items-center gap-3 px-3.5 py-3',
-                    idx > 0 && 'border-t border-[#2E2A3D]',
-                    isMe && 'bg-[#C6FF3D]/10'
+                    idx > 0 && 'border-t border-[#3B2758]',
+                    isMe && 'bg-[#FFD60A]/10'
                   )}
                 >
                   <span
@@ -368,7 +368,7 @@ export function HuntClient({
                     {isMe ? `You · ${row.display_name}` : row.display_name}
                     {row.verified && (
                       <Check
-                        className="ml-1 inline size-3.5 text-[#C6FF3D]"
+                        className="ml-1 inline size-3.5 text-[#FFD60A]"
                         aria-label="Verified student"
                       />
                     )}
@@ -380,7 +380,7 @@ export function HuntClient({
                     className={cn(
                       'w-11 text-right font-extrabold',
                       row.rank === 1 || isMe
-                        ? 'text-[#C6FF3D]'
+                        ? 'text-[#FFD60A]'
                         : 'text-[#F4F2FA]'
                     )}
                   >
@@ -391,8 +391,8 @@ export function HuntClient({
             })}
 
             {showMyRowSeparately && myRankRow && (
-              <li className="flex items-center gap-3 border-t border-dashed border-[#3A3549] bg-[#C6FF3D]/10 px-3.5 py-3">
-                <span className="flex size-7 shrink-0 items-center justify-center rounded-[9px] border-[1.5px] border-[#C6FF3D] text-xs font-extrabold text-[#C6FF3D]">
+              <li className="flex items-center gap-3 border-t border-dashed border-[#3A3549] bg-[#FFD60A]/10 px-3.5 py-3">
+                <span className="flex size-7 shrink-0 items-center justify-center rounded-[9px] border-[1.5px] border-[#FFD60A] text-xs font-extrabold text-[#FFD60A]">
                   {myRankRow.rank}
                 </span>
                 <span className="min-w-0 flex-1 truncate font-extrabold text-[#F4F2FA]">
@@ -401,20 +401,20 @@ export function HuntClient({
                 <span className="text-xs text-[#9C97B0]">
                   {myRankRow.stamps} stamps
                 </span>
-                <span className="w-11 text-right font-extrabold text-[#C6FF3D]">
+                <span className="w-11 text-right font-extrabold text-[#FFD60A]">
                   {myRankRow.score}
                 </span>
               </li>
             )}
           </ol>
         ) : (
-          <div className="rounded-[20px] border-[1.5px] border-[#2E2A3D] bg-[#16141F] px-5 py-7 text-center space-y-3">
+          <div className="rounded-[20px] border-[1.5px] border-[#3B2758] bg-[#1F1230] px-5 py-7 text-center space-y-3">
             <p className="text-sm font-semibold text-[#CFCBDD]">
               No stamps yet. Scan at a competition to be #1.
             </p>
             <Link
               href="/scan"
-              className="inline-flex min-h-10 items-center gap-2 rounded-xl bg-[#C6FF3D] px-4 text-xs font-extrabold text-[#0B0A12]"
+              className="inline-flex min-h-10 items-center gap-2 rounded-xl bg-[#FFD60A] px-4 text-xs font-extrabold text-[#12091E]"
             >
               <QrCode className="size-4" aria-hidden="true" />
               Scan a Stamp Station
@@ -433,14 +433,14 @@ export function HuntClient({
 
         {/* Hide me switch (signed in only) */}
         {userId && (
-          <label className="flex min-h-11 items-center justify-between gap-3 rounded-[16px] border-[1.5px] border-[#2E2A3D] bg-[#16141F] px-4 py-2 text-sm font-semibold text-[#F4F2FA] cursor-pointer">
+          <label className="flex min-h-11 items-center justify-between gap-3 rounded-[16px] border-[1.5px] border-[#3B2758] bg-[#1F1230] px-4 py-2 text-sm font-semibold text-[#F4F2FA] cursor-pointer">
             <span>Hide me from the leaderboard</span>
             <input
               type="checkbox"
               checked={hidden}
               disabled={isPending}
               onChange={(e) => handleToggleHidden(e.target.checked)}
-              className="size-5 accent-[#C6FF3D] cursor-pointer"
+              className="size-5 accent-[#FFD60A] cursor-pointer"
             />
           </label>
         )}

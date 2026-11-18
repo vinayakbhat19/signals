@@ -4,6 +4,8 @@ Everything needed to build **Fest Live** (the live fest guide plus the Signals "
 
 | File | What it is | When you use it |
 | --- | --- | --- |
+| `BRAND.md` + `brand/` | **Official Fiesta'26 look:** logo, banner, app icons, colours, fonts | Copy `brand/` to `public/brand/`; attach with the first UI prompt |
+| `FORMS_CHECK.md` | What the Linktree form previews show: confirmed times/venues and forms that look unfinished | Send to the committee |
 | `APP_FLOW.md` | **The complete structure:** every screen (IDs 01–46), route, who sees it, where each button goes, flows, roles and the Next.js folder layout | Read first, alongside the designs |
 | `design/` | `index.html` (all screens in flow order, clickable), `png/` (screenshot of every screen to attach to prompts), `screens/` (each screen as standalone HTML) | Attach PNGs to every prompt |
 | `PRD.md` | Product requirements: goals, features, pages, data, limits | Read first; the agent reads it every phase |

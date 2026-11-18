@@ -34,10 +34,10 @@ export function HuntBoardClient({
   const rows = payload.leaderboard.slice(0, 15);
 
   return (
-    <div className="min-h-dvh bg-[#0B0A12] p-8 text-[#F4F2FA] flex flex-col justify-between gap-6">
+    <div className="min-h-dvh bg-[#12091E] p-8 text-[#F4F2FA] flex flex-col justify-between gap-6">
       <div className="flex items-start justify-between gap-6">
         <div>
-          <span className="text-sm font-extrabold uppercase tracking-[0.14em] text-[#C6FF3D]">
+          <span className="text-sm font-extrabold uppercase tracking-[0.14em] text-[#FFD60A]">
             {festName} · LIVE LEADERBOARD
           </span>
           <h1 className="mt-1 font-heading text-5xl font-extrabold tracking-[-0.03em]">
@@ -46,7 +46,7 @@ export function HuntBoardClient({
         </div>
 
         {/* QR to /hunt in top-right corner */}
-        <div className="flex items-center gap-3 rounded-2xl border-2 border-[#C6FF3D] bg-[#16141F] p-3">
+        <div className="flex items-center gap-3 rounded-2xl border-2 border-[#FFD60A] bg-[#1F1230] p-3">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src={qrDataUrl}
@@ -54,7 +54,7 @@ export function HuntBoardClient({
             className="size-24 rounded-xl bg-white p-1"
           />
           <div className="max-w-[140px]">
-            <div className="text-xs font-extrabold uppercase tracking-wider text-[#C6FF3D]">
+            <div className="text-xs font-extrabold uppercase tracking-wider text-[#FFD60A]">
               JOIN NOW
             </div>
             <div className="mt-0.5 text-sm font-bold leading-snug">
@@ -71,19 +71,19 @@ export function HuntBoardClient({
               key={row.user_id}
               className={
                 row.rank === 1
-                  ? 'flex items-center gap-4 rounded-2xl bg-[#C6FF3D] px-5 py-4 text-[#0B0A12] shadow-[5px_5px_0_#FF4FA3]'
-                  : 'flex items-center gap-4 rounded-2xl border-2 border-[#2E2A3D] bg-[#16141F] px-5 py-4'
+                  ? 'flex items-center gap-4 rounded-2xl bg-[#FFD60A] px-5 py-4 text-[#12091E] shadow-[5px_5px_0_#FF4FD8]'
+                  : 'flex items-center gap-4 rounded-2xl border-2 border-[#3B2758] bg-[#1F1230] px-5 py-4'
               }
             >
               <span
                 className={
                   row.rank === 1
-                    ? 'flex size-11 items-center justify-center rounded-xl bg-[#0B0A12] font-heading text-2xl font-extrabold text-[#C6FF3D]'
+                    ? 'flex size-11 items-center justify-center rounded-xl bg-[#12091E] font-heading text-2xl font-extrabold text-[#FFD60A]'
                     : row.rank === 2
-                      ? 'flex size-11 items-center justify-center rounded-xl bg-[#DCD8E6] font-heading text-2xl font-extrabold text-[#0B0A12]'
+                      ? 'flex size-11 items-center justify-center rounded-xl bg-[#DCD8E6] font-heading text-2xl font-extrabold text-[#12091E]'
                       : row.rank === 3
-                        ? 'flex size-11 items-center justify-center rounded-xl bg-[#FF9F43] font-heading text-2xl font-extrabold text-[#0B0A12]'
-                        : 'flex size-11 items-center justify-center rounded-xl bg-[#24212F] font-heading text-xl font-extrabold text-[#CFCBDD]'
+                        ? 'flex size-11 items-center justify-center rounded-xl bg-[#FF9F43] font-heading text-2xl font-extrabold text-[#12091E]'
+                        : 'flex size-11 items-center justify-center rounded-xl bg-[#2A1840] font-heading text-xl font-extrabold text-[#CFCBDD]'
                 }
               >
                 {row.rank === 1 ? <Crown className="size-6" /> : row.rank}
@@ -98,7 +98,7 @@ export function HuntBoardClient({
                 <div
                   className={
                     row.rank === 1
-                      ? 'text-sm font-bold text-[#0B0A12]/80'
+                      ? 'text-sm font-bold text-[#12091E]/80'
                       : 'text-sm text-[#9C97B0]'
                   }
                 >
@@ -109,7 +109,7 @@ export function HuntBoardClient({
                 className={
                   row.rank === 1
                     ? 'font-heading text-3xl font-extrabold'
-                    : 'font-heading text-3xl font-extrabold text-[#C6FF3D]'
+                    : 'font-heading text-3xl font-extrabold text-[#FFD60A]'
                 }
               >
                 {row.score}
@@ -118,7 +118,7 @@ export function HuntBoardClient({
           ))}
         </div>
       ) : (
-        <div className="rounded-3xl border-2 border-dashed border-[#2E2A3D] p-16 text-center font-heading text-3xl font-extrabold text-[#9C97B0]">
+        <div className="rounded-3xl border-2 border-dashed border-[#3B2758] p-16 text-center font-heading text-3xl font-extrabold text-[#9C97B0]">
           No stamps yet — scan at any competition to be #1!
         </div>
       )}

@@ -11,7 +11,7 @@ const collegeName =
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
 
 export const viewport: Viewport = {
-  themeColor: '#0B0A12',
+  themeColor: '#12091E',
   colorScheme: 'dark',
   width: 'device-width',
   initialScale: 1,
@@ -20,20 +20,38 @@ export const viewport: Viewport = {
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
   title: {
-    default: `${festName} · fest.live`,
-    template: `%s · ${festName}`,
+    default: `${festName} Live · SDMCET`,
+    template: `%s · ${festName} Live`,
   },
   description: `Live schedule, venues, audience voting, Stamp Hunt and updates for ${festName} at ${collegeName}.`,
+  icons: {
+    icon: '/brand/icon-192.png',
+    apple: '/brand/icon-192.png',
+  },
+  appleWebApp: {
+    capable: true,
+    title: `${festName} Live`,
+    statusBarStyle: 'black-translucent',
+  },
   openGraph: {
     type: 'website',
-    siteName: `${festName} · fest.live`,
-    title: `${festName} · fest.live`,
-    description: `See what's happening now, up next, audience voting and Stamp Hunt at ${festName} (${collegeName}).`,
+    siteName: `${festName} Live`,
+    title: `${festName} Live · SDMCET`,
+    description: `See what's happening now, up next, registration links, audience voting and Stamp Hunt at ${festName} (${collegeName}).`,
+    images: [
+      {
+        url: '/brand/fiesta26-banner.jpg',
+        width: 1200,
+        height: 630,
+        alt: `${festName} — Intra College Cultural Fest, SDMCET Dharwad`,
+      },
+    ],
   },
   twitter: {
     card: 'summary_large_image',
-    title: `${festName} · fest.live`,
+    title: `${festName} Live · SDMCET`,
     description: `Live campus guide for ${festName} at ${collegeName}.`,
+    images: ['/brand/fiesta26-banner.jpg'],
   },
 };
 
@@ -53,11 +71,11 @@ export default function RootLayout({
         />
         {/* eslint-disable-next-line @next/next/no-page-custom-font */}
         <link
-          href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600..800&family=Inter:wght@400;500;600;700;800&display=swap"
+          href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600..800&family=Bungee&family=Inter:wght@400;500;600;700;800&display=swap"
           rel="stylesheet"
         />
       </head>
-      <body className="min-h-full bg-[#0B0A12] text-[#F4F2FA] font-sans">
+      <body className="min-h-full bg-[#12091E] text-[#F4F2FA] font-sans">
         <AppShell festName={festName} collegeName={collegeName}>
           {children}
         </AppShell>

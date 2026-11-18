@@ -43,7 +43,7 @@ Then show me the folder tree, run npm run lint, npm run build and npx vitest run
 
 ### Prompt 1.2: App shell and design system
 ```
-Read PROJECT_RULES.md. Build the app shell:
+Read PROJECT_RULES.md and BRAND.md. Copy the brand/ folder to public/brand/ and use brand/icon-192.png and icon-512.png for the web app manifest and favicon, brand/fiesta26-banner.jpg as the default Open Graph image and default event cover. Build the app shell:
 1. Root layout: fest name from env, metadata (title, description, Open Graph with a default image), theme colour {{BRAND_COLOR}}, light/dark following the system, Vercel Analytics.
 2. Mobile bottom tab bar (Home, Schedule, Signals, My, More) with lucide icons and the active tab highlighted; on screens ≥ 1024 px show a top nav instead. "More" opens a sheet with: Venues, Announcements, Results, About, and "Organiser panel" (only if the user is an organiser; for now just a link).
 3. Shared components: CategoryChip (colours from PROJECT_RULES.md), StatusBadge (scheduled/delayed/cancelled/done), EventCard (time range, title, venue, category, status, live dot, star button placeholder), EmptyState, ErrorState with retry, PageHeader, and list skeletons.

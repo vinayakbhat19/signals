@@ -88,7 +88,7 @@ export function LoginForm({ nextPath, initialError }: LoginFormProps) {
           <Link
             href={safeNext === '/login' ? '/' : safeNext}
             aria-label="Back"
-            className="flex size-11 items-center justify-center rounded-[14px] border-[1.5px] border-[#2E2A3D] bg-[#16141F] text-[#F4F2FA]"
+            className="flex size-11 items-center justify-center rounded-[14px] border-[1.5px] border-[#3B2758] bg-[#1F1230] text-[#F4F2FA]"
           >
             <ArrowLeft className="size-5" aria-hidden="true" />
           </Link>
@@ -123,7 +123,7 @@ export function LoginForm({ nextPath, initialError }: LoginFormProps) {
           type="button"
           onClick={() => void handleGoogleSignIn()}
           disabled={loadingGoogle || loadingEmail}
-          className="flex h-[54px] w-full items-center justify-center gap-3 rounded-[18px] bg-[#C6FF3D] text-base font-extrabold text-[#0B0A12] shadow-[5px_5px_0_#FF4FA3] transition-transform active:translate-y-0.5 disabled:opacity-60 cursor-pointer"
+          className="flex h-[54px] w-full items-center justify-center gap-3 rounded-[18px] bg-[#FFD60A] text-base font-extrabold text-[#12091E] shadow-[5px_5px_0_#FF4FD8] transition-transform active:translate-y-0.5 disabled:opacity-60 cursor-pointer"
         >
           {loadingGoogle ? (
             <Loader2 className="size-5 animate-spin" aria-hidden="true" />
@@ -144,9 +144,9 @@ export function LoginForm({ nextPath, initialError }: LoginFormProps) {
         </p>
 
         <div className="flex items-center gap-3 text-xs font-bold uppercase tracking-[0.08em] text-[#9C97B0]">
-          <span className="h-px flex-1 bg-[#2E2A3D]" />
+          <span className="h-px flex-1 bg-[#3B2758]" />
           or email & password
-          <span className="h-px flex-1 bg-[#2E2A3D]" />
+          <span className="h-px flex-1 bg-[#3B2758]" />
         </div>
 
         <form onSubmit={handleEmailSignIn} className="space-y-3.5">
@@ -165,7 +165,7 @@ export function LoginForm({ nextPath, initialError }: LoginFormProps) {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               placeholder="you@sdmcet.ac.in"
-              className="h-12 w-full rounded-[14px] border-[1.5px] border-[#2E2A3D] bg-[#16141F] px-4 text-sm text-[#F4F2FA] placeholder:text-[#8A8599] focus:border-[#C6FF3D] outline-none"
+              className="h-12 w-full rounded-[14px] border-[1.5px] border-[#3B2758] bg-[#1F1230] px-4 text-sm text-[#F4F2FA] placeholder:text-[#8A8599] focus:border-[#FFD60A] outline-none"
             />
           </div>
 
@@ -185,7 +185,7 @@ export function LoginForm({ nextPath, initialError }: LoginFormProps) {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="••••••••"
-                className="h-12 w-full rounded-[14px] border-[1.5px] border-[#2E2A3D] bg-[#16141F] pl-4 pr-12 text-sm text-[#F4F2FA] placeholder:text-[#8A8599] focus:border-[#C6FF3D] outline-none"
+                className="h-12 w-full rounded-[14px] border-[1.5px] border-[#3B2758] bg-[#1F1230] pl-4 pr-12 text-sm text-[#F4F2FA] placeholder:text-[#8A8599] focus:border-[#FFD60A] outline-none"
               />
               <button
                 type="button"
@@ -205,7 +205,7 @@ export function LoginForm({ nextPath, initialError }: LoginFormProps) {
           <button
             type="submit"
             disabled={loadingEmail || loadingGoogle}
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-[16px] border-[1.5px] border-[#2E2A3D] bg-[#16141F] text-sm font-extrabold text-[#F4F2FA] hover:border-[#C6FF3D] disabled:opacity-60 cursor-pointer"
+            className="flex h-12 w-full items-center justify-center gap-2 rounded-[16px] border-[1.5px] border-[#3B2758] bg-[#1F1230] text-sm font-extrabold text-[#F4F2FA] hover:border-[#FFD60A] disabled:opacity-60 cursor-pointer"
           >
             {loadingEmail && (
               <Loader2 className="size-4 animate-spin" aria-hidden="true" />
@@ -217,7 +217,7 @@ export function LoginForm({ nextPath, initialError }: LoginFormProps) {
 
       <p className="pt-6 text-center text-xs text-[#9C97B0]">
         Just want to check the schedule?{' '}
-        <Link href="/" className="font-bold text-[#C6FF3D] underline">
+        <Link href="/" className="font-bold text-[#FFD60A] underline">
           Continue browsing
         </Link>
       </p>

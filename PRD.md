@@ -8,20 +8,20 @@
 | Build window | 19–23 Nov (5 days), 24 Nov buffer |
 | Platform | Mobile-first website (PWA) opened from a link or QR code. No app-store install |
 
-Configured values:
+Replace these placeholders everywhere before you start:
 
-| Key | Value |
+| Placeholder | Example |
 | --- | --- |
-| Fest name | Fiest 2026 |
-| College name | SDM College of Engineering & Technology, Dharwad |
-| College domain | sdmcet.ac.in |
-| Brand theme | Neon Night (`#0B0A12` bg / `#C6FF3D` lime accent) |
+| `{{FEST_NAME}}` | **Fiesta'26** (official name: Fiesta 2026) |
+| `{{COLLEGE_NAME}}` | **SDM College of Engineering and Technology, Dharwad (SDMCET)**: confirm |
+| `{{COLLEGE_DOMAIN}}` | coeptech.ac.in |
+| `{{BRAND_COLOR}}` | #FFD60A (Fiesta yellow; full palette in BRAND.md) |
 
 ---
 
 ## 0. Scope for the first launch (updated: overrides the rest of this PRD)
 
-The first launch is the **campus fest on 25 Nov** only.
+The first launch is **Fiesta'26** (Fiesta 2026, intra college cultural fest, SDMCET Dharwad), **25–27 Nov 2026**.
 
 | In | Later (after the fest) |
 | --- | --- |
@@ -33,7 +33,7 @@ The first launch is the **campus fest on 25 Nov** only.
 | **Hosts and line-ups:** event hosts upload registrations (CSV/Excel), check people in, export; students see the public line-up | |
 | **Add to Home Screen** (PWA, never an app store) with a bar on every browser visit | |
 | Reliability: caching, fallbacks, emergency mode, rate limits, monitoring (`SPORTS_AND_RELIABILITY.md` part B) | "Here Now" opt-in presence |
-| **Bonus if tested by 23 Nov:** Stamp Hunt (`STAMP_HUNT.md`) | |
+| **Stamp Hunt** (part of the launch): scan stamp QRs at competitions, passport, live leaderboard (`STAMP_HUNT.md`) | |
 
 Consequences:
 - **Students never need to sign in to browse.** Accounts (Google, or email + password with a confirmation email) are only needed to vote and play the Stamp Hunt, and for organisers and volunteers. The Verified badge needs a **confirmed** college email.

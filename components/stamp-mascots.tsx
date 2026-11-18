@@ -3,10 +3,10 @@ import { cn } from '@/lib/utils';
 
 export const STAMP_MASCOT_COLOR: Record<StampMascot, string> = {
   zap: '#22D3EE',
-  beat: '#FF4FA3',
-  spark: '#C6FF3D',
+  beat: '#FF4FD8',
+  spark: '#FFD60A',
   kick: '#FF9F43',
-  doodle: '#A78BFA',
+  doodle: '#9B6CFF',
   buzz: '#FFE14D',
 };
 
@@ -26,15 +26,15 @@ export function StampHeaderMascot({
       viewBox="0 0 72 72"
       aria-hidden="true"
     >
-      <path d="M26 8h20v16l9 9v9H17v-9l9-9z" fill="#A78BFA" />
-      <rect x="12" y="46" width="48" height="10" rx="3" fill="#FF4FA3" />
+      <path d="M26 8h20v16l9 9v9H17v-9l9-9z" fill="#9B6CFF" />
+      <rect x="12" y="46" width="48" height="10" rx="3" fill="#FF4FD8" />
       <g className="m-blink">
-        <circle cx="31" cy="34" r="3" fill="#0B0A12" />
-        <circle cx="41" cy="34" r="3" fill="#0B0A12" />
+        <circle cx="31" cy="34" r="3" fill="#12091E" />
+        <circle cx="41" cy="34" r="3" fill="#12091E" />
       </g>
       <path
         d="M32 40c2.5 2 5.5 2 8 0"
-        stroke="#0B0A12"
+        stroke="#12091E"
         strokeWidth="2.4"
         fill="none"
         strokeLinecap="round"
@@ -55,7 +55,7 @@ export function StampMascotSvg({
   celebrating?: boolean;
   className?: string;
 }) {
-  const color = STAMP_MASCOT_COLOR[mascot] ?? '#C6FF3D';
+  const color = STAMP_MASCOT_COLOR[mascot] ?? '#FFD60A';
 
   return (
     <svg
@@ -99,11 +99,11 @@ export function StampMascotSvg({
             fill={color}
           />
           <g className="m-blink">
-            <rect x="24" y="38" width="8" height="8" rx="2" fill="#0B0A12" />
-            <rect x="40" y="38" width="8" height="8" rx="2" fill="#0B0A12" />
+            <rect x="24" y="38" width="8" height="8" rx="2" fill="#12091E" />
+            <rect x="40" y="38" width="8" height="8" rx="2" fill="#12091E" />
           </g>
           {celebrating && (
-            <path d="M29 49c3 5 11 5 14 0z" fill="#0B0A12" />
+            <path d="M29 49c3 5 11 5 14 0z" fill="#12091E" />
           )}
         </>
       )}
@@ -117,14 +117,14 @@ export function StampMascotSvg({
           <g className="m-blink">
             <path
               d="M25 42q4-5 8 0M39 42q4-5 8 0"
-              stroke="#0B0A12"
+              stroke="#12091E"
               strokeWidth="3"
               fill="none"
               strokeLinecap="round"
             />
           </g>
           {celebrating && (
-            <ellipse cx="36" cy="51" rx="4.5" ry="3.5" fill="#0B0A12" />
+            <ellipse cx="36" cy="51" rx="4.5" ry="3.5" fill="#12091E" />
           )}
         </>
       )}
@@ -136,12 +136,12 @@ export function StampMascotSvg({
             fill={color}
           />
           <g className="m-blink">
-            <circle cx="29" cy="42" r="4" fill="#0B0A12" />
-            <circle cx="43" cy="42" r="4" fill="#0B0A12" />
+            <circle cx="29" cy="42" r="4" fill="#12091E" />
+            <circle cx="43" cy="42" r="4" fill="#12091E" />
           </g>
           <path
             d="M31 50c3 3 7 3 10 0"
-            stroke="#0B0A12"
+            stroke="#12091E"
             strokeWidth="2.6"
             fill="none"
             strokeLinecap="round"
@@ -158,7 +158,7 @@ export function StampMascotSvg({
               cy="40"
               r="5"
               fill="none"
-              stroke="#0B0A12"
+              stroke="#12091E"
               strokeWidth="2.6"
             />
             <circle
@@ -166,13 +166,13 @@ export function StampMascotSvg({
               cy="40"
               r="5"
               fill="none"
-              stroke="#0B0A12"
+              stroke="#12091E"
               strokeWidth="2.6"
             />
           </g>
           <path
             d="M31 51c3 2.5 7 2.5 10 0"
-            stroke="#0B0A12"
+            stroke="#12091E"
             strokeWidth="2.6"
             fill="none"
             strokeLinecap="round"
@@ -183,18 +183,18 @@ export function StampMascotSvg({
       {mascot === 'doodle' && (
         <>
           <path d="M36 17V9" stroke={color} strokeWidth="4" strokeLinecap="round" />
-          <circle cx="36" cy="8" r="4.5" fill="#C6FF3D" />
+          <circle cx="36" cy="8" r="4.5" fill="#FFD60A" />
           <path
             d="M13 47c0-17 10-30 23-30s23 13 23 30c0 9-7 13-23 13S13 56 13 47z"
             fill={color}
           />
           <g className="m-blink">
-            <ellipse cx="29" cy="40" rx="4" ry="5" fill="#0B0A12" />
-            <ellipse cx="43" cy="40" rx="4" ry="5" fill="#0B0A12" />
+            <ellipse cx="29" cy="40" rx="4" ry="5" fill="#12091E" />
+            <ellipse cx="43" cy="40" rx="4" ry="5" fill="#12091E" />
           </g>
           <path
             d="M31 49c3 3.5 7 3.5 10 0"
-            stroke="#0B0A12"
+            stroke="#12091E"
             strokeWidth="2.6"
             fill="none"
             strokeLinecap="round"
@@ -209,12 +209,12 @@ export function StampMascotSvg({
             fill={color}
           />
           <g className="m-blink">
-            <circle cx="28" cy="41" r="4" fill="#0B0A12" />
-            <circle cx="44" cy="41" r="4" fill="#0B0A12" />
+            <circle cx="28" cy="41" r="4" fill="#12091E" />
+            <circle cx="44" cy="41" r="4" fill="#12091E" />
           </g>
           <path
             d="M30 50h12"
-            stroke="#0B0A12"
+            stroke="#12091E"
             strokeWidth="3"
             strokeLinecap="round"
           />

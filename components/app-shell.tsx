@@ -1,5 +1,6 @@
 'use client';
 
+import Image from 'next/image';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import {
@@ -10,7 +11,6 @@ import {
   Vote,
 } from 'lucide-react';
 import { AddToHomeBar } from '@/components/add-to-home-bar';
-import { AlienMascot } from '@/components/mascots';
 import { cn } from '@/lib/utils';
 
 const CHROMELESS_PREFIXES = [
@@ -69,7 +69,7 @@ export function AppShell({
 
   if (isChromeless) {
     return (
-      <div className="min-h-dvh bg-[#0B0A12] text-[#F4F2FA]">{children}</div>
+      <div className="min-h-dvh bg-[#12091E] text-[#F4F2FA]">{children}</div>
     );
   }
 
@@ -77,20 +77,22 @@ export function AppShell({
     pathname.startsWith('/events/') && !pathname.endsWith('/line-up');
 
   return (
-    <div className="flex min-h-dvh flex-col bg-[#0B0A12] text-[#F4F2FA]">
-      {/* Desktop top navigation (>= 1024px) */}
-      <header className="sticky top-0 z-40 hidden border-b border-[#2E2A3D] bg-[#0B0A12]/95 backdrop-blur-sm lg:block print:hidden">
+    <div className="flex min-h-dvh flex-col bg-[#12091E] text-[#F4F2FA]">
+      {/* Desktop top navigation (>= 1024px) with Fiesta'26 halftone band */}
+      <header className="halftone-band sticky top-0 z-40 hidden border-b border-[#3B2758] lg:block print:hidden">
         <div className="mx-auto flex h-16 max-w-5xl items-center justify-between gap-4 px-5">
-          <Link href="/" className="flex items-center gap-2.5">
-            <AlienMascot size={36} />
-            <div className="flex flex-col">
-              <span className="font-heading text-[22px] font-extrabold leading-none tracking-[-0.03em] text-[#F4F2FA]">
-                fest<span className="text-[#C6FF3D]">.</span>live
-              </span>
-              <span className="mt-0.5 text-[11px] text-[#9C97B0] truncate max-w-[240px]">
-                {festName} · {collegeName}
-              </span>
-            </div>
+          <Link href="/" title={collegeName} className="flex items-center gap-2.5">
+            <Image
+              src="/brand/fiesta26-logo.png"
+              alt={festName}
+              width={108}
+              height={42}
+              className="h-10 w-auto object-contain"
+              priority
+            />
+            <span className="-rotate-3 rounded-lg bg-[#FFD60A] px-2 py-0.5 font-heading text-xs font-extrabold tracking-wider text-[#12091E]">
+              LIVE
+            </span>
           </Link>
 
           <nav aria-label="Primary" className="flex items-center gap-1">
@@ -104,8 +106,8 @@ export function AppShell({
                   className={cn(
                     'inline-flex min-h-10 items-center rounded-xl px-3 text-sm font-semibold transition-colors',
                     active
-                      ? 'bg-[#C6FF3D] text-[#0B0A12] font-extrabold'
-                      : 'text-[#BDB8CF] hover:bg-[#16141F] hover:text-[#F4F2FA]'
+                      ? 'bg-[#FFD60A] text-[#12091E] font-extrabold'
+                      : 'text-[#BDB8CF] hover:bg-[#1F1230] hover:text-[#F4F2FA]'
                   )}
                 >
                   {item.label}
@@ -117,7 +119,7 @@ export function AppShell({
           <Link
             href="/account"
             aria-label="My account"
-            className="flex size-10 items-center justify-center rounded-[13px] bg-[#FF4FA3] text-sm font-extrabold text-[#0B0A12] rotate-3 hover:rotate-0 transition-transform"
+            className="flex size-10 items-center justify-center rounded-[13px] bg-[#FF4FD8] text-sm font-extrabold text-[#12091E] rotate-3 hover:rotate-0 transition-transform"
           >
             ME
           </Link>
@@ -130,7 +132,9 @@ export function AppShell({
           'mx-auto w-full flex-1',
           isEventDetail
             ? 'max-w-3xl pb-36 lg:pb-12'
-            : 'max-w-5xl px-4 pt-3 pb-44 lg:px-5 lg:pt-6 lg:pb-12'
+            : pathname === '/'
+              ? 'max-w-5xl px-4 pb-44 lg:px-5 lg:pt-6 lg:pb-12'
+              : 'max-w-5xl px-4 pt-3 pb-44 lg:px-5 lg:pt-6 lg:pb-12'
         )}
       >
         {children}
@@ -142,7 +146,7 @@ export function AppShell({
       {/* Mobile floating Neon Night bottom bar (< 1024px) */}
       <nav
         aria-label="Main"
-        className="fixed inset-x-3 bottom-3.5 z-40 mx-auto grid h-[68px] max-w-lg grid-cols-5 rounded-[24px] border-[1.5px] border-[#2E2A3D] bg-[#16141F]/95 p-1.5 backdrop-blur-md shadow-[0_12px_32px_rgba(0,0,0,0.65)] lg:hidden print:hidden"
+        className="fixed inset-x-3 bottom-3.5 z-40 mx-auto grid h-[68px] max-w-lg grid-cols-5 rounded-[24px] border-[1.5px] border-[#3B2758] bg-[#1F1230]/95 p-1.5 backdrop-blur-md shadow-[0_12px_32px_rgba(0,0,0,0.65)] lg:hidden print:hidden"
       >
         <Link
           href="/"
@@ -150,7 +154,7 @@ export function AppShell({
           className={cn(
             'flex flex-col items-center justify-center gap-0.5 rounded-[18px] text-[11px] transition-colors',
             isRouteActive(pathname, '/')
-              ? 'bg-[#C6FF3D] font-extrabold text-[#0B0A12]'
+              ? 'bg-[#FFD60A] font-extrabold text-[#12091E]'
               : 'font-semibold text-[#9C97B0] hover:text-[#F4F2FA]'
           )}
         >
@@ -164,7 +168,7 @@ export function AppShell({
           className={cn(
             'flex flex-col items-center justify-center gap-0.5 rounded-[18px] text-[11px] transition-colors',
             isRouteActive(pathname, '/events')
-              ? 'bg-[#C6FF3D] font-extrabold text-[#0B0A12]'
+              ? 'bg-[#FFD60A] font-extrabold text-[#12091E]'
               : 'font-semibold text-[#9C97B0] hover:text-[#F4F2FA]'
           )}
         >
@@ -179,7 +183,7 @@ export function AppShell({
           aria-current={isRouteActive(pathname, '/scan') ? 'page' : undefined}
           className="flex items-center justify-center"
         >
-          <span className="-mt-7 flex size-[62px] flex-col items-center justify-center gap-0.5 rounded-[22px] border-4 border-[#0B0A12] bg-[#C6FF3D] text-[10px] font-extrabold tracking-[0.06em] text-[#0B0A12] shadow-[4px_4px_0_#FF4FA3] active:translate-y-0.5 transition-transform">
+          <span className="-mt-7 flex size-[62px] flex-col items-center justify-center gap-0.5 rounded-[22px] border-4 border-[#12091E] bg-[#FFD60A] text-[10px] font-extrabold tracking-[0.06em] text-[#12091E] shadow-[4px_4px_0_#FF4FD8] active:translate-y-0.5 transition-transform">
             <QrCode className="size-6 stroke-[2.4]" aria-hidden="true" />
             SCAN
           </span>
@@ -191,7 +195,7 @@ export function AppShell({
           className={cn(
             'flex flex-col items-center justify-center gap-0.5 rounded-[18px] text-[11px] transition-colors',
             isRouteActive(pathname, '/vote')
-              ? 'bg-[#C6FF3D] font-extrabold text-[#0B0A12]'
+              ? 'bg-[#FFD60A] font-extrabold text-[#12091E]'
               : 'font-semibold text-[#9C97B0] hover:text-[#F4F2FA]'
           )}
         >
@@ -205,7 +209,7 @@ export function AppShell({
           className={cn(
             'flex flex-col items-center justify-center gap-0.5 rounded-[18px] text-[11px] transition-colors',
             isRouteActive(pathname, '/hunt')
-              ? 'bg-[#C6FF3D] font-extrabold text-[#0B0A12]'
+              ? 'bg-[#FFD60A] font-extrabold text-[#12091E]'
               : 'font-semibold text-[#9C97B0] hover:text-[#F4F2FA]'
           )}
         >

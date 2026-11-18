@@ -14,21 +14,21 @@ export const CATEGORY_LABELS: Record<EventCategory, string> = {
 /** Exact Neon Night solid category colors */
 export const CATEGORY_DOT_COLOR: Record<EventCategory, string> = {
   tech: '#22D3EE',
-  cultural: '#FF4FA3',
-  sports: '#C6FF3D',
+  cultural: '#FF4FD8',
+  sports: '#FFD60A',
   workshop: '#FF9F43',
-  talk: '#A78BFA',
+  talk: '#9B6CFF',
   fun: '#FFE14D',
   official: '#9C97B0',
 };
 
 export const CATEGORY_STYLES: Record<EventCategory, string> = {
-  tech: 'bg-[#22D3EE] text-[#0B0A12] border-transparent',
-  cultural: 'bg-[#FF4FA3] text-[#0B0A12] border-transparent',
-  sports: 'bg-[#C6FF3D] text-[#0B0A12] border-transparent',
-  workshop: 'bg-[#FF9F43] text-[#0B0A12] border-transparent',
-  talk: 'bg-[#A78BFA] text-[#0B0A12] border-transparent',
-  fun: 'bg-[#FFE14D] text-[#0B0A12] border-transparent',
+  tech: 'bg-[#22D3EE] text-[#12091E] border-transparent',
+  cultural: 'bg-[#FF4FD8] text-[#12091E] border-transparent',
+  sports: 'bg-[#FFD60A] text-[#12091E] border-transparent',
+  workshop: 'bg-[#FF9F43] text-[#12091E] border-transparent',
+  talk: 'bg-[#9B6CFF] text-[#12091E] border-transparent',
+  fun: 'bg-[#FFE14D] text-[#12091E] border-transparent',
   official: 'bg-[#3A3549] text-[#F4F2FA] border-transparent',
 };
 

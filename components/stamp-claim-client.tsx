@@ -10,14 +10,14 @@ import {
 import { StampMascotSvg } from '@/components/stamp-mascots';
 
 const CONFETTI_PIECES = [
-  { left: '8%', w: 10, h: 16, bg: '#C6FF3D', round: '2px', delay: '0s' },
-  { left: '22%', w: 12, h: 12, bg: '#FF4FA3', round: '6px', delay: '0.6s' },
+  { left: '8%', w: 10, h: 16, bg: '#FFD60A', round: '2px', delay: '0s' },
+  { left: '22%', w: 12, h: 12, bg: '#FF4FD8', round: '6px', delay: '0.6s' },
   { left: '38%', w: 8, h: 18, bg: '#22D3EE', round: '2px', delay: '1.4s' },
   { left: '55%', w: 12, h: 12, bg: '#FFE14D', round: '2px', delay: '0.3s' },
-  { left: '72%', w: 10, h: 16, bg: '#A78BFA', round: '2px', delay: '1s' },
+  { left: '72%', w: 10, h: 16, bg: '#9B6CFF', round: '2px', delay: '1s' },
   { left: '86%', w: 12, h: 12, bg: '#FF9F43', round: '6px', delay: '1.8s' },
   { left: '16%', w: 8, h: 14, bg: '#22D3EE', round: '2px', delay: '2.2s' },
-  { left: '78%', w: 8, h: 14, bg: '#C6FF3D', round: '2px', delay: '2.6s' },
+  { left: '78%', w: 8, h: 14, bg: '#FFD60A', round: '2px', delay: '2.6s' },
 ];
 
 export function StampClaimClient({
@@ -42,9 +42,9 @@ export function StampClaimClient({
 
   if (!result) {
     return (
-      <div className="flex min-h-dvh flex-col items-center justify-center gap-4 bg-[#0B0A12] px-6 text-center text-[#F4F2FA]">
+      <div className="flex min-h-dvh flex-col items-center justify-center gap-4 bg-[#12091E] px-6 text-center text-[#F4F2FA]">
         <Loader2
-          className="size-10 animate-spin text-[#C6FF3D]"
+          className="size-10 animate-spin text-[#FFD60A]"
           aria-hidden="true"
         />
         <p className="font-heading text-xl font-extrabold">
@@ -67,7 +67,7 @@ export function StampClaimClient({
           : `+${claim.points} LIVE STAMP`;
 
     return (
-      <div className="relative mx-auto flex min-h-dvh max-w-md flex-col items-center justify-between overflow-hidden bg-[#0B0A12] px-6 pt-14 pb-8 text-[#F4F2FA]">
+      <div className="relative mx-auto flex min-h-dvh max-w-md flex-col items-center justify-between overflow-hidden bg-[#12091E] px-6 pt-14 pb-8 text-[#F4F2FA]">
         {/* Neon Confetti */}
         <div
           aria-hidden="true"
@@ -91,18 +91,18 @@ export function StampClaimClient({
 
         <div className="relative z-10 flex w-full flex-col items-center">
           <span
-            className="popin font-heading text-[88px] font-extrabold leading-none tracking-[-0.04em] text-[#C6FF3D]"
-            style={{ textShadow: '6px 6px 0 #FF4FA3' }}
+            className="popin font-heading text-[88px] font-extrabold leading-none tracking-[-0.04em] text-[#FFD60A]"
+            style={{ textShadow: '6px 6px 0 #FF4FD8' }}
           >
             +{claim.points}!
           </span>
 
-          <span className="mt-3 rounded-full bg-[#FFE14D] px-3 py-1 text-xs font-extrabold uppercase tracking-[0.1em] text-[#0B0A12]">
+          <span className="mt-3 rounded-full bg-[#FFE14D] px-3 py-1 text-xs font-extrabold uppercase tracking-[0.1em] text-[#12091E]">
             {bonusBadge}
           </span>
 
           <div className="relative mt-6 flex h-[180px] w-[190px] items-end justify-center">
-            <div className="absolute bottom-0 h-4 w-36 rounded-full bg-[#16141F]" />
+            <div className="absolute bottom-0 h-4 w-36 rounded-full bg-[#1F1230]" />
             <StampMascotSvg
               mascot={claim.mascot}
               size={160}
@@ -118,17 +118,17 @@ export function StampClaimClient({
           </h1>
 
           {/* Progress card matching 21-stamp-collected.png */}
-          <section className="mt-5 w-full space-y-3 rounded-[22px] border-[1.5px] border-[#2E2A3D] bg-[#16141F] p-4">
+          <section className="mt-5 w-full space-y-3 rounded-[22px] border-[1.5px] border-[#3B2758] bg-[#1F1230] p-4">
             <div className="flex items-center justify-between text-sm font-bold">
               <span>
                 {claim.stamps} of {claim.of} stamps
               </span>
-              <span className="text-[#C6FF3D]">{claim.total} points</span>
+              <span className="text-[#FFD60A]">{claim.total} points</span>
             </div>
 
-            <div className="h-3 overflow-hidden rounded-full bg-[#2E2A3D]">
+            <div className="h-3 overflow-hidden rounded-full bg-[#3B2758]">
               <div
-                className="h-full rounded-full bg-[#C6FF3D] transition-all"
+                className="h-full rounded-full bg-[#FFD60A] transition-all"
                 style={{ width: `${progressPct}%` }}
               />
             </div>
@@ -137,9 +137,9 @@ export function StampClaimClient({
               <div className="flex items-center justify-between">
                 <span className="text-[15px] font-bold">
                   You&apos;re now{' '}
-                  <span className="text-[#C6FF3D]">#{newRank}</span>
+                  <span className="text-[#FFD60A]">#{newRank}</span>
                 </span>
-                <span className="rounded-full bg-[#C6FF3D] px-2.5 py-1 text-[11px] font-extrabold text-[#0B0A12]">
+                <span className="rounded-full bg-[#FFD60A] px-2.5 py-1 text-[11px] font-extrabold text-[#12091E]">
                   STAMP SAVED
                 </span>
               </div>
@@ -158,13 +158,13 @@ export function StampClaimClient({
         <div className="relative z-10 mt-6 flex w-full flex-col gap-2.5">
           <Link
             href="/hunt"
-            className="flex h-14 w-full items-center justify-center rounded-[18px] bg-[#C6FF3D] text-base font-extrabold text-[#0B0A12] shadow-[5px_5px_0_#FF4FA3]"
+            className="flex h-14 w-full items-center justify-center rounded-[18px] bg-[#FFD60A] text-base font-extrabold text-[#12091E] shadow-[5px_5px_0_#FF4FD8]"
           >
             See my passport
           </Link>
           <Link
             href="/"
-            className="flex h-12 w-full items-center justify-center rounded-[18px] border-2 border-[#2E2A3D] text-sm font-bold text-[#F4F2FA]"
+            className="flex h-12 w-full items-center justify-center rounded-[18px] border-2 border-[#3B2758] text-sm font-bold text-[#F4F2FA]"
           >
             What&apos;s on now
           </Link>
@@ -179,14 +179,14 @@ export function StampClaimClient({
   const isNotLive = claim.reason === 'not_live' || claim.reason === 'closed';
 
   return (
-    <div className="mx-auto flex min-h-dvh max-w-md flex-col items-center justify-center gap-6 bg-[#0B0A12] px-6 text-center text-[#F4F2FA]">
+    <div className="mx-auto flex min-h-dvh max-w-md flex-col items-center justify-center gap-6 bg-[#12091E] px-6 text-center text-[#F4F2FA]">
       <span
         className={
           isAlready
-            ? 'flex size-16 items-center justify-center rounded-[20px] bg-[#C6FF3D] text-[#0B0A12]'
+            ? 'flex size-16 items-center justify-center rounded-[20px] bg-[#FFD60A] text-[#12091E]'
             : isNotLive
-              ? 'flex size-16 items-center justify-center rounded-[20px] bg-[#FFE14D] text-[#0B0A12]'
-              : 'flex size-16 items-center justify-center rounded-[20px] bg-[#FF4F5E] text-[#0B0A12]'
+              ? 'flex size-16 items-center justify-center rounded-[20px] bg-[#FFE14D] text-[#12091E]'
+              : 'flex size-16 items-center justify-center rounded-[20px] bg-[#FF4F5E] text-[#12091E]'
         }
       >
         {isAlready ? (
@@ -218,7 +218,7 @@ export function StampClaimClient({
         {isExpired && (
           <Link
             href="/scan"
-            className="flex h-14 w-full items-center justify-center gap-2 rounded-[18px] bg-[#C6FF3D] text-base font-extrabold text-[#0B0A12] shadow-[5px_5px_0_#FF4FA3]"
+            className="flex h-14 w-full items-center justify-center gap-2 rounded-[18px] bg-[#FFD60A] text-base font-extrabold text-[#12091E] shadow-[5px_5px_0_#FF4FD8]"
           >
             <QrCode className="size-5" aria-hidden="true" />
             Scan screen again
@@ -228,8 +228,8 @@ export function StampClaimClient({
           href="/hunt"
           className={
             isExpired
-              ? 'flex h-12 w-full items-center justify-center rounded-[18px] border-2 border-[#2E2A3D] text-sm font-bold text-[#F4F2FA]'
-              : 'flex h-14 w-full items-center justify-center rounded-[18px] bg-[#C6FF3D] text-base font-extrabold text-[#0B0A12] shadow-[5px_5px_0_#FF4FA3]'
+              ? 'flex h-12 w-full items-center justify-center rounded-[18px] border-2 border-[#3B2758] text-sm font-bold text-[#F4F2FA]'
+              : 'flex h-14 w-full items-center justify-center rounded-[18px] bg-[#FFD60A] text-base font-extrabold text-[#12091E] shadow-[5px_5px_0_#FF4FD8]'
           }
         >
           See my passport

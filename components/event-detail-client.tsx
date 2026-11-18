@@ -34,7 +34,7 @@ export function EventShareIconButton({
       type="button"
       onClick={() => void handleShare()}
       aria-label="Share event"
-      className="flex size-11 items-center justify-center rounded-[14px] bg-[#0B0A12]/90 text-[#F4F2FA] backdrop-blur-xs hover:bg-[#0B0A12] cursor-pointer"
+      className="flex size-11 items-center justify-center rounded-[14px] bg-[#12091E]/90 text-[#F4F2FA] backdrop-blur-xs hover:bg-[#12091E] cursor-pointer"
     >
       <Share2 className="size-5" aria-hidden="true" />
     </button>
@@ -85,9 +85,9 @@ export function EventCountdownBoxes({
       ].map((box) => (
         <div
           key={box.label}
-          className="rounded-[16px] border-[1.5px] border-[#2E2A3D] bg-[#16141F] px-2.5 py-2.5 text-center"
+          className="rounded-[16px] border-[1.5px] border-[#3B2758] bg-[#1F1230] px-2.5 py-2.5 text-center"
         >
-          <div className="font-heading text-[30px] font-extrabold leading-tight text-[#C6FF3D]">
+          <div className="font-heading text-[30px] font-extrabold leading-tight text-[#FFD60A]">
             {box.value}
           </div>
           <div className="text-[11px] font-extrabold tracking-[0.06em] text-[#9C97B0]">

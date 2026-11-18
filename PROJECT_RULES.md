@@ -50,7 +50,7 @@ supabase/             schema.sql, seed.sql (already written; do not rewrite)
 - "Now" on the client comes from `serverTime` in `/api/live` plus elapsed time, so wrong phone clocks don't break "Happening now."
 
 ## UI
-- Follow the attached design screenshots (dark "Neon Night" theme: background #0B0A12, cards #16141F, borders #2E2A3D, text #F4F2FA, accent lime #C6FF3D, pink #FF4FA3, cyan #22D3EE, violet #A78BFA, orange #FF9F43, yellow #FFE14D; headings Bricolage Grotesque 800, body Inter; mascots as inline SVG with CSS animations, disabled under prefers-reduced-motion). Dark mode only.
+- Follow the attached design screenshots and **BRAND.md** (official Fiesta'26 look: logo from `brand/`, background #12091E, cards #1F1230, borders #3B2758, text #F4F2FA, accent Fiesta yellow #FFD60A, Fiesta pink #FF4FD8, purple halftone header #32194A; big titles in Bungee, headings Bricolage Grotesque 800, body Inter; mascots as inline SVG with CSS animations, off under prefers-reduced-motion). Dark mode only. App name: **Fiesta'26 Live**.
 - Mobile first: design at 390 px wide, then check 768 px and 1280 px.
 - Bottom tab bar on mobile: Home, Events, SCAN (raised centre button), Vote, Hunt. My account opens from the avatar on Home. Follow `APP_FLOW.md` for every route and link.
 - Category colours: tech cyan, cultural pink, sports lime, workshop orange, talk violet, fun yellow, official grey.

@@ -46,23 +46,23 @@ export default async function LeaderboardPage() {
         <Link
           href="/hunt"
           aria-label="Back to Stamp Hunt"
-          className="flex size-11 shrink-0 items-center justify-center rounded-[14px] border-[1.5px] border-[#2E2A3D] bg-[#16141F] text-[#F4F2FA] hover:border-[#C6FF3D]"
+          className="flex size-11 shrink-0 items-center justify-center rounded-[14px] border-[1.5px] border-[#3B2758] bg-[#1F1230] text-[#F4F2FA] hover:border-[#FFD60A]"
         >
           <ArrowLeft className="size-5 stroke-[2.4]" aria-hidden="true" />
         </Link>
         <div>
-          <span className="block text-[11px] font-extrabold uppercase tracking-[0.12em] text-[#A78BFA]">
+          <span className="block text-[11px] font-extrabold uppercase tracking-[0.12em] text-[#9B6CFF]">
             STAMP HUNT
             {hunt ? ` · CLOSES ${formatTime(hunt.closes_at).toUpperCase()}` : ''}
           </span>
-          <h1 className="font-heading text-[32px] font-extrabold leading-none tracking-[-0.03em] text-[#F4F2FA]">
-            Leaderboard
+          <h1 className="font-display text-[28px] leading-none tracking-[-0.01em] text-[#F4F2FA] sm:text-[34px]">
+            LEADERBOARD
           </h1>
         </div>
       </header>
 
       {rows.length === 0 ? (
-        <div className="flex flex-col items-center gap-4 rounded-[24px] border-[1.5px] border-[#2E2A3D] bg-[#16141F] px-6 py-12 text-center">
+        <div className="flex flex-col items-center gap-4 rounded-[24px] border-[1.5px] border-[#3B2758] bg-[#1F1230] px-6 py-12 text-center">
           <StampMascotSvg mascot="spark" size={64} />
           <div className="space-y-1">
             <h2 className="font-heading text-xl font-extrabold text-[#F4F2FA]">
@@ -74,7 +74,7 @@ export default async function LeaderboardPage() {
           </div>
           <Link
             href="/scan"
-            className="inline-flex min-h-12 items-center gap-2 rounded-[16px] bg-[#C6FF3D] px-5 text-sm font-extrabold text-[#0B0A12] shadow-[4px_4px_0_#FF4FA3]"
+            className="inline-flex min-h-12 items-center gap-2 rounded-[16px] bg-[#FFD60A] px-5 text-sm font-extrabold text-[#12091E] shadow-[4px_4px_0_#FF4FD8]"
           >
             <QrCode className="size-4" aria-hidden="true" />
             Scan to collect
@@ -100,12 +100,12 @@ export default async function LeaderboardPage() {
                       {second.score} pts
                     </div>
                   </div>
-                  <div className="flex h-[88px] w-full flex-col items-center justify-start rounded-t-[18px] bg-[#DCD8E6] pt-3 text-[#0B0A12]">
+                  <div className="flex h-[88px] w-full flex-col items-center justify-start rounded-t-[18px] bg-[#DCD8E6] pt-3 text-[#12091E]">
                     <span className="font-heading text-3xl font-extrabold">2</span>
                   </div>
                 </>
               ) : (
-                <div className="flex h-[70px] w-full items-center justify-center rounded-t-[18px] border border-dashed border-[#2E2A3D] text-xs text-[#8A8599]">
+                <div className="flex h-[70px] w-full items-center justify-center rounded-t-[18px] border border-dashed border-[#3B2758] text-xs text-[#8A8599]">
                   #2
                 </div>
               )}
@@ -124,11 +124,11 @@ export default async function LeaderboardPage() {
                     <div className="max-w-[110px] truncate text-sm font-extrabold text-[#F4F2FA]">
                       {first.display_name}
                     </div>
-                    <div className="text-xs font-bold text-[#C6FF3D]">
+                    <div className="text-xs font-bold text-[#FFD60A]">
                       {first.score} pts
                     </div>
                   </div>
-                  <div className="flex h-[118px] w-full flex-col items-center justify-start rounded-t-[20px] bg-[#C6FF3D] pt-3.5 text-[#0B0A12]">
+                  <div className="flex h-[118px] w-full flex-col items-center justify-start rounded-t-[20px] bg-[#FFD60A] pt-3.5 text-[#12091E]">
                     <span className="font-heading text-4xl font-extrabold">1</span>
                   </div>
                 </>
@@ -148,12 +148,12 @@ export default async function LeaderboardPage() {
                       {third.score} pts
                     </div>
                   </div>
-                  <div className="flex h-[72px] w-full flex-col items-center justify-start rounded-t-[18px] bg-[#FF9F43] pt-2.5 text-[#0B0A12]">
+                  <div className="flex h-[72px] w-full flex-col items-center justify-start rounded-t-[18px] bg-[#FF9F43] pt-2.5 text-[#12091E]">
                     <span className="font-heading text-3xl font-extrabold">3</span>
                   </div>
                 </>
               ) : (
-                <div className="flex h-[60px] w-full items-center justify-center rounded-t-[18px] border border-dashed border-[#2E2A3D] text-xs text-[#8A8599]">
+                <div className="flex h-[60px] w-full items-center justify-center rounded-t-[18px] border border-dashed border-[#3B2758] text-xs text-[#8A8599]">
                   #3
                 </div>
               )}
@@ -162,8 +162,8 @@ export default async function LeaderboardPage() {
 
           {/* Table from rank 4 onwards */}
           {rest.length > 0 && (
-            <div className="overflow-hidden rounded-[20px] border-[1.5px] border-[#2E2A3D] bg-[#16141F]">
-              <div className="grid grid-cols-[44px_1fr_72px_56px] border-b border-[#2E2A3D] px-3.5 py-2.5 text-[11px] font-extrabold uppercase tracking-[0.08em] text-[#9C97B0]">
+            <div className="overflow-hidden rounded-[20px] border-[1.5px] border-[#3B2758] bg-[#1F1230]">
+              <div className="grid grid-cols-[44px_1fr_72px_56px] border-b border-[#3B2758] px-3.5 py-2.5 text-[11px] font-extrabold uppercase tracking-[0.08em] text-[#9C97B0]">
                 <span>#</span>
                 <span>NAME</span>
                 <span className="text-center">STAMPS</span>
@@ -176,14 +176,14 @@ export default async function LeaderboardPage() {
                     <li
                       key={row.user_id}
                       className={cn(
-                        'grid grid-cols-[44px_1fr_72px_56px] items-center border-t border-[#2E2A3D]/80 px-3.5 py-3 text-sm',
-                        isMe && 'bg-[#C6FF3D]/12'
+                        'grid grid-cols-[44px_1fr_72px_56px] items-center border-t border-[#3B2758]/80 px-3.5 py-3 text-sm',
+                        isMe && 'bg-[#FFD60A]/12'
                       )}
                     >
                       <span
                         className={cn(
                           'font-extrabold',
-                          isMe ? 'text-[#C6FF3D]' : 'text-[#CFCBDD]'
+                          isMe ? 'text-[#FFD60A]' : 'text-[#CFCBDD]'
                         )}
                       >
                         {row.rank}
@@ -192,7 +192,7 @@ export default async function LeaderboardPage() {
                         {isMe ? `You · ${row.display_name}` : row.display_name}
                         {row.verified && (
                           <Check
-                            className="ml-1 inline size-3.5 text-[#C6FF3D]"
+                            className="ml-1 inline size-3.5 text-[#FFD60A]"
                             aria-label="Verified student"
                           />
                         )}
@@ -203,7 +203,7 @@ export default async function LeaderboardPage() {
                       <span
                         className={cn(
                           'text-right font-extrabold',
-                          isMe ? 'text-[#C6FF3D]' : 'text-[#F4F2FA]'
+                          isMe ? 'text-[#FFD60A]' : 'text-[#F4F2FA]'
                         )}
                       >
                         {row.score}
@@ -216,7 +216,7 @@ export default async function LeaderboardPage() {
           )}
 
           {/* Violet Motivation Hint + Scan button */}
-          <div className="flex items-center justify-between gap-3 rounded-[20px] bg-[#A78BFA] px-4 py-3.5 text-[#0B0A12]">
+          <div className="flex items-center justify-between gap-3 rounded-[20px] bg-[#9B6CFF] px-4 py-3.5 text-[#12091E]">
             <p className="text-sm font-extrabold leading-snug">
               {myRow && personAbove && pointsToPass
                 ? `${pointsToPass} ${pointsToPass === 1 ? 'point' : 'points'} to pass ${personAbove.display_name} (#${personAbove.rank})`
@@ -226,7 +226,7 @@ export default async function LeaderboardPage() {
             </p>
             <Link
               href="/scan"
-              className="inline-flex h-10 shrink-0 items-center rounded-[12px] bg-[#0B0A12] px-4 text-sm font-extrabold text-[#C6FF3D]"
+              className="inline-flex h-10 shrink-0 items-center rounded-[12px] bg-[#12091E] px-4 text-sm font-extrabold text-[#FFD60A]"
             >
               Scan
             </Link>

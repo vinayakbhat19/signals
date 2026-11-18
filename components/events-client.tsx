@@ -171,20 +171,20 @@ export function EventsClient({ events, serverTime }: EventsClientProps) {
       {/* Header matching 11-events.png */}
       <header className="space-y-3 pt-1">
         <div className="flex items-center justify-between">
-          <h1 className="font-heading text-[40px] font-extrabold leading-none tracking-[-0.03em] text-[#F4F2FA]">
-            Events
+          <h1 className="font-display text-[36px] leading-none tracking-[-0.01em] text-[#F4F2FA]">
+            EVENTS
           </h1>
           <Link
             href="/scan"
             aria-label="Scan a QR"
-            className="flex size-[46px] items-center justify-center rounded-[14px] bg-[#C6FF3D] text-[#0B0A12] transition-transform active:translate-y-0.5"
+            className="flex size-[46px] items-center justify-center rounded-[14px] bg-[#FFD60A] text-[#12091E] transition-transform active:translate-y-0.5"
           >
             <QrCode className="size-6 stroke-[2.4]" aria-hidden="true" />
           </Link>
         </div>
 
         {/* Search */}
-        <label className="relative flex h-[46px] items-center gap-2.5 rounded-[16px] border-[1.5px] border-[#2E2A3D] bg-[#16141F] px-3.5 focus-within:border-[#C6FF3D]">
+        <label className="relative flex h-[46px] items-center gap-2.5 rounded-[16px] border-[1.5px] border-[#3B2758] bg-[#1F1230] px-3.5 focus-within:border-[#FFD60A]">
           <Search
             className="size-[18px] shrink-0 text-[#9C97B0]"
             aria-hidden="true"
@@ -213,7 +213,7 @@ export function EventsClient({ events, serverTime }: EventsClientProps) {
         <div
           role="tablist"
           aria-label="Filter by status"
-          className="grid grid-cols-4 gap-1 rounded-[14px] border-[1.5px] border-[#2E2A3D] bg-[#16141F] p-1"
+          className="grid grid-cols-4 gap-1 rounded-[14px] border-[1.5px] border-[#3B2758] bg-[#1F1230] p-1"
         >
           {tabs.map((tab) => {
             const selected = tab.id === activeTab;
@@ -227,7 +227,7 @@ export function EventsClient({ events, serverTime }: EventsClientProps) {
                 className={cn(
                   'h-[38px] rounded-[10px] text-[13px] transition-colors cursor-pointer',
                   selected
-                    ? 'bg-[#C6FF3D] font-extrabold text-[#0B0A12]'
+                    ? 'bg-[#FFD60A] font-extrabold text-[#12091E]'
                     : 'bg-transparent font-semibold text-[#BDB8CF] hover:text-[#F4F2FA]'
                 )}
               >
@@ -255,7 +255,7 @@ export function EventsClient({ events, serverTime }: EventsClientProps) {
                   'shrink-0 rounded-full border px-3 py-1.5 text-[11px] font-extrabold uppercase tracking-[0.06em] transition-all cursor-pointer',
                   active
                     ? CATEGORY_STYLES[cat]
-                    : 'border-[#2E2A3D] bg-[#16141F] text-[#BDB8CF] hover:border-[#9C97B0]'
+                    : 'border-[#3B2758] bg-[#1F1230] text-[#BDB8CF] hover:border-[#9C97B0]'
                 )}
               >
                 {CATEGORY_LABELS[cat]}
@@ -269,7 +269,7 @@ export function EventsClient({ events, serverTime }: EventsClientProps) {
                 setSearch('');
                 updateQuery('all', []);
               }}
-              className="shrink-0 px-2 py-1.5 text-xs font-bold text-[#C6FF3D] cursor-pointer"
+              className="shrink-0 px-2 py-1.5 text-xs font-bold text-[#FFD60A] cursor-pointer"
             >
               Reset
             </button>
@@ -307,15 +307,15 @@ export function EventsClient({ events, serverTime }: EventsClientProps) {
                       className={cn(
                         'flex flex-col gap-2.5 rounded-[22px] p-2.5 transition-colors',
                         eventLive
-                          ? 'border-2 border-[#FF4FA3] bg-[#16141F]'
+                          ? 'border-2 border-[#FF4FD8] bg-[#1F1230]'
                           : isDone
                             ? 'border-[1.5px] border-dashed border-[#3A3549] bg-transparent opacity-80 hover:opacity-100'
-                            : 'border-[1.5px] border-[#2E2A3D] bg-[#16141F] hover:border-[#C6FF3D]/60'
+                            : 'border-[1.5px] border-[#3B2758] bg-[#1F1230] hover:border-[#FFD60A]/60'
                       )}
                     >
                       <Link
                         href={`/events/${event.id}`}
-                        className="flex gap-3 rounded-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#C6FF3D]"
+                        className="flex gap-3 rounded-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#FFD60A]"
                       >
                         <EventCover
                           title={event.title}
@@ -327,23 +327,23 @@ export function EventsClient({ events, serverTime }: EventsClientProps) {
                         <div className="flex min-w-0 flex-1 flex-col justify-center gap-1">
                           <div className="flex flex-wrap items-center gap-1.5">
                             {eventLive && (
-                              <span className="inline-flex items-center gap-1.5 rounded-full bg-[#FF4FA3] px-2 py-0.5 text-[10px] font-extrabold uppercase tracking-[0.08em] text-[#0B0A12]">
-                                <span className="live-dot size-1.5 rounded-full bg-[#0B0A12]" />
+                              <span className="inline-flex items-center gap-1.5 rounded-full bg-[#FF4FD8] px-2 py-0.5 text-[10px] font-extrabold uppercase tracking-[0.08em] text-[#12091E]">
+                                <span className="live-dot size-1.5 rounded-full bg-[#12091E]" />
                                 LIVE
                               </span>
                             )}
                             {!eventLive && eventSoon && (
-                              <span className="rounded-full bg-[#FFE14D] px-2 py-0.5 text-[10px] font-extrabold uppercase tracking-[0.08em] text-[#0B0A12]">
+                              <span className="rounded-full bg-[#FFE14D] px-2 py-0.5 text-[10px] font-extrabold uppercase tracking-[0.08em] text-[#12091E]">
                                 {formatShortSoon(event.starts_at, new Date(serverTime))}
                               </span>
                             )}
                             {event.status === 'delayed' && (
-                              <span className="rounded-full bg-[#FF9F43] px-2 py-0.5 text-[10px] font-extrabold uppercase tracking-[0.08em] text-[#0B0A12]">
+                              <span className="rounded-full bg-[#FF9F43] px-2 py-0.5 text-[10px] font-extrabold uppercase tracking-[0.08em] text-[#12091E]">
                                 DELAYED
                               </span>
                             )}
                             {isCancelled && (
-                              <span className="rounded-full bg-[#FF4FA3]/25 px-2 py-0.5 text-[10px] font-extrabold uppercase tracking-[0.08em] text-[#FF4FA3]">
+                              <span className="rounded-full bg-[#FF4FD8]/25 px-2 py-0.5 text-[10px] font-extrabold uppercase tracking-[0.08em] text-[#FF4FD8]">
                                 CANCELLED
                               </span>
                             )}
@@ -352,7 +352,7 @@ export function EventsClient({ events, serverTime }: EventsClientProps) {
                                 DONE
                               </span>
                             )}
-                            <span className="rounded-full border border-[#2E2A3D] px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.06em] text-[#CFCBDD]">
+                            <span className="rounded-full border border-[#3B2758] px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.06em] text-[#CFCBDD]">
                               {CATEGORY_LABELS[event.category]}
                             </span>
                           </div>
@@ -384,7 +384,7 @@ export function EventsClient({ events, serverTime }: EventsClientProps) {
                           href={event.registration_url}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="flex min-h-11 items-center justify-center gap-1.5 rounded-[14px] bg-[#C6FF3D] px-4 text-xs font-extrabold uppercase tracking-[0.06em] text-[#0B0A12] hover:bg-[#D8FF75]"
+                          className="flex min-h-11 items-center justify-center gap-1.5 rounded-[14px] bg-[#FFD60A] px-4 text-xs font-extrabold uppercase tracking-[0.06em] text-[#12091E] hover:bg-[#D8FF75]"
                         >
                           Register
                           <ExternalLink className="size-3.5" aria-hidden="true" />
@@ -398,7 +398,7 @@ export function EventsClient({ events, serverTime }: EventsClientProps) {
           ))}
         </div>
       ) : (
-        <div className="flex flex-col items-center justify-center rounded-[22px] border-[1.5px] border-dashed border-[#2E2A3D] bg-[#16141F]/50 px-6 py-12 text-center">
+        <div className="flex flex-col items-center justify-center rounded-[22px] border-[1.5px] border-dashed border-[#3B2758] bg-[#1F1230]/50 px-6 py-12 text-center">
           <CalendarSearch
             className="mb-3 size-7 text-[#9C97B0]"
             aria-hidden="true"
@@ -416,7 +416,7 @@ export function EventsClient({ events, serverTime }: EventsClientProps) {
                 setSearch('');
                 updateQuery('all', []);
               }}
-              className="mt-4 inline-flex min-h-11 items-center rounded-xl bg-[#C6FF3D] px-4 text-sm font-extrabold text-[#0B0A12] cursor-pointer"
+              className="mt-4 inline-flex min-h-11 items-center rounded-xl bg-[#FFD60A] px-4 text-sm font-extrabold text-[#12091E] cursor-pointer"
             >
               Show all events
             </button>

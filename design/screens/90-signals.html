@@ -5,10 +5,10 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Signals board · Fest Live design</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500..800&amp;family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Bungee&amp;family=Bricolage+Grotesque:opsz,wght@12..96,500..800&amp;family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
 <style>
-body{margin:0;background:#0B0A12}
-a{color:#C6FF3D}a:hover{color:#E3FF9A}
+body{margin:0;background:#12091E}
+a{color:#FFD60A}a:hover{color:#FFE680}
 @keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
 @keyframes blink{0%,90%,100%{transform:scaleY(1)}94%{transform:scaleY(.1)}}
 @keyframes wave{0%,100%{transform:rotate(0)}50%{transform:rotate(-28deg)}}
@@ -22,99 +22,99 @@ a{color:#C6FF3D}a:hover{color:#E3FF9A}
 <style>body{display:flex;justify-content:center;min-height:100vh}</style>
 </head>
 <body>
-<div style="width: 390px; height: 1040px; position: relative; box-sizing: border-box; background: #0B0A12; font-family: Inter, system-ui, sans-serif; color: #F4F2FA; overflow: hidden">
+<div style="width: 390px; height: 1040px; position: relative; box-sizing: border-box; background: #12091E; font-family: Inter, system-ui, sans-serif; color: #F4F2FA; overflow: hidden">
 
   <header style="padding: 18px 16px 0; display: flex; flex-direction: column; gap: 12px">
     <div style="display: flex; justify-content: space-between; align-items: center">
       <div style="display: flex; flex-direction: column; gap: 4px">
-        <h1 style="margin: 0; font-family: 'Bricolage Grotesque', sans-serif; font-size: 40px; font-weight: 800; letter-spacing: -0.03em; line-height: 1">Signals</h1>
+        <h1 style="margin: 0; font-family: 'Bungee', 'Bricolage Grotesque', sans-serif; font-weight: 400; font-size: 40px; font-weight: 800; letter-spacing: -0.03em; line-height: 1">Signals</h1>
         <span style="font-size: 14px; color: #BDB8CF">Find your people. Build, play, team up.</span>
       </div>
-      <svg width="74" height="74" viewBox="0 0 80 80" aria-hidden="true"><circle class="ping" cx="40" cy="30" r="22" fill="none" stroke="#A78BFA" stroke-width="2"></circle><g class="m-bob"><path d="M40 22V14" stroke="#A78BFA" stroke-width="4" stroke-linecap="round"></path><circle cx="40" cy="13" r="4.5" fill="#C6FF3D"></circle><path class="m-wave" d="M60 46c6-3 9-9 8-15" stroke="#A78BFA" stroke-width="6" stroke-linecap="round" fill="none"></path><path d="M17 51c0-17 10-30 23-30s23 13 23 30c0 9-7 13-23 13S17 60 17 51z" fill="#A78BFA"></path><g class="m-blink"><ellipse cx="33" cy="44" rx="4.2" ry="5.2" fill="#0B0A12"></ellipse><ellipse cx="47" cy="44" rx="4.2" ry="5.2" fill="#0B0A12"></ellipse></g><path d="M35 53c3 3.5 7 3.5 10 0" stroke="#0B0A12" stroke-width="2.6" fill="none" stroke-linecap="round"></path></g></svg>
+      <svg width="74" height="74" viewBox="0 0 80 80" aria-hidden="true"><circle class="ping" cx="40" cy="30" r="22" fill="none" stroke="#9B6CFF" stroke-width="2"></circle><g class="m-bob"><path d="M40 22V14" stroke="#9B6CFF" stroke-width="4" stroke-linecap="round"></path><circle cx="40" cy="13" r="4.5" fill="#FFD60A"></circle><path class="m-wave" d="M60 46c6-3 9-9 8-15" stroke="#9B6CFF" stroke-width="6" stroke-linecap="round" fill="none"></path><path d="M17 51c0-17 10-30 23-30s23 13 23 30c0 9-7 13-23 13S17 60 17 51z" fill="#9B6CFF"></path><g class="m-blink"><ellipse cx="33" cy="44" rx="4.2" ry="5.2" fill="#12091E"></ellipse><ellipse cx="47" cy="44" rx="4.2" ry="5.2" fill="#12091E"></ellipse></g><path d="M35 53c3 3.5 7 3.5 10 0" stroke="#12091E" stroke-width="2.6" fill="none" stroke-linecap="round"></path></g></svg>
     </div>
     <div style="display: flex; gap: 8px; overflow: hidden">
-      <button aria-pressed="true" style="flex: none; border: 2px solid #F4F2FA; height: 36px; padding: 0 14px; border-radius: 999px; background: #F4F2FA; color: #0B0A12; font: inherit; font-size: 13px; font-weight: 800; cursor: pointer">All</button>
-      <button aria-pressed="false" style="flex: none; border: 2px solid #2E2A3D; height: 36px; padding: 0 12px; border-radius: 999px; background: #16141F; color: #F4F2FA; font: inherit; font-size: 13px; font-weight: 600; cursor: pointer">Need a teammate</button>
-      <button aria-pressed="false" style="flex: none; border: 2px solid #2E2A3D; height: 36px; padding: 0 12px; border-radius: 999px; background: #16141F; color: #F4F2FA; font: inherit; font-size: 13px; font-weight: 600; cursor: pointer">Want to build</button>
-      <button aria-pressed="false" style="flex: none; border: 2px solid #2E2A3D; height: 36px; padding: 0 12px; border-radius: 999px; background: #16141F; color: #F4F2FA; font: inherit; font-size: 13px; font-weight: 600; cursor: pointer">Connect</button>
+      <button aria-pressed="true" style="flex: none; border: 2px solid #F4F2FA; height: 36px; padding: 0 14px; border-radius: 999px; background: #F4F2FA; color: #12091E; font: inherit; font-size: 13px; font-weight: 800; cursor: pointer">All</button>
+      <button aria-pressed="false" style="flex: none; border: 2px solid #3B2758; height: 36px; padding: 0 12px; border-radius: 999px; background: #1F1230; color: #F4F2FA; font: inherit; font-size: 13px; font-weight: 600; cursor: pointer">Need a teammate</button>
+      <button aria-pressed="false" style="flex: none; border: 2px solid #3B2758; height: 36px; padding: 0 12px; border-radius: 999px; background: #1F1230; color: #F4F2FA; font: inherit; font-size: 13px; font-weight: 600; cursor: pointer">Want to build</button>
+      <button aria-pressed="false" style="flex: none; border: 2px solid #3B2758; height: 36px; padding: 0 12px; border-radius: 999px; background: #1F1230; color: #F4F2FA; font: inherit; font-size: 13px; font-weight: 600; cursor: pointer">Connect</button>
     </div>
   </header>
 
-  <div role="status" style="margin: 14px 16px 0; background: #C6FF3D; color: #0B0A12; border-radius: 18px; padding: 10px 14px; display: flex; align-items: center; gap: 10px; transform: rotate(-1deg)">
-    <svg width="34" height="34" viewBox="0 0 72 72" aria-hidden="true" style="flex: none"><path d="M13 48c0-15 10-24 23-24s23 9 23 24c0 9-7 12-23 12S13 57 13 48z" fill="#0B0A12"></path><path d="M25 41q4-5 8 0M39 41q4-5 8 0" stroke="#C6FF3D" stroke-width="3" fill="none" stroke-linecap="round"></path><path d="M30 49c3 4 9 4 12 0z" fill="#C6FF3D"></path></svg>
+  <div role="status" style="margin: 14px 16px 0; background: #FFD60A; color: #12091E; border-radius: 18px; padding: 10px 14px; display: flex; align-items: center; gap: 10px; transform: rotate(-1deg)">
+    <svg width="34" height="34" viewBox="0 0 72 72" aria-hidden="true" style="flex: none"><path d="M13 48c0-15 10-24 23-24s23 9 23 24c0 9-7 12-23 12S13 57 13 48z" fill="#12091E"></path><path d="M25 41q4-5 8 0M39 41q4-5 8 0" stroke="#FFD60A" stroke-width="3" fill="none" stroke-linecap="round"></path><path d="M30 49c3 4 9 4 12 0z" fill="#FFD60A"></path></svg>
     <span style="font-size: 14px; font-weight: 700; line-height: 19px">Vikram accepted you! Their contact is in <u>Mine</u>.</span>
   </div>
 
   <main style="padding: 14px 16px 0; display: flex; flex-direction: column; gap: 12px">
 
-    <article style="background: #16141F; border: 1.5px solid #2E2A3D; border-radius: 22px; padding: 14px 16px; display: flex; flex-direction: column; gap: 10px">
+    <article style="background: #1F1230; border: 1.5px solid #3B2758; border-radius: 22px; padding: 14px 16px; display: flex; flex-direction: column; gap: 10px">
       <div style="display: flex; justify-content: space-between; align-items: center">
-        <span style="font-size: 11px; font-weight: 800; letter-spacing: 0.08em; color: #0B0A12; background: #22D3EE; padding: 4px 10px; border-radius: 999px">NEED A TEAMMATE</span>
+        <span style="font-size: 11px; font-weight: 800; letter-spacing: 0.08em; color: #12091E; background: #22D3EE; padding: 4px 10px; border-radius: 999px">NEED A TEAMMATE</span>
         <span style="font-size: 12px; color: #9C97B0">ends in 5 h</span>
       </div>
       <p style="margin: 0; font-size: 16px; line-height: 23px; font-weight: 500">Hackathon team needs 1 ML person. Idea and frontend ready, we just need brains for the model.</p>
       <div style="display: flex; gap: 6px; flex-wrap: wrap">
-        <span style="font-size: 12px; font-weight: 700; padding: 4px 10px; border-radius: 999px; border: 1.5px solid #3A3549; color: #CFCBDD">#AI</span>
-        <span style="font-size: 12px; font-weight: 700; padding: 4px 10px; border-radius: 999px; border: 1.5px solid #3A3549; color: #CFCBDD">#Data</span>
+        <span style="font-size: 12px; font-weight: 700; padding: 4px 10px; border-radius: 999px; border: 1.5px solid #4A3466; color: #CFCBDD">#AI</span>
+        <span style="font-size: 12px; font-weight: 700; padding: 4px 10px; border-radius: 999px; border: 1.5px solid #4A3466; color: #CFCBDD">#Data</span>
         <span style="font-size: 12px; font-weight: 700; padding: 4px 10px; border-radius: 999px; border: 1.5px solid #22D3EE; color: #22D3EE">24-hour Hackathon</span>
       </div>
       <div style="display: flex; justify-content: space-between; align-items: center; padding-top: 4px">
         <div style="display: flex; align-items: center; gap: 10px">
-          <span style="width: 36px; height: 36px; border-radius: 12px; background: #FFE14D; color: #0B0A12; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 13px; transform: rotate(-4deg)">AK</span>
+          <span style="width: 36px; height: 36px; border-radius: 12px; background: #FFE14D; color: #12091E; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 13px; transform: rotate(-4deg)">AK</span>
           <div style="display: flex; flex-direction: column">
-            <span style="font-size: 14px; font-weight: 700; display: flex; align-items: center; gap: 5px">Asha K <svg width="15" height="15" viewBox="0 0 24 24" role="img" aria-label="Verified student"><path d="M12 2l2.4 2.1 3.1-.4.9 3 2.7 1.7-1.2 2.9 1.2 2.9-2.7 1.7-.9 3-3.1-.4L12 22l-2.4-2.1-3.1.4-.9-3-2.7-1.7 1.2-2.9-1.2-2.9 2.7-1.7.9-3 3.1.4z" fill="#C6FF3D"></path><path d="M8.5 12.2l2.3 2.3 4.7-4.7" stroke="#0B0A12" stroke-width="2.2" fill="none" stroke-linecap="round" stroke-linejoin="round"></path></svg></span>
+            <span style="font-size: 14px; font-weight: 700; display: flex; align-items: center; gap: 5px">Asha K <svg width="15" height="15" viewBox="0 0 24 24" role="img" aria-label="Verified student"><path d="M12 2l2.4 2.1 3.1-.4.9 3 2.7 1.7-1.2 2.9 1.2 2.9-2.7 1.7-.9 3-3.1-.4L12 22l-2.4-2.1-3.1.4-.9-3-2.7-1.7 1.2-2.9-1.2-2.9 2.7-1.7.9-3 3.1.4z" fill="#FFD60A"></path><path d="M8.5 12.2l2.3 2.3 4.7-4.7" stroke="#12091E" stroke-width="2.2" fill="none" stroke-linecap="round" stroke-linejoin="round"></path></svg></span>
             <span style="font-size: 12px; color: #9C97B0">12 min ago</span>
           </div>
         </div>
-        <button style="height: 44px; padding: 0 16px; border-radius: 14px; border: 0; background: #C6FF3D; color: #0B0A12; font: inherit; font-size: 14px; font-weight: 800; cursor: pointer; box-shadow: 3px 3px 0 #FF4FA3">I'm in</button>
+        <button style="height: 44px; padding: 0 16px; border-radius: 14px; border: 0; background: #FFD60A; color: #12091E; font: inherit; font-size: 14px; font-weight: 800; cursor: pointer; box-shadow: 3px 3px 0 #FF4FD8">I'm in</button>
       </div>
     </article>
 
-    <article style="background: #16141F; border: 1.5px solid #2E2A3D; border-radius: 22px; padding: 14px 16px; display: flex; flex-direction: column; gap: 10px">
+    <article style="background: #1F1230; border: 1.5px solid #3B2758; border-radius: 22px; padding: 14px 16px; display: flex; flex-direction: column; gap: 10px">
       <div style="display: flex; justify-content: space-between; align-items: center">
-        <span style="font-size: 11px; font-weight: 800; letter-spacing: 0.08em; color: #0B0A12; background: #FF9F43; padding: 4px 10px; border-radius: 999px">WANT TO BUILD</span>
+        <span style="font-size: 11px; font-weight: 800; letter-spacing: 0.08em; color: #12091E; background: #FF9F43; padding: 4px 10px; border-radius: 999px">WANT TO BUILD</span>
         <span style="font-size: 12px; color: #9C97B0">ends in 3 days</span>
       </div>
       <p style="margin: 0; font-size: 16px; line-height: 23px; font-weight: 500">Canteen pre-order app for our campus. No more 20-min queues. Need a Flutter dev + a designer.</p>
       <div style="display: flex; gap: 6px; flex-wrap: wrap">
-        <span style="font-size: 12px; font-weight: 700; padding: 4px 10px; border-radius: 999px; border: 1.5px solid #3A3549; color: #CFCBDD">#App</span>
-        <span style="font-size: 12px; font-weight: 700; padding: 4px 10px; border-radius: 999px; border: 1.5px solid #3A3549; color: #CFCBDD">#Design</span>
-        <span style="font-size: 12px; font-weight: 700; padding: 4px 10px; border-radius: 999px; border: 1.5px solid #3A3549; color: #CFCBDD">#Startup</span>
+        <span style="font-size: 12px; font-weight: 700; padding: 4px 10px; border-radius: 999px; border: 1.5px solid #4A3466; color: #CFCBDD">#App</span>
+        <span style="font-size: 12px; font-weight: 700; padding: 4px 10px; border-radius: 999px; border: 1.5px solid #4A3466; color: #CFCBDD">#Design</span>
+        <span style="font-size: 12px; font-weight: 700; padding: 4px 10px; border-radius: 999px; border: 1.5px solid #4A3466; color: #CFCBDD">#Startup</span>
       </div>
       <div style="display: flex; justify-content: space-between; align-items: center; padding-top: 4px">
         <div style="display: flex; align-items: center; gap: 10px">
-          <span style="width: 36px; height: 36px; border-radius: 12px; background: #22D3EE; color: #0B0A12; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 13px; transform: rotate(3deg)">VN</span>
+          <span style="width: 36px; height: 36px; border-radius: 12px; background: #22D3EE; color: #12091E; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 13px; transform: rotate(3deg)">VN</span>
           <div style="display: flex; flex-direction: column">
             <span style="font-size: 14px; font-weight: 700">Vikram N</span>
             <span style="font-size: 12px; color: #9C97B0">1 h ago · 4 interested</span>
           </div>
         </div>
-        <span style="height: 44px; padding: 0 14px; border-radius: 14px; border: 1.5px solid #C6FF3D; color: #C6FF3D; font-size: 14px; font-weight: 800; display: flex; align-items: center; gap: 6px"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"></path></svg>Matched</span>
+        <span style="height: 44px; padding: 0 14px; border-radius: 14px; border: 1.5px solid #FFD60A; color: #FFD60A; font-size: 14px; font-weight: 800; display: flex; align-items: center; gap: 6px"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"></path></svg>Matched</span>
       </div>
     </article>
 
-    <article style="background: #16141F; border: 1.5px solid #2E2A3D; border-radius: 22px; padding: 14px 16px; display: flex; flex-direction: column; gap: 10px">
+    <article style="background: #1F1230; border: 1.5px solid #3B2758; border-radius: 22px; padding: 14px 16px; display: flex; flex-direction: column; gap: 10px">
       <div style="display: flex; justify-content: space-between; align-items: center">
-        <span style="font-size: 11px; font-weight: 800; letter-spacing: 0.08em; color: #0B0A12; background: #FF4FA3; padding: 4px 10px; border-radius: 999px">OPEN TO CONNECT</span>
+        <span style="font-size: 11px; font-weight: 800; letter-spacing: 0.08em; color: #12091E; background: #FF4FD8; padding: 4px 10px; border-radius: 999px">OPEN TO CONNECT</span>
         <span style="font-size: 12px; color: #9C97B0">ends in 22 h</span>
       </div>
       <p style="margin: 0; font-size: 16px; line-height: 23px; font-weight: 500">2nd year, into robotics and drones. At the Startup Talk tonight, come say hi!</p>
       <div style="display: flex; justify-content: space-between; align-items: center">
         <div style="display: flex; align-items: center; gap: 10px">
-          <span style="width: 36px; height: 36px; border-radius: 12px; background: #FF4FA3; color: #0B0A12; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 13px; transform: rotate(-3deg)">PS</span>
+          <span style="width: 36px; height: 36px; border-radius: 12px; background: #FF4FD8; color: #12091E; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 13px; transform: rotate(-3deg)">PS</span>
           <span style="font-size: 14px; font-weight: 700">Priya S</span>
         </div>
-        <button style="height: 44px; padding: 0 16px; border-radius: 14px; border: 0; background: #C6FF3D; color: #0B0A12; font: inherit; font-size: 14px; font-weight: 800; cursor: pointer; box-shadow: 3px 3px 0 #FF4FA3">I'm in</button>
+        <button style="height: 44px; padding: 0 16px; border-radius: 14px; border: 0; background: #FFD60A; color: #12091E; font: inherit; font-size: 14px; font-weight: 800; cursor: pointer; box-shadow: 3px 3px 0 #FF4FD8">I'm in</button>
       </div>
     </article>
   </main>
 
-  <a href="91-new-signal.html" aria-label="Raise a Signal" style="position: absolute; right: 18px; bottom: 98px; width: 64px; height: 64px; border-radius: 22px; background: #FF4FA3; color: #0B0A12; display: flex; align-items: center; justify-content: center; text-decoration: none; box-shadow: 4px 4px 0 #C6FF3D; transform: rotate(-6deg)"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"></path></svg></a>
+  <a href="91-new-signal.html" aria-label="Raise a Signal" style="position: absolute; right: 18px; bottom: 98px; width: 64px; height: 64px; border-radius: 22px; background: #FF4FD8; color: #12091E; display: flex; align-items: center; justify-content: center; text-decoration: none; box-shadow: 4px 4px 0 #FFD60A; transform: rotate(-6deg)"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"></path></svg></a>
 
-  <nav aria-label="Main" style="position: absolute; left: 12px; right: 12px; bottom: 14px; height: 68px; background: #16141F; border: 1.5px solid #2E2A3D; border-radius: 24px; display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); padding: 6px; box-sizing: border-box">
+  <nav aria-label="Main" style="position: absolute; left: 12px; right: 12px; bottom: 14px; height: 68px; background: #1F1230; border: 1.5px solid #3B2758; border-radius: 24px; display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); padding: 6px; box-sizing: border-box">
     <a href="10-home.html" style="text-decoration: none; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; color: #9C97B0; font-size: 11px; font-weight: 600"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6h-6v6H4a1 1 0 0 1-1-1z"></path></svg>Home</a>
     <a href="11-events.html" style="text-decoration: none; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; color: #9C97B0; font-size: 11px; font-weight: 600"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"></rect><path d="M3 10h18M8 3v4M16 3v4"></path></svg>Schedule</a>
-    <a href="90-signals.html" style="text-decoration: none; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; background: #C6FF3D; border-radius: 18px; color: #0B0A12; font-size: 11px; font-weight: 800"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5a7 7 0 0 1 14 0"></path><path d="M8.5 12.5a3.5 3.5 0 0 1 7 0"></path><circle cx="12" cy="15" r="1.5"></circle></svg>Signals</a>
+    <a href="90-signals.html" style="text-decoration: none; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; background: #FFD60A; border-radius: 18px; color: #12091E; font-size: 11px; font-weight: 800"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5a7 7 0 0 1 14 0"></path><path d="M8.5 12.5a3.5 3.5 0 0 1 7 0"></path><circle cx="12" cy="15" r="1.5"></circle></svg>Signals</a>
     <a href="92-my-schedule.html" style="text-decoration: none; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; color: #9C97B0; font-size: 11px; font-weight: 600"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1-4.4-4.3 6.1-.9z"></path></svg>My</a>
     <a href="01-welcome.html" style="text-decoration: none; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; color: #9C97B0; font-size: 11px; font-weight: 600"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"></path></svg>More</a>
   </nav>

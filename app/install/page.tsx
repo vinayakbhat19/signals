@@ -1,9 +1,9 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import Image from 'next/image';
 import Link from 'next/link';
 import { MoreVertical, PlusSquare, Share, Smartphone, X } from 'lucide-react';
-import { AlienMascot } from '@/components/mascots';
 import { cn } from '@/lib/utils';
 
 interface BeforeInstallPromptEvent extends Event {
@@ -73,7 +73,7 @@ export default function InstallPage() {
             ),
             icon: (
               <PlusSquare
-                className="size-6 text-[#C6FF3D]"
+                className="size-6 text-[#FFD60A]"
                 aria-hidden="true"
               />
             ),
@@ -88,7 +88,7 @@ export default function InstallPage() {
             ),
             icon: (
               <Smartphone
-                className="size-6 text-[#A78BFA]"
+                className="size-6 text-[#9B6CFF]"
                 aria-hidden="true"
               />
             ),
@@ -122,7 +122,7 @@ export default function InstallPage() {
             ),
             icon: (
               <PlusSquare
-                className="size-6 text-[#C6FF3D]"
+                className="size-6 text-[#FFD60A]"
                 aria-hidden="true"
               />
             ),
@@ -137,7 +137,7 @@ export default function InstallPage() {
             ),
             icon: (
               <Smartphone
-                className="size-6 text-[#A78BFA]"
+                className="size-6 text-[#9B6CFF]"
                 aria-hidden="true"
               />
             ),
@@ -150,7 +150,7 @@ export default function InstallPage() {
         <Link
           href="/"
           aria-label="Close"
-          className="flex size-11 items-center justify-center rounded-[14px] border-[1.5px] border-[#2E2A3D] bg-[#16141F] text-[#F4F2FA]"
+          className="flex size-11 items-center justify-center rounded-[14px] border-[1.5px] border-[#3B2758] bg-[#1F1230] text-[#F4F2FA]"
         >
           <X className="size-5" aria-hidden="true" />
         </Link>
@@ -161,11 +161,17 @@ export default function InstallPage() {
 
       {/* Hero icon + title */}
       <div className="flex items-center gap-4">
-        <div className="flex size-20 shrink-0 items-center justify-center rounded-[22px] border-2 border-[#C6FF3D] bg-[#16141F] shadow-[4px_4px_0_#FF4FA3]">
-          <AlienMascot size={54} />
+        <div className="relative size-20 shrink-0 overflow-hidden rounded-[22px] border-2 border-[#FFD60A] bg-[#32194A] shadow-[4px_4px_0_#FF4FD8]">
+          <Image
+            src="/brand/icon-192.png"
+            alt="Fiesta'26 Live icon"
+            fill
+            sizes="80px"
+            className="object-cover"
+          />
         </div>
-        <h1 className="font-heading text-[32px] font-extrabold leading-[1.02] tracking-[-0.03em] text-[#F4F2FA]">
-          Add Fest Live to your Home Screen
+        <h1 className="font-heading text-[30px] font-extrabold leading-[1.04] tracking-[-0.03em] text-[#F4F2FA]">
+          Add Fiesta&apos;26 Live to your Home Screen
         </h1>
       </div>
 
@@ -178,7 +184,7 @@ export default function InstallPage() {
       <div
         role="tablist"
         aria-label="Phone type"
-        className="grid grid-cols-2 gap-1.5 rounded-[16px] border-[1.5px] border-[#2E2A3D] bg-[#16141F] p-1.5"
+        className="grid grid-cols-2 gap-1.5 rounded-[16px] border-[1.5px] border-[#3B2758] bg-[#1F1230] p-1.5"
       >
         <button
           type="button"
@@ -188,7 +194,7 @@ export default function InstallPage() {
           className={cn(
             'h-10 rounded-[11px] text-sm transition-colors cursor-pointer',
             platform === 'ios'
-              ? 'bg-[#C6FF3D] font-extrabold text-[#0B0A12]'
+              ? 'bg-[#FFD60A] font-extrabold text-[#12091E]'
               : 'font-semibold text-[#BDB8CF]'
           )}
         >
@@ -202,7 +208,7 @@ export default function InstallPage() {
           className={cn(
             'h-10 rounded-[11px] text-sm transition-colors cursor-pointer',
             platform === 'android'
-              ? 'bg-[#C6FF3D] font-extrabold text-[#0B0A12]'
+              ? 'bg-[#FFD60A] font-extrabold text-[#12091E]'
               : 'font-semibold text-[#BDB8CF]'
           )}
         >
@@ -215,9 +221,9 @@ export default function InstallPage() {
         {steps.map((step) => (
           <div
             key={step.num}
-            className="flex items-center gap-3.5 rounded-[20px] border-[1.5px] border-[#2E2A3D] bg-[#16141F] p-3.5"
+            className="flex items-center gap-3.5 rounded-[20px] border-[1.5px] border-[#3B2758] bg-[#1F1230] p-3.5"
           >
-            <span className="flex size-9 shrink-0 items-center justify-center rounded-[11px] bg-[#C6FF3D] font-heading text-base font-extrabold text-[#0B0A12]">
+            <span className="flex size-9 shrink-0 items-center justify-center rounded-[11px] bg-[#FFD60A] font-heading text-base font-extrabold text-[#12091E]">
               {step.num}
             </span>
             <p className="flex-1 text-sm leading-snug text-[#CFCBDD]">
@@ -231,14 +237,14 @@ export default function InstallPage() {
       {/* Primary install button (if native prompt available) + Maybe later */}
       <div className="space-y-3 pt-2">
         {installed ? (
-          <div className="rounded-[18px] border border-[#C6FF3D]/40 bg-[#C6FF3D]/15 p-4 text-center text-sm font-bold text-[#C6FF3D]">
+          <div className="rounded-[18px] border border-[#FFD60A]/40 bg-[#FFD60A]/15 p-4 text-center text-sm font-bold text-[#FFD60A]">
             Fest Live has been added to your Home Screen!
           </div>
         ) : deferredPrompt ? (
           <button
             type="button"
             onClick={() => void handleInstall()}
-            className="flex h-[54px] w-full items-center justify-center gap-2 rounded-[18px] bg-[#C6FF3D] text-base font-extrabold text-[#0B0A12] shadow-[4px_4px_0_#FF4FA3] cursor-pointer"
+            className="flex h-[54px] w-full items-center justify-center gap-2 rounded-[18px] bg-[#FFD60A] text-base font-extrabold text-[#12091E] shadow-[4px_4px_0_#FF4FD8] cursor-pointer"
           >
             <PlusSquare className="size-5" aria-hidden="true" />
             Add to Home Screen

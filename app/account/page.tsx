@@ -15,7 +15,7 @@ export default function AccountPage() {
         title="My Account"
         subtitle="Sign in with your @sdmcet.ac.in email or Google to vote and collect stamps."
       />
-      <div className="flex flex-col items-center gap-4 rounded-[24px] border-[1.5px] border-[#2E2A3D] bg-[#16141F] p-7 text-center">
+      <div className="flex flex-col items-center gap-4 rounded-[24px] border-[1.5px] border-[#3B2758] bg-[#1F1230] p-7 text-center">
         <AlienMascot size={64} />
         <div className="space-y-1">
           <h2 className="font-heading text-xl font-extrabold text-[#F4F2FA]">
@@ -29,13 +29,13 @@ export default function AccountPage() {
         <div className="flex flex-wrap justify-center gap-2">
           <Link
             href="/install"
-            className="inline-flex min-h-11 items-center rounded-xl bg-[#C6FF3D] px-4 text-sm font-extrabold text-[#0B0A12]"
+            className="inline-flex min-h-11 items-center rounded-xl bg-[#FFD60A] px-4 text-sm font-extrabold text-[#12091E]"
           >
             Add to Home Screen
           </Link>
           <Link
             href="/about"
-            className="inline-flex min-h-11 items-center rounded-xl border-[1.5px] border-[#2E2A3D] px-4 text-sm font-bold text-[#F4F2FA]"
+            className="inline-flex min-h-11 items-center rounded-xl border-[1.5px] border-[#3B2758] px-4 text-sm font-bold text-[#F4F2FA]"
           >
             About Fiest 2026
           </Link>

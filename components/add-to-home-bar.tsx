@@ -80,24 +80,24 @@ export function AddToHomeBar() {
     <div
       role="region"
       aria-label="Add to Home Screen"
-      className="fixed inset-x-3 bottom-[96px] z-40 mx-auto flex h-14 max-w-lg items-center gap-2.5 rounded-[18px] bg-[#F4F2FA] pl-3 pr-1.5 text-[#0B0A12] shadow-[0_10px_28px_rgba(0,0,0,0.55)] lg:hidden print:hidden"
+      className="fixed inset-x-3 bottom-[96px] z-40 mx-auto flex h-14 max-w-lg items-center gap-2.5 rounded-[18px] bg-[#F4F2FA] pl-3 pr-1.5 text-[#12091E] shadow-[0_10px_28px_rgba(0,0,0,0.55)] lg:hidden print:hidden"
     >
       <AlienMascot size={28} animate={false} className="shrink-0" />
       <span className="min-w-0 flex-1 text-[13px] font-bold leading-tight">
-        Add Fest Live to your Home Screen
+        Add Fiesta&apos;26 Live to your Home Screen
       </span>
       {deferredPrompt ? (
         <button
           type="button"
           onClick={() => void handleInstallClick()}
-          className="inline-flex h-10 shrink-0 items-center rounded-[12px] bg-[#0B0A12] px-3.5 text-sm font-extrabold text-[#C6FF3D] cursor-pointer"
+          className="inline-flex h-10 shrink-0 items-center rounded-[12px] bg-[#12091E] px-3.5 text-sm font-extrabold text-[#FFD60A] cursor-pointer"
         >
           Add
         </button>
       ) : (
         <Link
           href="/install"
-          className="inline-flex h-10 shrink-0 items-center rounded-[12px] bg-[#0B0A12] px-3.5 text-sm font-extrabold text-[#C6FF3D]"
+          className="inline-flex h-10 shrink-0 items-center rounded-[12px] bg-[#12091E] px-3.5 text-sm font-extrabold text-[#FFD60A]"
         >
           Add
         </Link>
@@ -106,7 +106,7 @@ export function AddToHomeBar() {
         type="button"
         onClick={dismiss}
         aria-label="Dismiss Add to Home Screen bar"
-        className="inline-flex size-9 shrink-0 items-center justify-center rounded-lg text-[#0B0A12] hover:bg-black/10 cursor-pointer"
+        className="inline-flex size-9 shrink-0 items-center justify-center rounded-lg text-[#12091E] hover:bg-black/10 cursor-pointer"
       >
         <X className="size-4 stroke-[2.6]" aria-hidden="true" />
       </button>

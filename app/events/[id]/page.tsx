@@ -139,7 +139,7 @@ export default async function EventDetailPage({
           <Link
             href="/events"
             aria-label="Back to events"
-            className="flex size-11 items-center justify-center rounded-[14px] bg-[#0B0A12]/90 text-[#F4F2FA] backdrop-blur-xs hover:bg-[#0B0A12]"
+            className="flex size-11 items-center justify-center rounded-[14px] bg-[#12091E]/90 text-[#F4F2FA] backdrop-blur-xs hover:bg-[#12091E]"
           >
             <ArrowLeft className="size-5 stroke-[2.5]" aria-hidden="true" />
           </Link>
@@ -148,27 +148,27 @@ export default async function EventDetailPage({
       </div>
 
       {/* Overlapping Neon Night Content Sheet */}
-      <div className="relative -mt-6 space-y-3.5 rounded-t-[24px] bg-[#0B0A12] px-4 pt-4">
+      <div className="relative -mt-6 space-y-3.5 rounded-t-[24px] bg-[#12091E] px-4 pt-4">
         {/* Status + Category pills */}
         <div className="flex flex-wrap items-center gap-1.5">
           {live && (
-            <span className="inline-flex items-center gap-1.5 rounded-full bg-[#FF4FA3] px-2.5 py-1 text-[11px] font-extrabold uppercase tracking-[0.08em] text-[#0B0A12]">
-              <span className="live-dot size-1.5 rounded-full bg-[#0B0A12]" />
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-[#FF4FD8] px-2.5 py-1 text-[11px] font-extrabold uppercase tracking-[0.08em] text-[#12091E]">
+              <span className="live-dot size-1.5 rounded-full bg-[#12091E]" />
               LIVE NOW
             </span>
           )}
           {!live && soon && (
-            <span className="rounded-full bg-[#FFE14D] px-2.5 py-1 text-[11px] font-extrabold uppercase tracking-[0.08em] text-[#0B0A12]">
+            <span className="rounded-full bg-[#FFE14D] px-2.5 py-1 text-[11px] font-extrabold uppercase tracking-[0.08em] text-[#12091E]">
               COMING SOON
             </span>
           )}
           {event.status === 'delayed' && (
-            <span className="rounded-full bg-[#FF9F43] px-2.5 py-1 text-[11px] font-extrabold uppercase tracking-[0.08em] text-[#0B0A12]">
+            <span className="rounded-full bg-[#FF9F43] px-2.5 py-1 text-[11px] font-extrabold uppercase tracking-[0.08em] text-[#12091E]">
               DELAYED
             </span>
           )}
           {isCancelled && (
-            <span className="rounded-full bg-[#FF4FA3]/20 px-2.5 py-1 text-[11px] font-extrabold uppercase tracking-[0.08em] text-[#FF4FA3]">
+            <span className="rounded-full bg-[#FF4FD8]/20 px-2.5 py-1 text-[11px] font-extrabold uppercase tracking-[0.08em] text-[#FF4FD8]">
               CANCELLED
             </span>
           )}
@@ -195,7 +195,7 @@ export default async function EventDetailPage({
             {event.venue ? (
               <Link
                 href={`/venues/${event.venue.id}`}
-                className="text-[#C6FF3D] underline underline-offset-4 hover:text-[#E3FF9A]"
+                className="text-[#FFD60A] underline underline-offset-4 hover:text-[#E3FF9A]"
               >
                 {event.venue.name}
               </Link>
@@ -216,9 +216,9 @@ export default async function EventDetailPage({
         {/* Hosted by card */}
         <section
           aria-label="Host"
-          className="flex items-center gap-3 rounded-[20px] border-[1.5px] border-[#2E2A3D] bg-[#16141F] px-3.5 py-3"
+          className="flex items-center gap-3 rounded-[20px] border-[1.5px] border-[#3B2758] bg-[#1F1230] px-3.5 py-3"
         >
-          <span className="flex size-[46px] shrink-0 items-center justify-center rounded-[14px] bg-[#A78BFA] font-heading text-base font-extrabold text-[#0B0A12]">
+          <span className="flex size-[46px] shrink-0 items-center justify-center rounded-[14px] bg-[#9B6CFF] font-heading text-base font-extrabold text-[#12091E]">
             {getInitials(hostName)}
           </span>
           <div className="min-w-0 flex-1 space-y-0.5">
@@ -239,7 +239,7 @@ export default async function EventDetailPage({
           </div>
           <Link
             href="/about"
-            className="inline-flex h-10 shrink-0 items-center rounded-[12px] border-[1.5px] border-[#3A3549] px-3 text-[13px] font-bold text-[#F4F2FA] hover:border-[#C6FF3D]"
+            className="inline-flex h-10 shrink-0 items-center rounded-[12px] border-[1.5px] border-[#3A3549] px-3 text-[13px] font-bold text-[#F4F2FA] hover:border-[#FFD60A]"
           >
             Help
           </Link>
@@ -248,12 +248,12 @@ export default async function EventDetailPage({
         {/* See the line-up link card */}
         <Link
           href={`/events/${event.id}/line-up`}
-          className="flex items-center gap-3 rounded-[20px] border-[1.5px] border-[#2E2A3D] bg-[#16141F] px-3.5 py-3 text-[#F4F2FA] hover:border-[#C6FF3D]/60 transition-colors"
+          className="flex items-center gap-3 rounded-[20px] border-[1.5px] border-[#3B2758] bg-[#1F1230] px-3.5 py-3 text-[#F4F2FA] hover:border-[#FFD60A]/60 transition-colors"
         >
           <span className="flex shrink-0" aria-hidden="true">
-            <span className="size-[34px] rounded-[12px] border-2 border-[#16141F] bg-[#FF4FA3]" />
-            <span className="-ml-3 size-[34px] rounded-[12px] border-2 border-[#16141F] bg-[#22D3EE]" />
-            <span className="-ml-3 size-[34px] rounded-[12px] border-2 border-[#16141F] bg-[#FFE14D]" />
+            <span className="size-[34px] rounded-[12px] border-2 border-[#1F1230] bg-[#FF4FD8]" />
+            <span className="-ml-3 size-[34px] rounded-[12px] border-2 border-[#1F1230] bg-[#22D3EE]" />
+            <span className="-ml-3 size-[34px] rounded-[12px] border-2 border-[#1F1230] bg-[#FFE14D]" />
           </span>
           <span className="min-w-0 flex-1 space-y-0.5">
             <strong className="block text-[15px] font-extrabold">
@@ -275,7 +275,7 @@ export default async function EventDetailPage({
             href={event.registration_url}
             target="_blank"
             rel="noopener noreferrer"
-            className="flex items-center justify-between gap-3 rounded-[20px] bg-[#C6FF3D] px-4 py-3.5 text-[#0B0A12] shadow-[5px_5px_0_#FF4FA3] active:translate-y-0.5 transition-transform"
+            className="flex items-center justify-between gap-3 rounded-[20px] bg-[#FFD60A] px-4 py-3.5 text-[#12091E] shadow-[5px_5px_0_#FF4FD8] active:translate-y-0.5 transition-transform"
           >
             <div className="space-y-0.5">
               <span className="block text-base font-extrabold">
@@ -288,13 +288,13 @@ export default async function EventDetailPage({
             <ExternalLink className="size-6 shrink-0" aria-hidden="true" />
           </a>
         ) : isSafeHttpUrl(event.registration_url) && !soon ? (
-          <div className="flex items-center justify-between gap-3 rounded-[20px] border-[1.5px] border-[#2E2A3D] bg-[#16141F] px-4 py-3 text-sm font-bold text-[#9C97B0]">
+          <div className="flex items-center justify-between gap-3 rounded-[20px] border-[1.5px] border-[#3B2758] bg-[#1F1230] px-4 py-3 text-sm font-bold text-[#9C97B0]">
             <span>Registration closed (event already started)</span>
           </div>
         ) : (
           <Link
             href={`/vote/${event.id}`}
-            className="flex items-center gap-3 rounded-[20px] bg-[#C6FF3D] px-4 py-3.5 text-[#0B0A12] shadow-[5px_5px_0_#FF4FA3] active:translate-y-0.5 transition-transform"
+            className="flex items-center gap-3 rounded-[20px] bg-[#FFD60A] px-4 py-3.5 text-[#12091E] shadow-[5px_5px_0_#FF4FD8] active:translate-y-0.5 transition-transform"
           >
             <Vote className="size-8 shrink-0 stroke-[2.2]" aria-hidden="true" />
             <div className="space-y-0.5">
@@ -316,7 +316,7 @@ export default async function EventDetailPage({
             href={googleCalendarUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="flex h-[50px] items-center justify-center gap-2 rounded-[16px] border-[1.5px] border-[#2E2A3D] bg-[#16141F] px-3 text-sm font-bold text-[#F4F2FA] hover:border-[#22D3EE]"
+            className="flex h-[50px] items-center justify-center gap-2 rounded-[16px] border-[1.5px] border-[#3B2758] bg-[#1F1230] px-3 text-sm font-bold text-[#F4F2FA] hover:border-[#22D3EE]"
           >
             <CalendarPlus
               className="size-[18px] text-[#22D3EE]"
@@ -330,7 +330,7 @@ export default async function EventDetailPage({
               href={directionsHref}
               target="_blank"
               rel="noopener noreferrer"
-              className="flex h-[50px] items-center justify-center gap-2 rounded-[16px] border-[1.5px] border-[#2E2A3D] bg-[#16141F] px-3 text-sm font-bold text-[#F4F2FA] hover:border-[#FF9F43]"
+              className="flex h-[50px] items-center justify-center gap-2 rounded-[16px] border-[1.5px] border-[#3B2758] bg-[#1F1230] px-3 text-sm font-bold text-[#F4F2FA] hover:border-[#FF9F43]"
             >
               <MapPin
                 className="size-[18px] text-[#FF9F43]"
@@ -341,7 +341,7 @@ export default async function EventDetailPage({
           ) : (
             <Link
               href={directionsHref}
-              className="flex h-[50px] items-center justify-center gap-2 rounded-[16px] border-[1.5px] border-[#2E2A3D] bg-[#16141F] px-3 text-sm font-bold text-[#F4F2FA] hover:border-[#FF9F43]"
+              className="flex h-[50px] items-center justify-center gap-2 rounded-[16px] border-[1.5px] border-[#3B2758] bg-[#1F1230] px-3 text-sm font-bold text-[#F4F2FA] hover:border-[#FF9F43]"
             >
               <MapPin
                 className="size-[18px] text-[#FF9F43]"
@@ -354,7 +354,7 @@ export default async function EventDetailPage({
 
         {/* Description */}
         {event.description && (
-          <section className="rounded-[20px] border-[1.5px] border-[#2E2A3D] bg-[#16141F] p-4 space-y-1.5">
+          <section className="rounded-[20px] border-[1.5px] border-[#3B2758] bg-[#1F1230] p-4 space-y-1.5">
             <h2 className="text-xs font-extrabold uppercase tracking-[0.08em] text-[#9C97B0]">
               ABOUT THIS EVENT
             </h2>
@@ -374,7 +374,7 @@ export default async function EventDetailPage({
             {event.results.map((result) => (
               <div
                 key={result.id}
-                className="rounded-[20px] border-[1.5px] border-[#2E2A3D] bg-[#16141F] p-4 space-y-2"
+                className="rounded-[20px] border-[1.5px] border-[#3B2758] bg-[#1F1230] p-4 space-y-2"
               >
                 <div className="flex items-center justify-between gap-2">
                   <span className="font-bold text-[#F4F2FA]">
@@ -382,7 +382,7 @@ export default async function EventDetailPage({
                   </span>
                   <div className="flex items-center gap-2">
                     {result.is_live && (
-                      <span className="rounded-full bg-[#FF4FA3] px-2 py-0.5 text-[10px] font-extrabold text-[#0B0A12]">
+                      <span className="rounded-full bg-[#FF4FD8] px-2 py-0.5 text-[10px] font-extrabold text-[#12091E]">
                         LIVE
                       </span>
                     )}

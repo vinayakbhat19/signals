@@ -61,24 +61,24 @@ function changeMeta(kind: EventChangeKind): {
     case 'restored':
       return {
         label: 'BACK ON',
-        accent: '#C6FF3D',
-        border: '#C6FF3D',
-        iconBg: '#C6FF3D',
+        accent: '#FFD60A',
+        border: '#FFD60A',
+        iconBg: '#FFD60A',
       };
   }
 }
 
 function ChangeIcon({ kind }: { kind: EventChangeKind }) {
   if (kind === 'cancelled') {
-    return <X className="size-5 stroke-[2.6] text-[#0B0A12]" aria-hidden="true" />;
+    return <X className="size-5 stroke-[2.6] text-[#12091E]" aria-hidden="true" />;
   }
   if (kind === 'venue') {
-    return <MapPin className="size-5 stroke-[2.4] text-[#0B0A12]" aria-hidden="true" />;
+    return <MapPin className="size-5 stroke-[2.4] text-[#12091E]" aria-hidden="true" />;
   }
   if (kind === 'restored') {
-    return <Check className="size-5 stroke-[2.6] text-[#0B0A12]" aria-hidden="true" />;
+    return <Check className="size-5 stroke-[2.6] text-[#12091E]" aria-hidden="true" />;
   }
-  return <Clock className="size-5 stroke-[2.4] text-[#0B0A12]" aria-hidden="true" />;
+  return <Clock className="size-5 stroke-[2.4] text-[#12091E]" aria-hidden="true" />;
 }
 
 interface UpdatesClientProps {
@@ -128,12 +128,12 @@ export function UpdatesClient({
         <Link
           href="/"
           aria-label="Back to home"
-          className="flex size-11 shrink-0 items-center justify-center rounded-[14px] border-[1.5px] border-[#2E2A3D] bg-[#16141F] text-[#F4F2FA] hover:border-[#C6FF3D]"
+          className="flex size-11 shrink-0 items-center justify-center rounded-[14px] border-[1.5px] border-[#3B2758] bg-[#1F1230] text-[#F4F2FA] hover:border-[#FFD60A]"
         >
           <ArrowLeft className="size-5 stroke-[2.4]" aria-hidden="true" />
         </Link>
-        <h1 className="flex-1 font-heading text-[30px] font-extrabold leading-none tracking-[-0.03em] text-[#F4F2FA]">
-          Updates
+        <h1 className="flex-1 font-display text-[28px] leading-none tracking-[-0.01em] text-[#F4F2FA]">
+          UPDATES
         </h1>
         <Bell
           className="bell-ring size-8 text-[#FFE14D] stroke-[2.2]"
@@ -145,7 +145,7 @@ export function UpdatesClient({
       <div
         role="tablist"
         aria-label="Filter updates"
-        className="grid grid-cols-3 gap-1 rounded-[14px] border-[1.5px] border-[#2E2A3D] bg-[#16141F] p-1"
+        className="grid grid-cols-3 gap-1 rounded-[14px] border-[1.5px] border-[#3B2758] bg-[#1F1230] p-1"
       >
         {(
           [
@@ -165,7 +165,7 @@ export function UpdatesClient({
               className={cn(
                 'h-[38px] rounded-[10px] text-[13px] transition-colors cursor-pointer',
                 active
-                  ? 'bg-[#C6FF3D] font-extrabold text-[#0B0A12]'
+                  ? 'bg-[#FFD60A] font-extrabold text-[#12091E]'
                   : 'font-semibold text-[#BDB8CF] hover:text-[#F4F2FA]'
               )}
             >
@@ -182,10 +182,10 @@ export function UpdatesClient({
           {visibleUrgent.map((notice) => (
             <li
               key={`urgent-${notice.id}`}
-              className="flex flex-col gap-1.5 rounded-[20px] bg-[#FF4F5E] px-4 py-3.5 text-[#0B0A12] shadow-[4px_4px_0_#FFE14D]"
+              className="flex flex-col gap-1.5 rounded-[20px] bg-[#FF4F5E] px-4 py-3.5 text-[#12091E] shadow-[4px_4px_0_#FFE14D]"
             >
               <span className="flex items-center gap-2 text-[11px] font-extrabold uppercase tracking-[0.1em]">
-                <span className="live-dot size-2 rounded-full bg-[#0B0A12]" />
+                <span className="live-dot size-2 rounded-full bg-[#12091E]" />
                 IMPORTANT NOTICE · PINNED ·{' '}
                 {formatTimeAgo(notice.created_at, now).toUpperCase()}
               </span>
@@ -197,7 +197,7 @@ export function UpdatesClient({
                 {notice.event_id && (
                   <Link
                     href={`/events/${notice.event_id}`}
-                    className="underline underline-offset-4 text-[#0B0A12]"
+                    className="underline underline-offset-4 text-[#12091E]"
                   >
                     {notice.event_title ?? 'View event'} →
                   </Link>
@@ -228,7 +228,7 @@ export function UpdatesClient({
                 <li key={`change-${change.id}`}>
                   <Link
                     href={`/events/${change.event_id}`}
-                    className="flex gap-3 rounded-[20px] border-[1.5px] bg-[#16141F] px-4 py-3.5 text-[#F4F2FA] transition-opacity hover:opacity-95"
+                    className="flex gap-3 rounded-[20px] border-[1.5px] bg-[#1F1230] px-4 py-3.5 text-[#F4F2FA] transition-opacity hover:opacity-95"
                     style={{ borderColor: meta.border }}
                   >
                     <span
@@ -279,7 +279,7 @@ export function UpdatesClient({
             return (
               <li
                 key={`notice-${notice.id}`}
-                className="flex flex-col gap-1.5 rounded-[20px] border-[1.5px] border-[#2E2A3D] bg-[#16141F] px-4 py-3.5"
+                className="flex flex-col gap-1.5 rounded-[20px] border-[1.5px] border-[#3B2758] bg-[#1F1230] px-4 py-3.5"
               >
                 <span className="text-[11px] font-extrabold uppercase tracking-[0.1em] text-[#9C97B0]">
                   NOTICE · {formatTimeAgo(notice.created_at, now).toUpperCase()}
@@ -290,7 +290,7 @@ export function UpdatesClient({
                 {notice.event_id && (
                   <Link
                     href={`/events/${notice.event_id}`}
-                    className="mt-0.5 text-xs font-extrabold text-[#C6FF3D] hover:underline underline-offset-4"
+                    className="mt-0.5 text-xs font-extrabold text-[#FFD60A] hover:underline underline-offset-4"
                   >
                     {notice.event_title ?? 'View linked event'} →
                   </Link>
@@ -300,7 +300,7 @@ export function UpdatesClient({
           })}
         </ol>
       ) : (
-        <div className="flex flex-col items-center gap-2 rounded-[22px] border-[1.5px] border-dashed border-[#2E2A3D] bg-[#16141F]/50 px-6 py-12 text-center">
+        <div className="flex flex-col items-center gap-2 rounded-[22px] border-[1.5px] border-dashed border-[#3B2758] bg-[#1F1230]/50 px-6 py-12 text-center">
           <Megaphone className="size-6 text-[#9C97B0]" aria-hidden="true" />
           <h2 className="font-heading text-lg font-extrabold text-[#F4F2FA]">
             No updates in this tab yet

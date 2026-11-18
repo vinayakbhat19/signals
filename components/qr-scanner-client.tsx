@@ -269,7 +269,7 @@ export function QrScannerClient() {
   }
 
   return (
-    <div className="relative flex min-h-dvh flex-col justify-between overflow-hidden bg-[#0B0A12] text-[#F4F2FA]">
+    <div className="relative flex min-h-dvh flex-col justify-between overflow-hidden bg-[#12091E] text-[#F4F2FA]">
       {/* Live Camera Feed Background */}
       <video
         ref={videoRef}
@@ -277,19 +277,19 @@ export function QrScannerClient() {
         playsInline
         className="pointer-events-none absolute inset-0 h-full w-full object-cover opacity-80"
       />
-      <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-[#0B0A12]/80 via-[#0B0A12]/25 to-[#0B0A12]/90" />
+      <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-[#12091E]/80 via-[#12091E]/25 to-[#12091E]/90" />
 
       {/* Top Bar matching 20-scan.png */}
       <header className="relative z-10 flex items-center justify-between px-4 pt-4">
         <Link
           href="/"
           aria-label="Close scanner"
-          className="flex size-11 items-center justify-center rounded-[14px] bg-[#16141F]/90 text-[#F4F2FA] backdrop-blur-xs"
+          className="flex size-11 items-center justify-center rounded-[14px] bg-[#1F1230]/90 text-[#F4F2FA] backdrop-blur-xs"
         >
           <X className="size-5 stroke-[2.5]" aria-hidden="true" />
         </Link>
 
-        <span className="rounded-[14px] bg-[#16141F]/90 px-5 py-2.5 font-heading text-lg font-extrabold backdrop-blur-xs">
+        <span className="rounded-[14px] bg-[#1F1230]/90 px-5 py-2.5 font-heading text-lg font-extrabold backdrop-blur-xs">
           Scan
         </span>
 
@@ -298,7 +298,7 @@ export function QrScannerClient() {
           onClick={() => void toggleTorch()}
           disabled={!torchSupported}
           aria-label={torchOn ? 'Turn off flashlight' : 'Turn on flashlight'}
-          className="flex size-11 items-center justify-center rounded-[14px] bg-[#16141F]/90 text-[#FFE14D] backdrop-blur-xs disabled:opacity-40 cursor-pointer"
+          className="flex size-11 items-center justify-center rounded-[14px] bg-[#1F1230]/90 text-[#FFE14D] backdrop-blur-xs disabled:opacity-40 cursor-pointer"
         >
           <Flashlight className="size-5" aria-hidden="true" />
         </button>
@@ -308,18 +308,18 @@ export function QrScannerClient() {
       <div className="relative z-10 flex flex-col items-center px-6">
         <div className="relative flex size-[248px] items-center justify-center">
           {/* 4 Neon Lime Corner Brackets */}
-          <span className="absolute top-0 left-0 h-11 w-11 rounded-tl-2xl border-t-[5px] border-l-[5px] border-[#C6FF3D]" />
-          <span className="absolute top-0 right-0 h-11 w-11 rounded-tr-2xl border-t-[5px] border-r-[5px] border-[#C6FF3D]" />
-          <span className="absolute bottom-0 left-0 h-11 w-11 rounded-bl-2xl border-b-[5px] border-l-[5px] border-[#C6FF3D]" />
-          <span className="absolute right-0 bottom-0 h-11 w-11 rounded-br-2xl border-r-[5px] border-b-[5px] border-[#C6FF3D]" />
+          <span className="absolute top-0 left-0 h-11 w-11 rounded-tl-2xl border-t-[5px] border-l-[5px] border-[#FFD60A]" />
+          <span className="absolute top-0 right-0 h-11 w-11 rounded-tr-2xl border-t-[5px] border-r-[5px] border-[#FFD60A]" />
+          <span className="absolute bottom-0 left-0 h-11 w-11 rounded-bl-2xl border-b-[5px] border-l-[5px] border-[#FFD60A]" />
+          <span className="absolute right-0 bottom-0 h-11 w-11 rounded-br-2xl border-r-[5px] border-b-[5px] border-[#FFD60A]" />
 
           {/* Sweeping Neon Scan Line */}
           {cameraState === 'active' && !detected && (
-            <div className="scan-line absolute inset-x-4 top-0 h-0.5 rounded-full bg-[#C6FF3D] shadow-[0_0_14px_#C6FF3D]" />
+            <div className="scan-line absolute inset-x-4 top-0 h-0.5 rounded-full bg-[#FFD60A] shadow-[0_0_14px_#FFD60A]" />
           )}
 
           {cameraState === 'denied' && (
-            <div className="mx-4 rounded-2xl bg-[#16141F]/95 p-4 text-center space-y-2 border border-[#2E2A3D]">
+            <div className="mx-4 rounded-2xl bg-[#1F1230]/95 p-4 text-center space-y-2 border border-[#3B2758]">
               <AlertCircle
                 className="mx-auto size-6 text-[#FFE14D]"
                 aria-hidden="true"
@@ -335,9 +335,9 @@ export function QrScannerClient() {
           )}
 
           {cameraState === 'unsupported' && (
-            <div className="mx-4 rounded-2xl bg-[#16141F]/95 p-4 text-center space-y-2 border border-[#2E2A3D]">
+            <div className="mx-4 rounded-2xl bg-[#1F1230]/95 p-4 text-center space-y-2 border border-[#3B2758]">
               <QrCode
-                className="mx-auto size-6 text-[#C6FF3D]"
+                className="mx-auto size-6 text-[#FFD60A]"
                 aria-hidden="true"
               />
               <p className="text-xs font-bold text-[#F4F2FA]">
@@ -347,19 +347,19 @@ export function QrScannerClient() {
           )}
         </div>
 
-        <p className="mt-5 max-w-xs rounded-2xl bg-[#16141F]/90 px-4 py-2.5 text-center text-xs font-semibold leading-snug text-[#F4F2FA] backdrop-blur-xs">
+        <p className="mt-5 max-w-xs rounded-2xl bg-[#1F1230]/90 px-4 py-2.5 text-center text-xs font-semibold leading-snug text-[#F4F2FA] backdrop-blur-xs">
           Point at a Stamp Station, a vote screen, or an event poster
         </p>
       </div>
 
       {/* Bottom Sheet matching 20-scan.png */}
-      <div className="relative z-10 rounded-t-[28px] border-t-[1.5px] border-[#2E2A3D] bg-[#16141F] px-5 pt-3 pb-7 space-y-4">
+      <div className="relative z-10 rounded-t-[28px] border-t-[1.5px] border-[#3B2758] bg-[#1F1230] px-5 pt-3 pb-7 space-y-4">
         <div className="mx-auto h-1 w-10 rounded-full bg-[#3A3549]" />
 
         {detected ? (
           <div className="space-y-4">
             <div className="flex items-center gap-3.5">
-              <span className="flex size-12 shrink-0 items-center justify-center rounded-[14px] bg-[#A78BFA] text-[#0B0A12]">
+              <span className="flex size-12 shrink-0 items-center justify-center rounded-[14px] bg-[#9B6CFF] text-[#12091E]">
                 {detected.kind === 'stamp' && <Stamp className="size-6" />}
                 {detected.kind === 'vote' && <Vote className="size-6" />}
                 {detected.kind === 'event' && <CalendarDays className="size-6" />}
@@ -367,7 +367,7 @@ export function QrScannerClient() {
                 {detected.kind === 'external' && <ExternalLink className="size-6" />}
               </span>
               <div className="min-w-0 flex-1">
-                <span className="block text-[11px] font-extrabold uppercase tracking-[0.08em] text-[#A78BFA]">
+                <span className="block text-[11px] font-extrabold uppercase tracking-[0.08em] text-[#9B6CFF]">
                   {detected.label}
                 </span>
                 <span className="block truncate text-lg font-extrabold text-[#F4F2FA]">
@@ -390,7 +390,7 @@ export function QrScannerClient() {
             <button
               type="button"
               onClick={() => handleProceed(detected)}
-              className="flex h-[54px] w-full items-center justify-center rounded-[18px] bg-[#C6FF3D] text-base font-extrabold text-[#0B0A12] shadow-[4px_4px_0_#FF4FA3] cursor-pointer"
+              className="flex h-[54px] w-full items-center justify-center rounded-[18px] bg-[#FFD60A] text-base font-extrabold text-[#12091E] shadow-[4px_4px_0_#FF4FD8] cursor-pointer"
             >
               {detected.ctaLabel}
             </button>
@@ -414,11 +414,11 @@ export function QrScannerClient() {
               value={manualInput}
               onChange={(e) => setManualInput(e.target.value)}
               placeholder="Paste /stamp/... or full Fest Live QR URL"
-              className="h-12 w-full rounded-[14px] border-[1.5px] border-[#2E2A3D] bg-[#0B0A12] px-3.5 text-sm text-[#F4F2FA] placeholder:text-[#8A8599] focus:border-[#C6FF3D] outline-none"
+              className="h-12 w-full rounded-[14px] border-[1.5px] border-[#3B2758] bg-[#12091E] px-3.5 text-sm text-[#F4F2FA] placeholder:text-[#8A8599] focus:border-[#FFD60A] outline-none"
             />
             <button
               type="submit"
-              className="flex h-12 w-full items-center justify-center rounded-[16px] bg-[#C6FF3D] text-sm font-extrabold text-[#0B0A12] cursor-pointer"
+              className="flex h-12 w-full items-center justify-center rounded-[16px] bg-[#FFD60A] text-sm font-extrabold text-[#12091E] cursor-pointer"
             >
               Open link
             </button>
@@ -432,7 +432,7 @@ export function QrScannerClient() {
               <button
                 type="button"
                 onClick={() => setShowHelp(false)}
-                className="font-bold text-[#C6FF3D] cursor-pointer"
+                className="font-bold text-[#FFD60A] cursor-pointer"
               >
                 Done
               </button>
@@ -450,7 +450,7 @@ export function QrScannerClient() {
         ) : (
           <div className="space-y-3">
             <div className="flex items-center gap-3">
-              <span className="flex size-11 shrink-0 items-center justify-center rounded-[14px] bg-[#24212F] text-[#C6FF3D]">
+              <span className="flex size-11 shrink-0 items-center justify-center rounded-[14px] bg-[#2A1840] text-[#FFD60A]">
                 <QrCode className="size-5" aria-hidden="true" />
               </span>
               <div className="min-w-0 flex-1">
@@ -472,7 +472,7 @@ export function QrScannerClient() {
               setShowHelp(false);
               setShowManual((v) => !v);
             }}
-            className="inline-flex min-h-9 items-center gap-1.5 text-[#C6FF3D] underline underline-offset-4 cursor-pointer"
+            className="inline-flex min-h-9 items-center gap-1.5 text-[#FFD60A] underline underline-offset-4 cursor-pointer"
           >
             <Keyboard className="size-3.5" aria-hidden="true" />
             Enter a code instead

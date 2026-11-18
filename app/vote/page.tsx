@@ -15,8 +15,8 @@ export default function VoteHubPage() {
         title="Audience Voting"
         subtitle="Live stage polls will appear here when competitions open."
       />
-      <div className="flex flex-col items-center gap-4 rounded-[24px] border-[1.5px] border-[#2E2A3D] bg-[#16141F] p-8 text-center">
-        <span className="flex size-16 items-center justify-center rounded-[20px] bg-[#FF4FA3] text-[#0B0A12] shadow-[4px_4px_0_#C6FF3D]">
+      <div className="flex flex-col items-center gap-4 rounded-[24px] border-[1.5px] border-[#3B2758] bg-[#1F1230] p-8 text-center">
+        <span className="flex size-16 items-center justify-center rounded-[20px] bg-[#FF4FD8] text-[#12091E] shadow-[4px_4px_0_#FFD60A]">
           <Vote className="size-8 stroke-[2.2]" aria-hidden="true" />
         </span>
         <div className="space-y-1">
@@ -30,7 +30,7 @@ export default function VoteHubPage() {
         </div>
         <Link
           href="/events"
-          className="inline-flex min-h-11 items-center rounded-xl bg-[#C6FF3D] px-5 text-sm font-extrabold text-[#0B0A12]"
+          className="inline-flex min-h-11 items-center rounded-xl bg-[#FFD60A] px-5 text-sm font-extrabold text-[#12091E]"
         >
           See all events
         </Link>

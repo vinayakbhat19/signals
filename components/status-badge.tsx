@@ -7,15 +7,15 @@ const STATUS_CONFIG: Record<
 > = {
   scheduled: {
     label: 'On time',
-    className: 'bg-[#24212F] text-[#CFCBDD] border-[#3A3549]',
+    className: 'bg-[#2A1840] text-[#CFCBDD] border-[#3A3549]',
   },
   delayed: {
     label: 'Delayed',
-    className: 'bg-[#FF9F43] text-[#0B0A12] border-transparent',
+    className: 'bg-[#FF9F43] text-[#12091E] border-transparent',
   },
   cancelled: {
     label: 'Cancelled',
-    className: 'bg-[#FF4FA3]/20 text-[#FF4FA3] border-[#FF4FA3]/40',
+    className: 'bg-[#FF4FD8]/20 text-[#FF4FD8] border-[#FF4FD8]/40',
   },
   done: {
     label: 'Done',
