@@ -1,21 +1,20 @@
-import type { Metadata } from 'next';
+'use client';
+
+import { Suspense } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { LoginForm } from '@/components/login-form';
 
-export const metadata: Metadata = {
-  title: 'Log in',
-  description: 'Sign in to join the Stamp Hunt and cast live audience votes.',
-};
+function LoginInner() {
+  const params = useSearchParams();
+  const nextPath = params.get('next') ?? '/';
+  const initialError = params.get('error');
+  return <LoginForm nextPath={nextPath} initialError={initialError} />;
+}
 
-export default async function LoginPage({
-  searchParams,
-}: {
-  searchParams: Promise<{ next?: string; error?: string }>;
-}) {
-  const params = await searchParams;
+export default function LoginPage() {
   return (
-    <LoginForm
-      nextPath={params.next ?? '/'}
-      initialError={params.error ?? null}
-    />
+    <Suspense fallback={null}>
+      <LoginInner />
+    </Suspense>
   );
 }

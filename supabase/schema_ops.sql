@@ -29,6 +29,8 @@ create table public.app_config (
   writes_paused  boolean not null default false,
   banner_message text check (char_length(banner_message) <= 200),
   banner_level   text not null default 'info' check (banner_level in ('info', 'warning', 'critical')),
+  data_version   bigint not null default 1,                       -- +1 whenever public fest data changes (phones fetch the feed only then)
+  poll_seconds   int not null default 30 check (poll_seconds between 10 and 300),   -- how often phones ask; organisers can slow it down
   updated_at     timestamptz not null default now(),
   check (campus_from >= fest_ends_at)
 );
@@ -411,7 +413,7 @@ grant execute on function public.archive_and_purge_fest() to authenticated;
 revoke all on public.app_config from anon, authenticated;
 grant select on public.app_config to anon, authenticated;
 grant update (mode_override, fest_name, fest_starts_at, fest_ends_at, campus_from, hosts_until,
-              writes_paused, banner_message, banner_level) on public.app_config to authenticated;
+              writes_paused, banner_message, banner_level, poll_seconds) on public.app_config to authenticated;
 alter table public.app_config enable row level security;
 create policy config_read on public.app_config for select to anon, authenticated using (true);
 create policy config_update on public.app_config for update to authenticated
@@ -424,7 +426,7 @@ grant execute on function public.current_mode(), public.app_status() to anon, au
 -- hunt QR stickers and read the winners list) are added by an organiser by EMAIL, like hosts.
 create table public.staff_invites (
   email       text primary key check (email = lower(email) and char_length(email) <= 120),
-  role        text not null default 'volunteer' check (role in ('volunteer')),
+  role        text not null default 'volunteer' check (role in ('volunteer', 'admin')),   -- 'admin' only via bootstrap_admin.sql
   invited_by  uuid references public.profiles (id) on delete set null default auth.uid(),
   accepted_by uuid references public.profiles (id) on delete set null,
   accepted_at timestamptz,
@@ -465,7 +467,10 @@ language plpgsql security definer set search_path = public
 as $$
 begin
   if exists (select 1 from public.staff_invites where email = lower(new.email) and accepted_at is null) then
-    update public.profiles set role = 'volunteer' where id = new.id and role = 'student';
+    update public.profiles p set role = i.role
+      from public.staff_invites i
+     where p.id = new.id and i.email = lower(new.email) and i.accepted_at is null
+       and (p.role = 'student' or i.role = 'admin');
     update public.staff_invites set accepted_by = new.id, accepted_at = now()
      where email = lower(new.email) and accepted_at is null;
   end if;
@@ -497,7 +502,8 @@ begin
   if not public.can_make_qr() then raise exception 'Not allowed'; end if;
   select * into sp from public.stamp_points where id = p_point;
   if sp.id is null then return jsonb_build_object('ok', false, 'reason', 'unknown'); end if;
-  return jsonb_build_object('ok', true, 'path', '/s/' || sp.id::text || '.' || sp.code, 'name', sp.name,
+  return jsonb_build_object('ok', true, 'token', sp.id::text || '.' || sp.code,
+                            'path', '/s/?t=' || sp.id::text || '.' || sp.code, 'name', sp.name,
                             'sort', sp.sort, 'mascot', sp.mascot);
 end;
 $$;
@@ -509,7 +515,7 @@ language plpgsql stable security definer set search_path = public
 as $$
 begin
   if not public.can_make_qr() then raise exception 'Not allowed'; end if;
-  return query select p.id, p.sort, p.name, p.clue, p.hint, '/s/' || p.id::text || '.' || p.code, p.active
+  return query select p.id, p.sort, p.name, p.clue, p.hint, '/s/?t=' || p.id::text || '.' || p.code, p.active
                  from public.stamp_points p order by p.sort, p.created_at;
 end;
 $$;
@@ -650,3 +656,240 @@ end;
 $$;
 revoke execute on function public.host_update_event(uuid, timestamptz, timestamptz, uuid, text, text, text, timestamptz, timestamptz, text, text, text) from public, anon;
 grant execute on function public.host_update_event(uuid, timestamptz, timestamptz, uuid, text, text, text, timestamptz, timestamptz, text, text, text) to authenticated;
+
+
+-- ================================================================ static hosting (Cloudflare Pages) support
+-- The website is a static site: there is no server in between. The phone calls Supabase directly, so
+-- the cheap, public, tiny calls live here. Nothing below exposes private data.
+--
+--   app_status()  tiny: mode, banner, data version, how often to poll (every phone calls this)
+--   live_feed()   one call: events, venues, latest changes, notices, open polls (only when the version changed)
+--   data_version  goes up by 1 whenever events, venues, announcements, changes, polls, contestants or results change
+--   poll_seconds  organisers can slow every phone's polling from the safety panel (protects the free egress limit)
+
+create or replace function public.app_status()
+returns jsonb
+language sql stable
+as $$
+  select jsonb_build_object(
+    'mode', public.current_mode(),
+    'fest_name', c.fest_name,
+    'fest_starts_at', c.fest_starts_at,
+    'fest_ends_at', c.fest_ends_at,
+    'campus_from', c.campus_from,
+    'writes_paused', c.writes_paused,
+    'banner', c.banner_message,
+    'banner_level', c.banner_level,
+    'version', c.data_version,
+    'poll_seconds', c.poll_seconds,
+    'server_time', now())
+  from public.app_config c where c.id = 1;
+$$;
+
+-- Bumping the version must not fill the audit log: audit only real settings changes.
+drop trigger if exists audit_config on public.app_config;
+create trigger audit_config after update of mode_override, writes_paused, campus_from, banner_message, banner_level, poll_seconds
+  on public.app_config for each row execute function public.audit_config();
+
+create or replace function public.bump_data_version()
+returns trigger
+language plpgsql security definer set search_path = public
+as $$
+begin
+  update public.app_config set data_version = data_version + 1 where id = 1;
+  return null;
+end;
+$$;
+
+do $$
+declare t text;
+begin
+  foreach t in array array['events', 'venues', 'announcements', 'event_changes', 'polls', 'contestants', 'results']
+  loop
+    if to_regclass('public.' || t) is not null then
+      execute format('drop trigger if exists %I on public.%I', 'bump_version_' || t, t);
+      execute format('create trigger %I after insert or update or delete on public.%I for each statement execute function public.bump_data_version()',
+                     'bump_version_' || t, t);
+    end if;
+  end loop;
+end $$;
+
+create or replace function public.live_feed()
+returns jsonb
+language sql stable security definer set search_path = public
+as $$
+  select jsonb_build_object(
+    'status', public.app_status(),
+    'venues', coalesce((select jsonb_agg(jsonb_build_object('id', v.id, 'name', v.name, 'maps_url', v.maps_url) order by v.name)
+                          from public.venues v), '[]'::jsonb),
+    'events', coalesce((select jsonb_agg(jsonb_build_object(
+                'id', e.id, 'title', e.title, 'category', e.category, 'venue_id', e.venue_id,
+                'starts_at', e.starts_at, 'ends_at', e.ends_at, 'status', e.status, 'cover_url', e.cover_url,
+                'host_name', e.host_name, 'registration_url', e.registration_url,
+                'registration_opens_at', e.registration_opens_at, 'registration_closes_at', e.registration_closes_at)
+                order by e.starts_at)
+                from public.events e where e.is_published), '[]'::jsonb),
+    'changes', coalesce((select jsonb_agg(jsonb_build_object('id', c.id, 'event_id', c.event_id, 'kind', c.kind,
+                'message', c.message, 'created_at', c.created_at) order by c.created_at desc)
+                from (select * from public.event_changes where created_at > now() - interval '24 hours'
+                       order by created_at desc limit 10) c), '[]'::jsonb),
+    'notices', coalesce((select jsonb_agg(jsonb_build_object('id', a.id, 'message', a.message, 'priority', a.priority,
+                'event_id', a.event_id, 'created_at', a.created_at) order by a.created_at desc)
+                from (select * from public.announcements order by created_at desc limit 8) a), '[]'::jsonb),
+    'polls', coalesce((select jsonb_agg(jsonb_build_object('poll_id', p.id, 'event_id', p.event_id, 'title', p.title,
+                'closes_at', p.closes_at, 'results_visibility', p.results_visibility))
+                from public.polls p where public.poll_open(p)), '[]'::jsonb),
+    'server_time', now());
+$$;
+grant execute on function public.app_status(), public.live_feed() to anon, authenticated;
+
+-- Push subscribe/unsubscribe from the browser (no server needed). Signed-in only, at most 5 devices
+-- per person, rate limited, and at most 30,000 devices in total (keeps the free database small).
+create or replace function public.save_push_subscription(p_endpoint text, p_p256dh text, p_auth text, p_topics text[] default null)
+returns jsonb
+language plpgsql volatile security definer set search_path = public
+as $$
+declare uid uuid := auth.uid(); t text[];
+begin
+  if uid is null then return jsonb_build_object('ok', false, 'reason', 'sign_in', 'message', 'Sign in to get alerts'); end if;
+  if p_endpoint !~ '^https://[^\s]+$' or char_length(p_endpoint) > 1000 or char_length(coalesce(p_p256dh, '')) not between 20 and 200
+     or char_length(coalesce(p_auth, '')) not between 8 and 100 then
+    return jsonb_build_object('ok', false, 'reason', 'invalid', 'message', 'That device could not be registered');
+  end if;
+  if not (public.rate_hit('push:' || uid::text, 10, 3600)->>'allowed')::boolean then
+    return jsonb_build_object('ok', false, 'reason', 'slow_down', 'message', 'Try again in a little while');
+  end if;
+  t := coalesce((select array_agg(x) from unnest(coalesce(p_topics, '{changes,urgent}')) x
+                  where x in ('changes', 'urgent', 'vote', 'hunt', 'signals') or x ~ '^event:[0-9a-f-]{36}$'), '{changes,urgent}');
+  if not exists (select 1 from public.push_subscriptions where endpoint = p_endpoint) then
+    if (select count(*) from public.push_subscriptions where user_id = uid) >= 5
+       or (select count(*) from public.push_subscriptions) >= 30000 then
+      return jsonb_build_object('ok', false, 'reason', 'limit', 'message', 'Too many devices for this account');
+    end if;
+  end if;
+  insert into public.push_subscriptions (endpoint, p256dh, auth, topics, user_id)
+  values (p_endpoint, p_p256dh, p_auth, t, uid)
+  on conflict (endpoint) do update set p256dh = excluded.p256dh, auth = excluded.auth, topics = excluded.topics,
+                                       user_id = uid, failures = 0;
+  return jsonb_build_object('ok', true);
+end;
+$$;
+
+create or replace function public.remove_push_subscription(p_endpoint text)
+returns jsonb
+language plpgsql volatile security definer set search_path = public
+as $$
+begin
+  delete from public.push_subscriptions where endpoint = p_endpoint and user_id = auth.uid();
+  return jsonb_build_object('ok', true);
+end;
+$$;
+revoke execute on function public.save_push_subscription(text, text, text, text[]), public.remove_push_subscription(text) from public, anon;
+grant execute on function public.save_push_subscription(text, text, text, text[]), public.remove_push_subscription(text) to authenticated;
+
+-- "Delete my account and data": the website has no server, so the user deletes themselves with this function.
+create or replace function public.delete_my_account()
+returns jsonb
+language plpgsql volatile security definer set search_path = public, auth
+as $$
+declare uid uuid := auth.uid();
+begin
+  if uid is null then return jsonb_build_object('ok', false, 'reason', 'sign_in'); end if;
+  if public.is_organiser() then
+    return jsonb_build_object('ok', false, 'reason', 'organiser', 'message', 'Ask another organiser to remove your organiser role first');
+  end if;
+  perform public._audit('delete_account', uid::text, '{}'::jsonb);
+  delete from auth.users where id = uid;          -- cascades to profiles, stars, signals, stamps, votes, push subscriptions
+  return jsonb_build_object('ok', true);
+end;
+$$;
+revoke execute on function public.delete_my_account() from public, anon;
+grant execute on function public.delete_my_account() to authenticated;
+
+
+-- ================================================================ hosts control voting for THEIR event
+-- "Voting on/off" belongs to the host of the competition (and organisers/admin). Hosts never touch the
+-- polls table directly: these functions check is_event_host() and validate every value.
+create or replace function public.host_set_voting(
+  p_event uuid, p_enabled boolean, p_title text default null, p_opens_at timestamptz default null,
+  p_closes_at timestamptz default null, p_visibility text default null, p_clear_times boolean default false)
+returns jsonb
+language plpgsql volatile security definer set search_path = public
+as $$
+declare p public.polls;
+begin
+  if not public.is_event_host(p_event) then raise exception 'Not allowed'; end if;
+  if not exists (select 1 from public.events where id = p_event) then
+    return jsonb_build_object('ok', false, 'reason', 'unknown_event', 'message', 'That event does not exist');
+  end if;
+  if p_visibility is not null and p_visibility not in ('live', 'after_close', 'hidden') then
+    return jsonb_build_object('ok', false, 'reason', 'bad_visibility', 'message', 'Results can be Live, After close or Hidden');
+  end if;
+  if p_title is not null and char_length(p_title) > 80 then
+    return jsonb_build_object('ok', false, 'reason', 'title_long', 'message', 'The title is too long');
+  end if;
+  if not (public.rate_hit('hostvote:' || p_event::text, 60, 3600)->>'allowed')::boolean then
+    return jsonb_build_object('ok', false, 'reason', 'too_many', 'message', 'Too many changes, try again in a little while');
+  end if;
+  insert into public.polls (event_id, enabled) values (p_event, false) on conflict (event_id) do nothing;
+  select * into p from public.polls where event_id = p_event;
+  if p_enabled and not exists (select 1 from public.contestants where poll_id = p.id and active) then
+    return jsonb_build_object('ok', false, 'reason', 'no_contestants', 'message', 'Add at least one team or person before turning voting on');
+  end if;
+  if coalesce(p_opens_at, p.opens_at) is not null and coalesce(p_closes_at, p.closes_at) is not null
+     and not p_clear_times and coalesce(p_closes_at, p.closes_at) <= coalesce(p_opens_at, p.opens_at) then
+    return jsonb_build_object('ok', false, 'reason', 'bad_times', 'message', 'Voting must close after it opens');
+  end if;
+  update public.polls set
+    enabled = p_enabled,
+    title = coalesce(nullif(trim(p_title), ''), title),
+    opens_at  = case when p_clear_times then null else coalesce(p_opens_at, opens_at) end,
+    closes_at = case when p_clear_times then null else coalesce(p_closes_at, closes_at) end,
+    results_visibility = coalesce(p_visibility, results_visibility)
+  where id = p.id;
+  perform public._audit('host_voting', p_event::text, jsonb_build_object('enabled', p_enabled));
+  return jsonb_build_object('ok', true, 'enabled', p_enabled);
+end;
+$$;
+
+create or replace function public.host_save_contestant(
+  p_event uuid, p_id uuid, p_name text, p_subtitle text default null, p_photo_url text default null,
+  p_sort int default 0, p_active boolean default true)
+returns jsonb
+language plpgsql volatile security definer set search_path = public
+as $$
+declare p public.polls; cid uuid;
+begin
+  if not public.is_event_host(p_event) then raise exception 'Not allowed'; end if;
+  if char_length(trim(coalesce(p_name, ''))) not between 1 and 80 then
+    return jsonb_build_object('ok', false, 'reason', 'bad_name', 'message', 'The name must be 1 to 80 characters');
+  end if;
+  if char_length(coalesce(p_subtitle, '')) > 80 then
+    return jsonb_build_object('ok', false, 'reason', 'bad_subtitle', 'message', 'The line under the name is too long');
+  end if;
+  if p_photo_url is not null and p_photo_url <> '' and (p_photo_url !~ '^https://[^\s]+$' or char_length(p_photo_url) > 300) then
+    return jsonb_build_object('ok', false, 'reason', 'bad_url', 'message', 'The photo link must start with https://');
+  end if;
+  insert into public.polls (event_id, enabled) values (p_event, false) on conflict (event_id) do nothing;
+  select * into p from public.polls where event_id = p_event;
+  if p_id is null then
+    if (select count(*) from public.contestants where poll_id = p.id) >= 60 then
+      return jsonb_build_object('ok', false, 'reason', 'limit', 'message', 'At most 60 teams or people per vote');
+    end if;
+    insert into public.contestants (poll_id, name, subtitle, photo_url, sort, active)
+    values (p.id, trim(p_name), nullif(trim(coalesce(p_subtitle, '')), ''), nullif(p_photo_url, ''), coalesce(p_sort, 0), coalesce(p_active, true))
+    returning id into cid;
+  else
+    update public.contestants set name = trim(p_name), subtitle = nullif(trim(coalesce(p_subtitle, '')), ''),
+           photo_url = nullif(p_photo_url, ''), sort = coalesce(p_sort, sort), active = coalesce(p_active, active)
+     where id = p_id and poll_id = p.id returning id into cid;
+    if cid is null then return jsonb_build_object('ok', false, 'reason', 'unknown', 'message', 'That team or person is not in this vote'); end if;
+  end if;
+  return jsonb_build_object('ok', true, 'id', cid);
+end;
+$$;
+
+revoke execute on function public.host_set_voting(uuid, boolean, text, timestamptz, timestamptz, text, boolean),
+  public.host_save_contestant(uuid, uuid, text, text, text, int, boolean) from public, anon;
+grant execute on function public.host_set_voting(uuid, boolean, text, timestamptz, timestamptz, text, boolean),
+  public.host_save_contestant(uuid, uuid, text, text, text, int, boolean) to authenticated;

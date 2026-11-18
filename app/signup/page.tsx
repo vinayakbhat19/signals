@@ -33,12 +33,12 @@ export default function SignUpPage() {
     const { error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {
-        redirectTo: `${siteUrl}/auth/callback?next=/verified`,
+        redirectTo: `${siteUrl.replace(/\/$/, '')}/auth/callback/?next=/verified/`,
         queryParams: { prompt: 'select_account' },
       },
     });
     if (error) {
-      setErrorMsg('Could not start Google sign-in. Try email & password below.');
+      setErrorMsg('Could not start Google sign-in.');
       setLoadingGoogle(false);
     }
   }
@@ -55,38 +55,33 @@ export default function SignUpPage() {
       return;
     }
     if (!acceptedTerms) {
-      setErrorMsg('Please accept the fest code of conduct to continue.');
+      setErrorMsg('Please accept the fest rules to continue.');
       return;
     }
 
     setLoading(true);
     try {
-      const res = await fetch('/api/auth/signup', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          fullName: fullName.trim(),
-          email: email.trim(),
-          password,
-        }),
+      const supabase = createClient();
+      const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || window.location.origin;
+      const { data, error } = await supabase.auth.signUp({
+        email: email.trim().toLowerCase(),
+        password,
+        options: {
+          data: { full_name: fullName.trim() },
+          emailRedirectTo: `${siteUrl.replace(/\/$/, '')}/auth/callback/?next=/verified/`,
+        },
       });
-      const json = (await res.json()) as {
-        ok?: boolean;
-        signedIn?: boolean;
-        error?: string;
-      };
-      if (!res.ok) {
-        setErrorMsg(json.error || 'Could not create account.');
+      if (error) {
+        setErrorMsg('Unable to create account right now. Please try again.');
         setLoading(false);
         return;
       }
-      if (json.signedIn) {
+      if (data.session) {
         toast.success('Account created!');
-        router.push('/verified');
-        router.refresh();
+        router.push('/verified/');
       } else {
         router.push(
-          `/signup/check-email?email=${encodeURIComponent(email.trim())}`
+          `/signup/check-email/?email=${encodeURIComponent(email.trim())}`
         );
       }
     } catch {
@@ -100,13 +95,13 @@ export default function SignUpPage() {
       <div className="space-y-5">
         <div className="flex items-center justify-between">
           <Link
-            href="/welcome"
+            href="/welcome/"
             aria-label="Back"
             className="flex size-11 items-center justify-center rounded-[14px] border-[1.5px] border-[#3B2758] bg-[#1F1230] text-[#F4F2FA]"
           >
-            <ArrowLeft className="size-5" aria-hidden="true" />
+            <ArrowLeft className="size-5" />
           </Link>
-          <Link href="/login" className="text-xs font-extrabold text-[#FFD60A]">
+          <Link href="/login/" className="text-xs font-extrabold text-[#FFD60A]">
             Already have an account? Log in
           </Link>
         </div>
@@ -118,7 +113,7 @@ export default function SignUpPage() {
               CREATE ACCOUNT
             </h1>
             <p className="mt-1 text-xs text-[#BDB8CF]">
-              Join Fiesta&apos;26 Stamp Hunt &amp; live audience voting.
+              Join Fiesta&apos;26 Treasure Hunt &amp; live audience voting.
             </p>
           </div>
         </div>
@@ -128,7 +123,7 @@ export default function SignUpPage() {
         {errorMsg && (
           <div
             role="alert"
-            className="rounded-2xl border border-[#FF4F5E]/60 bg-[#FF4F5E]/15 px-4 py-3 text-sm font-medium text-[#FF9EA7]"
+            className="rounded-2xl border border-[#FF4F5E]/60 bg-[#FF4F5E]/15 px-4 py-3 text-sm text-[#FF9EA7]"
           >
             {errorMsg}
           </div>
@@ -138,81 +133,62 @@ export default function SignUpPage() {
           type="button"
           onClick={() => void handleGoogle()}
           disabled={loadingGoogle || loading}
-          className="flex h-[52px] w-full items-center justify-center gap-2.5 rounded-[18px] bg-[#FFD60A] text-sm font-extrabold text-[#12091E] shadow-[5px_5px_0_#FF4FD8] disabled:opacity-60 cursor-pointer"
+          className="flex h-[52px] w-full items-center justify-center gap-2.5 rounded-[18px] bg-[#FFD60A] text-sm font-extrabold text-[#12091E] shadow-[5px_5px_0_#FF4FD8] cursor-pointer"
         >
           {loadingGoogle && <Loader2 className="size-4 animate-spin" />}
           Continue with Google
         </button>
 
-        <div className="flex items-center gap-3 text-[11px] font-bold uppercase tracking-[0.08em] text-[#9C97B0]">
+        <div className="flex items-center gap-3 text-[11px] font-bold uppercase text-[#9C97B0]">
           <span className="h-px flex-1 bg-[#3B2758]" />
           or with email
           <span className="h-px flex-1 bg-[#3B2758]" />
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-3.5">
-          <div className="space-y-1">
-            <label htmlFor="su-name" className="text-xs font-bold text-[#BDB8CF]">
-              Full name
-            </label>
-            <input
-              id="su-name"
-              type="text"
-              required
-              maxLength={80}
-              value={fullName}
-              onChange={(e) => setFullName(e.target.value)}
-              placeholder="Asha Kulkarni"
-              className="h-12 w-full rounded-[14px] border-[1.5px] border-[#3B2758] bg-[#1F1230] px-4 text-sm text-[#F4F2FA] placeholder:text-[#8A8599] focus:border-[#FFD60A] outline-none"
-            />
-          </div>
-
-          <div className="space-y-1">
-            <label htmlFor="su-email" className="text-xs font-bold text-[#BDB8CF]">
-              Email address
-            </label>
-            <input
-              id="su-email"
-              type="email"
-              required
-              autoComplete="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="you@gmail.com"
-              className="h-12 w-full rounded-[14px] border-[1.5px] border-[#3B2758] bg-[#1F1230] px-4 text-sm text-[#F4F2FA] placeholder:text-[#8A8599] focus:border-[#FFD60A] outline-none"
-            />
-          </div>
-
+          <input
+            type="text"
+            required
+            maxLength={80}
+            value={fullName}
+            onChange={(e) => setFullName(e.target.value)}
+            placeholder="Full name"
+            className="h-12 w-full rounded-[14px] border-[1.5px] border-[#3B2758] bg-[#1F1230] px-4 text-sm text-[#F4F2FA] outline-none focus:border-[#FFD60A]"
+          />
+          <input
+            type="email"
+            required
+            autoComplete="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            placeholder="you@gmail.com"
+            className="h-12 w-full rounded-[14px] border-[1.5px] border-[#3B2758] bg-[#1F1230] px-4 text-sm text-[#F4F2FA] outline-none focus:border-[#FFD60A]"
+          />
           <div className="space-y-1.5">
-            <label htmlFor="su-pass" className="text-xs font-bold text-[#BDB8CF]">
-              Password (8+ chars with a number)
-            </label>
             <div className="relative">
               <input
-                id="su-pass"
                 type={showPassword ? 'text' : 'password'}
                 required
                 autoComplete="new-password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                placeholder="At least 8 chars + 1 number"
-                className="h-12 w-full rounded-[14px] border-[1.5px] border-[#3B2758] bg-[#1F1230] pl-4 pr-12 text-sm text-[#F4F2FA] placeholder:text-[#8A8599] focus:border-[#FFD60A] outline-none"
+                placeholder="Password (8+ chars with a number)"
+                className="h-12 w-full rounded-[14px] border-[1.5px] border-[#3B2758] bg-[#1F1230] pl-4 pr-12 text-sm text-[#F4F2FA] outline-none focus:border-[#FFD60A]"
               />
               <button
                 type="button"
                 onClick={() => setShowPassword((v) => !v)}
-                aria-label={showPassword ? 'Hide password' : 'Show password'}
-                className="absolute top-1/2 right-1.5 flex size-9 -translate-y-1/2 items-center justify-center rounded-lg text-[#9C97B0] cursor-pointer"
+                className="absolute top-1/2 right-2 -translate-y-1/2 p-1.5 text-[#9C97B0] cursor-pointer"
               >
                 {showPassword ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
               </button>
             </div>
             {password.length > 0 && (
-              <div className="grid grid-cols-3 gap-1.5 pt-0.5">
+              <div className="grid grid-cols-3 gap-1.5">
                 {[1, 2, 3].map((step) => (
                   <div
                     key={step}
-                    className="h-1.5 rounded-full transition-colors"
+                    className="h-1.5 rounded-full"
                     style={{
                       backgroundColor:
                         strength >= step
@@ -226,8 +202,7 @@ export default function SignUpPage() {
               </div>
             )}
           </div>
-
-          <label className="flex items-start gap-2.5 pt-1 text-xs text-[#BDB8CF] cursor-pointer">
+          <label className="flex items-start gap-2.5 text-xs text-[#BDB8CF] cursor-pointer">
             <input
               type="checkbox"
               checked={acceptedTerms}
@@ -235,14 +210,13 @@ export default function SignUpPage() {
               className="mt-0.5 size-4 accent-[#FFD60A]"
             />
             <span>
-              I agree to play fair in the Stamp Hunt and Audience Voting.
+              I agree to play fair in the Treasure Hunt and Audience Voting.
             </span>
           </label>
-
           <button
             type="submit"
             disabled={loading || loadingGoogle}
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-[16px] border-[1.5px] border-[#FFD60A] bg-[#1F1230] text-sm font-extrabold text-[#FFD60A] hover:bg-[#FFD60A] hover:text-[#12091E] disabled:opacity-60 transition-colors cursor-pointer"
+            className="flex h-12 w-full items-center justify-center gap-2 rounded-[16px] border-[1.5px] border-[#FFD60A] bg-[#1F1230] text-sm font-extrabold text-[#FFD60A] hover:bg-[#FFD60A] hover:text-[#12091E] cursor-pointer"
           >
             {loading && <Loader2 className="size-4 animate-spin" />}
             Create account with email

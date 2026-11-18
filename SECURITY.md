@@ -10,7 +10,7 @@ Rule of thumb: **the database enforces every rule; the app is just the front doo
 
 | Way in | How it works | Notes |
 | --- | --- | --- |
-| **Continue with Google** | Supabase Auth, Google OAuth, PKCE code flow via `@supabase/ssr` | Fastest for students. Google confirms the email, so a college Google account gets the Verified badge at once |
+| **Continue with Google** | Supabase Auth, Google OAuth, PKCE code flow in the browser (`supabase-js`) | Fastest for students. Google confirms the email |
 | **Email + password** | Supabase Auth with **Confirm email ON** | Verified badge only after the confirmation link is clicked |
 | **Organisers and admins** | Google sign-in + **TOTP two-factor (MFA)** | Enrol at `/account/security`; admin pages require the second factor once enrolled |
 
@@ -21,7 +21,7 @@ Configuration checklist (Supabase dashboard unless noted):
 - [ ] Authentication → Rate Limits: keep sign-up, sign-in, token refresh and email limits **at or below** the defaults; lower the email-send limit to what you need.
 - [ ] Authentication → Attack Protection: turn on **CAPTCHA** (Cloudflare Turnstile or hCaptcha) for sign-up and password reset; turn on leaked-password protection if your plan offers it.
 - [ ] Sessions: access token (JWT) expiry 1 hour, refresh-token rotation on (defaults).
-- [ ] Cookies: `httpOnly`, `Secure`, `SameSite=Lax` (the `@supabase/ssr` helpers do this). Never copy tokens into `localStorage`.
+- [ ] Sessions live in the browser's localStorage (static site, no server). Protect them with the strict CSP in `public/_headers` (no inline scripts, no third-party scripts except Turnstile and Cloudflare analytics) and never log tokens.
 
 **Google blocks sign-in inside in-app browsers** (Instagram, WhatsApp, Facebook, Snapchat, LinkedIn, Telegram) with the error `disallowed_useragent`. Students who scan a QR from a story or a chat will hit this. The app must detect those browsers and show: "Open in Chrome or Safari to continue with Google", with a Copy link button and email + password as the alternative.
 
@@ -33,19 +33,21 @@ Configuration checklist (Supabase dashboard unless noted):
 | --- | --- | --- |
 | visitor (no account) | — | read public pages, scan, see results that are visible |
 | student | sign-up | vote, collect stamps, own profile |
-| host | organiser invite (`invite_host`); active only after the invited email is **confirmed** | manage participants of **their** events until `hosts_until` |
-| volunteer | organiser invites their email (`invite_volunteer`); active after the email is confirmed | print hunt QR stickers, see the winners list |
-| organiser | dashboard / admin | everything in the control room |
-| admin | dashboard | make organisers |
+| host | the **admin creates the account** (staff Worker) and picks the event | their event's time, venue, status, registration window, **voting on/off and teams**, participants; until `hosts_until` |
+| volunteer | the **admin creates the account** (staff Worker) | print hunt QR stickers, see the winners list |
+| organiser | the admin (optional, for a committee head) | events, voting, announcements |
+| admin | **only** `supabase/bootstrap_admin.sql` in the SQL Editor | everything, including staff accounts, hunt places and the safety panel |
 
-- Roles live in `profiles.role` and **can't be changed by the user** (column privileges). The app checks the role **in the database** for every admin/host page and server action (`requireRole`), never from client data.
+**Staff Worker rules:** only a caller whose own token resolves to `profiles.role = 'admin'` is accepted; the website's address is the only allowed origin; passwords need 8 to 72 characters with a letter and a number, are never logged or returned, and every action goes to `audit_log` without the password; admins cannot be changed there. Hand passwords over privately and tell staff to change them.
+
+- Roles live in `profiles.role` and **can't be changed by the user** (column privileges). The app checks the role **in the database** for every admin/host page (`<RequireRole>`) and again inside every database function and policy, never from client data.
 - Unauthorised visits to `/admin` or `/host` return **404**, not "forbidden".
-- **Service-role key**: used only in `lib/supabase/admin.ts` (server-only), for delete-my-account, push subscriptions, rate-limit fallback and purge. Never prefixed `NEXT_PUBLIC_`.
-- **Audit log** (`audit_log`): role changes, hosts added/removed, polls changed, events deleted, config changes (mode, pause, banner), archive/purge. Organisers can read it; nobody can edit it. Exports of participant lists are added by the server action.
+- **Service-role key**: exists only as a secret of the Cloudflare push Worker. It is never in the website, the repository or any `NEXT_PUBLIC_` variable. Delete-my-account, push subscribe and purge are database functions.
+- **Audit log** (`audit_log`): role changes, hosts added/removed, polls changed, events deleted, config changes (mode, pause, banner), archive/purge. Organisers can read it; nobody can edit it. Exports of participant lists are logged through a database function.
 
 ## 3. Rate limiting and abuse
 
-Full table and fallback chain in `RESILIENCE.md` section 3. Summary of what's protected: sign-up, login, password reset, confirmation resend, push subscribe, stamps, votes, uploads, imports, admin writes, and a high per-IP flood guard (thousands per minute, writes only) at the Vercel firewall. Real limits are per account/email, never low per-IP limits, because many students share one campus IP. Sign-in calls run from the browser. Auth endpoints use CAPTCHA too.
+Full table and fallback chain in `RESILIENCE.md` section 3. Summary of what's protected: sign-up, login, password reset, confirmation resend, push subscribe, stamps, votes, uploads, imports, admin writes, and the database functions' own limits. There are no per-IP limits in the app, because many students share one campus IP. Sign-in calls run from the browser. Sign-up and reset use Turnstile.
 
 ## 4. Web hardening
 
@@ -53,13 +55,13 @@ Set in `next.config` for all routes:
 
 | Header | Value |
 | --- | --- |
-| `Content-Security-Policy` | `default-src 'self'; script-src 'self' 'nonce-<per-request>'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data: blob: https://<project>.supabase.co; connect-src 'self' https://<project>.supabase.co wss://<project>.supabase.co; frame-ancestors 'none'; form-action 'self'; base-uri 'self'; object-src 'none'`. Start in **Report-Only**, fix what it reports, then enforce |
+| `Content-Security-Policy` | `default-src 'self'; script-src 'self' https://challenges.cloudflare.com https://static.cloudflareinsights.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data: blob: https://<project>.supabase.co; connect-src 'self' https://<project>.supabase.co wss://<project>.supabase.co; frame-ancestors 'none'; form-action 'self'; base-uri 'self'; object-src 'none'`. Start in **Report-Only**, fix what it reports, then enforce |
 | `Strict-Transport-Security` | `max-age=31536000; includeSubDomains` |
 | `X-Content-Type-Options` | `nosniff` |
 | `Referrer-Policy` | `strict-origin-when-cross-origin` |
 | `Permissions-Policy` | `camera=(self), microphone=(), geolocation=(), payment=()` |
 
-Also: `poweredByHeader: false`, `devIndicators: false`, server actions check the `Origin` header, every input goes through zod on the server, no `dangerouslySetInnerHTML`.
+Also: all headers go in `public/_headers` (Cloudflare Pages), every input goes through zod in the browser and the database checks it again, no `dangerouslySetInnerHTML`.
 
 ## 5. Files and imports
 
@@ -70,10 +72,10 @@ Also: `poweredByHeader: false`, `devIndicators: false`, server actions check the
 ## 6. Secrets
 
 - [ ] Only these are public: `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `NEXT_PUBLIC_SITE_URL`, `NEXT_PUBLIC_VAPID_PUBLIC_KEY`, `NEXT_PUBLIC_TURNSTILE_SITE_KEY`.
-- [ ] Server-only: `SUPABASE_SERVICE_ROLE_KEY`, `VAPID_PRIVATE_KEY`, `UPSTASH_REDIS_REST_TOKEN`, `EMERGENCY_PIN_HASH`, `CRON_SECRET`, SMTP key, `TURNSTILE_SECRET_KEY`.
+- [ ] Secrets (never in the website): `SUPABASE_SERVICE_ROLE_KEY` and `VAPID_PRIVATE_KEY` (Worker secrets), the SMTP key and `TURNSTILE_SECRET_KEY` (Supabase dashboard).
 - [ ] `.env*` in `.gitignore`; GitHub secret scanning on; a pre-commit scan (gitleaks).
-- [ ] Never paste a secret into chat, WhatsApp, a prompt or an issue. If one leaks: rotate it the same day (Supabase → Settings → API; Vercel env; Upstash; VAPID pair).
-- [ ] After the fest: rotate the service-role key and the emergency PIN.
+- [ ] Never paste a secret into chat, WhatsApp, a prompt or an issue. If one leaks: rotate it the same day (Supabase → Settings → API; Cloudflare secrets; VAPID pair).
+- [ ] After the fest: rotate the service-role key and the VAPID pair.
 
 ## 7. Dependencies
 
@@ -100,7 +102,7 @@ Replace `$URL` and `$ANON` with your Supabase project URL and anon key.
 | 4 | Public line-up has no emails | `curl -s "$URL/rest/v1/participants_public?select=email" -H "apikey: $ANON"` | column does not exist |
 | 5 | Student can't make themselves admin | signed in as a student: `PATCH profiles?id=eq.<me>` with `{"role":"admin"}` | permission denied |
 | 6 | Student can't vote twice or stamp directly | `POST /rest/v1/votes`, `POST /rest/v1/stamps` | permission denied |
-| 7 | Service-role key isn't in the browser | search the built client files (`.next/static`) and page source for the key's first 20 characters | not found |
+| 7 | Service-role key isn't in the browser | search the built `out/` folder and page source for the key's first 20 characters | not found |
 | 8 | `/admin`, `/host` as a student | open the URLs | 404 |
 | 9 | Headers present | `curl -sI https://<app>/` | CSP, HSTS, nosniff, referrer-policy, permissions-policy |
 | 10 | Rate limit works | 11 wrong logins in a minute | 429 with retry-after |

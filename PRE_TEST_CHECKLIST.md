@@ -17,19 +17,19 @@ Legend: 🤖 the agent can check it · 📱 needs a person with a phone · 👥 
 ## B. Security
 - [ ] 🤖 All 15 checks in `SECURITY.md` section 9.
 - [ ] 🤖 Security headers present; CSP enforced without console errors on every screen.
-- [ ] 🤖 Service-role key, VAPID private key, Upstash token and emergency PIN hash are not in any client file.
+- [ ] 🤖 Service-role key and VAPID private key are not in the repository or the `out/` folder (they exist only as Worker secrets).
 - [ ] 🤖 `npm audit --omit=dev` and `gitleaks` clean.
 - [ ] 👥 Privacy notice read by someone from the college.
 
 ## C. Failure drills (do each on purpose)
 - [ ] 🤖 Wrong Supabase URL → pages still show the last data with the backup banner.
-- [ ] 🤖 Wrong Upstash URL → limiter source "database". Both wrong → "memory"; sign-up refused politely, other pages work.
+- [ ] 🤖 Wrong Supabase URL in a local build → "Backup mode" with the last data; no crash. Edit `emergency.json`, deploy: the banner shows on a phone within about 2 minutes.
 - [ ] 🤖 `writes_paused = true` → votes and stamps show the paused message; browsing works; banner appears within 20 s.
 - [ ] 🤖 Emergency mode works with the database off (post an announcement; phone shows it).
 - [ ] 📱 Phone in airplane mode: installed app opens, shows last data and "Offline".
 - [ ] 📱 Block the camera permission: scanner shows the steps and "Take a photo" works.
 - [ ] 📱 A hunt sticker is torn: reprint it from `/admin/hunt/qr`; the new sticker works and the link is the same. Rotate a code: the old sticker is refused.
-- [ ] 👥 Instant Rollback in Vercel rehearsed once.
+- [ ] 👥 Rollback in Cloudflare Pages rehearsed once.
 
 ## D. Load
 - [ ] 🤖 All k6 scenarios in `loadtest/` pass for **2,000 people at once** (readers, signin, vote, registration) on staging: see `PEAK_LOAD.md` section 7. No 429 for legitimate users (no low per-IP limits).
@@ -45,7 +45,7 @@ Legend: 🤖 the agent can check it · 📱 needs a person with a phone · 👥 
 - [ ] 📱 Camera light turns off when leaving the scanner.
 
 ## F. Hosts
-- [ ] 🤖 Invite an email with no account → "waiting"; sign up **unconfirmed** → no host access; confirm → host access.
+- [ ] 🤖 `node workers/staff/test.mjs` passes. As admin create a host and a volunteer (email + password); each signs in and reaches only their own pages; a student token calling the staff Worker gets 403; a password reset and a removal work.
 - [ ] 🤖 Host can't open another event's participants (404) and can't change time, venue or status.
 - [ ] 🤖 Upload `templates/participants_template.csv` and an `.xlsx` of Google Forms responses; re-upload updates, not duplicates; errors shown per row.
 - [ ] 🤖 Export is logged; a name starting with `=` is exported as text.
@@ -62,9 +62,9 @@ Legend: 🤖 the agent can check it · 📱 needs a person with a phone · 👥 
 
 ## H. Fest data and people
 - [ ] 👥 Date, time and venue for all 21 competitions (see `FORMS_CHECK.md`); every Google Form fixed.
-- [ ] 👥 Competitions chosen for audience voting (outdoor only) and 10 hunt places with clues; hosts' and volunteers' emails given and invited.
-- [ ] 👥 Free vercel.app address chosen and final; Supabase Site URL and redirects updated; hunt stickers and posters printed from that address; custom SMTP sender working (`ADDRESS_AND_PEOPLE.md`).
-- [ ] 👥 Fest-week scaling checklist in `PEAK_LOAD.md` section 6 done (Supabase compute and Auth limits, Vercel Pro, email plan).
+- [ ] 👥 Competitions chosen for audience voting (outdoor only) and 10 hunt places with clues; hosts' and volunteers' emails and passwords ready; you are the admin (`bootstrap_admin.sql` run, signed in once). Hosts know how to turn voting on and off.
+- [ ] 👥 Free pages.dev address chosen and final; Supabase Site URL and redirects updated; hunt stickers and posters printed from that address; custom SMTP sender working (`ADDRESS_AND_PEOPLE.md`).
+- [ ] 👥 Fest-week scaling checklist in `PEAK_LOAD.md` section 6 done (Supabase usage page, Auth limits, polling slider, backup, Worker deployed).
 - [ ] 👥 Committee knows the three emergency actions: delay an event, post an urgent notice, pause writes.
 - [ ] 👥 Owner's phone number is on the runbook; uptime alerts go to it.
 

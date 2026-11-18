@@ -22,7 +22,7 @@ const votesOk = new Counter('votes_counted');
 const signinMs = new Trend('signin_ms', true);
 
 const all = {
-  // P1: 2,000 people read the app at once (home, live feed, vote results) for 10 minutes
+  // P1: 2,000 people read the app at once (status check, feed on change, vote results) for 10 minutes
   readers: {
     executor: 'ramping-vus', startVUs: 0, exec: 'reader',
     stages: [{ duration: '3m', target: 2000 }, { duration: '10m', target: 2000 }, { duration: '1m', target: 0 }],
@@ -56,13 +56,28 @@ export const options = {
 
 const jitter = (s) => s * (0.7 + Math.random() * 0.6);   // spread polling so phones don't all hit at once
 
+const sbHeaders = { apikey: ANON, Authorization: `Bearer ${ANON}`, 'Content-Type': 'application/json' };
+const rpc = (name, body) => http.post(`${SB}/rest/v1/rpc/${name}`, JSON.stringify(body || {}), { headers: sbHeaders, tags: { kind: 'read' } });
+
+// A phone on the static site: open the page (a static file), then every ~30 s ask app_status (tiny) and
+// fetch live_feed only when the version changed. On the vote page it also reads poll_results every ~10 s.
 export function reader() {
   http.get(`${BASE}/`, { tags: { kind: 'read' } });
-  for (let i = 0; i < 40; i++) {
-    const r = http.get(`${BASE}/api/live`, { tags: { kind: 'read' } });
-    check(r, { 'live 200': (x) => x.status === 200 });
-    if (i % 3 === 0) http.get(`${BASE}/api/vote/${EVENT}`, { tags: { kind: 'read' } });
-    sleep(jitter(15));
+  let version = null;
+  for (let i = 0; i < 20; i++) {
+    const st = rpc('app_status');
+    check(st, { 'status 200': (x) => x.status === 200 });
+    let v = null;
+    try { v = st.json('version'); } catch (e) { /* ignore */ }
+    if (v !== version) {
+      const f = rpc('live_feed');
+      check(f, { 'feed 200': (x) => x.status === 200 });
+      version = v;
+    }
+    if (POLL && i % 3 === 0) {
+      http.get(`${SB}/rest/v1/poll_results?poll_id=eq.${POLL}&select=*`, { headers: sbHeaders, tags: { kind: 'read' } });
+    }
+    sleep(jitter(30));
   }
 }
 
@@ -94,7 +109,7 @@ export function setup() {
 
 export function castVote(data) {
   const tok = data.tokens[__ITER % data.tokens.length];
-  const r = http.post(`${SB}/rest/v1/rpc/cast_vote`, JSON.stringify({ p_poll: POLL, p_contestant: CONTESTANT, p_code: null }),
+  const r = http.post(`${SB}/rest/v1/rpc/cast_vote`, JSON.stringify({ p_poll: POLL, p_contestant: CONTESTANT }),
     { headers: { apikey: ANON, Authorization: `Bearer ${tok}`, 'Content-Type': 'application/json' }, tags: { kind: 'write' } });
   const ok = r.status === 200 && r.json('ok') === true;
   check(r, { 'vote counted or already counted': () => ok || (r.status === 200 && r.json('reason') === 'same') });
@@ -102,6 +117,6 @@ export function castVote(data) {
 }
 
 export function eventPage() {
-  const r = http.get(`${BASE}/events/${EVENT}`, { tags: { kind: 'read' } });
+  const r = http.get(`${BASE}/event/?id=${EVENT}`, { tags: { kind: 'read' } });
   check(r, { 'event page 200': (x) => x.status === 200 });
 }

@@ -1,5 +1,4 @@
 import type { Metadata, Viewport } from 'next';
-import { Analytics } from '@vercel/analytics/next';
 import { AppShell } from '@/components/app-shell';
 import { SwRegister } from '@/components/sw-register';
 import { Toaster } from '@/components/ui/sonner';
@@ -20,11 +19,12 @@ export const viewport: Viewport = {
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
+  manifest: '/manifest.webmanifest',
   title: {
     default: `${festName} Live · SDMCET`,
     template: `%s · ${festName} Live`,
   },
-  description: `Live schedule, venues, audience voting, Stamp Hunt and updates for ${festName} at ${collegeName}.`,
+  description: `Live schedule, venues, audience voting, Treasure Hunt and updates for ${festName} at ${collegeName}.`,
   icons: {
     icon: '/brand/icon-192.png',
     apple: '/brand/icon-192.png',
@@ -38,7 +38,7 @@ export const metadata: Metadata = {
     type: 'website',
     siteName: `${festName} Live`,
     title: `${festName} Live · SDMCET`,
-    description: `See what's happening now, up next, registration links, audience voting and Stamp Hunt at ${festName} (${collegeName}).`,
+    description: `See what's happening now, up next, registration links, audience voting and Treasure Hunt at ${festName} (${collegeName}).`,
     images: [
       {
         url: '/brand/fiesta26-banner.jpg',
@@ -47,12 +47,6 @@ export const metadata: Metadata = {
         alt: `${festName} — Intra College Cultural Fest, SDMCET Dharwad`,
       },
     ],
-  },
-  twitter: {
-    card: 'summary_large_image',
-    title: `${festName} Live · SDMCET`,
-    description: `Live campus guide for ${festName} at ${collegeName}.`,
-    images: ['/brand/fiesta26-banner.jpg'],
   },
 };
 
@@ -82,7 +76,6 @@ export default function RootLayout({
         </AppShell>
         <SwRegister />
         <Toaster theme="dark" position="top-center" richColors />
-        <Analytics />
       </body>
     </html>
   );

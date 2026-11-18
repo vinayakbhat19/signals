@@ -23,7 +23,7 @@ export function LoginForm({ nextPath, initialError }: LoginFormProps) {
   const [loadingEmail, setLoadingEmail] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(
     initialError === 'access_denied'
-      ? 'Sign-in was cancelled. You can try again anytime or continue browsing without signing in.'
+      ? 'Sign-in was cancelled. You can try again anytime or continue browsing.'
       : initialError === 'auth_failed'
         ? 'Sign-in link expired or failed. Please try again.'
         : null
@@ -39,7 +39,7 @@ export function LoginForm({ nextPath, initialError }: LoginFormProps) {
       const supabase = createClient();
       const siteUrl =
         process.env.NEXT_PUBLIC_SITE_URL || window.location.origin;
-      const redirectTo = `${siteUrl}/auth/callback?next=${encodeURIComponent(safeNext)}`;
+      const redirectTo = `${siteUrl.replace(/\/$/, '')}/auth/callback/?next=${encodeURIComponent(safeNext)}`;
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
@@ -66,20 +66,18 @@ export function LoginForm({ nextPath, initialError }: LoginFormProps) {
     setLoadingEmail(true);
     setErrorMsg(null);
     try {
-      const res = await fetch('/api/auth/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: email.trim(), password }),
+      const supabase = createClient();
+      const { error } = await supabase.auth.signInWithPassword({
+        email: email.trim().toLowerCase(),
+        password,
       });
-      const json = (await res.json()) as { ok?: boolean; error?: string };
-      if (!res.ok) {
-        setErrorMsg(json.error || 'Invalid email or password.');
+      if (error) {
+        setErrorMsg('Invalid email or password.');
         setLoadingEmail(false);
         return;
       }
       toast.success('Signed in!');
       router.push(safeNext);
-      router.refresh();
     } catch {
       setErrorMsg('Sign-in is busy right now. Please try again.');
       setLoadingEmail(false);
@@ -91,11 +89,11 @@ export function LoginForm({ nextPath, initialError }: LoginFormProps) {
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <Link
-            href={safeNext === '/login' ? '/' : safeNext}
+            href={safeNext.startsWith('/login') ? '/' : safeNext}
             aria-label="Back"
             className="flex size-11 items-center justify-center rounded-[14px] border-[1.5px] border-[#3B2758] bg-[#1F1230] text-[#F4F2FA]"
           >
-            <ArrowLeft className="size-5" aria-hidden="true" />
+            <ArrowLeft className="size-5" />
           </Link>
           <span className="text-xs font-extrabold uppercase tracking-[0.1em] text-[#9C97B0]">
             BROWSING NEEDS NO SIGN-IN
@@ -109,7 +107,7 @@ export function LoginForm({ nextPath, initialError }: LoginFormProps) {
               Log in
             </h1>
             <p className="mt-1 text-sm text-[#9C97B0]">
-              Collect stamps, cast live votes, and save your progress.
+              Play the Treasure Hunt, cast live votes, and save your progress.
             </p>
           </div>
         </div>
@@ -125,15 +123,14 @@ export function LoginForm({ nextPath, initialError }: LoginFormProps) {
           </div>
         )}
 
-        {/* Primary Google button */}
         <button
           type="button"
           onClick={() => void handleGoogleSignIn()}
           disabled={loadingGoogle || loadingEmail}
-          className="flex h-[54px] w-full items-center justify-center gap-3 rounded-[18px] bg-[#FFD60A] text-base font-extrabold text-[#12091E] shadow-[5px_5px_0_#FF4FD8] transition-transform active:translate-y-0.5 disabled:opacity-60 cursor-pointer"
+          className="flex h-[54px] w-full items-center justify-center gap-3 rounded-[18px] bg-[#FFD60A] text-base font-extrabold text-[#12091E] shadow-[5px_5px_0_#FF4FD8] disabled:opacity-60 cursor-pointer"
         >
           {loadingGoogle ? (
-            <Loader2 className="size-5 animate-spin" aria-hidden="true" />
+            <Loader2 className="size-5 animate-spin" />
           ) : (
             <svg className="size-5" viewBox="0 0 24 24" aria-hidden="true">
               <path
@@ -146,97 +143,62 @@ export function LoginForm({ nextPath, initialError }: LoginFormProps) {
         </button>
 
         <p className="text-center text-xs text-[#9C97B0]">
-          Fastest way in — any Google or email account can vote and play the
-          Treasure Hunt.
+          Fastest way in — any Google or email account can vote and play.
         </p>
 
         <div className="flex items-center gap-3 text-xs font-bold uppercase tracking-[0.08em] text-[#9C97B0]">
           <span className="h-px flex-1 bg-[#3B2758]" />
-          or email & password
+          or email &amp; password
           <span className="h-px flex-1 bg-[#3B2758]" />
         </div>
 
         <form onSubmit={handleEmailSignIn} className="space-y-3.5">
-          <div className="space-y-1.5">
-            <label
-              htmlFor="login-email"
-              className="block text-xs font-bold uppercase tracking-[0.06em] text-[#BDB8CF]"
-            >
-              Email
-            </label>
+          <input
+            type="email"
+            autoComplete="email"
+            required
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            placeholder="you@gmail.com"
+            className="h-12 w-full rounded-[14px] border-[1.5px] border-[#3B2758] bg-[#1F1230] px-4 text-sm text-[#F4F2FA] outline-none focus:border-[#FFD60A]"
+          />
+          <div className="relative">
             <input
-              id="login-email"
-              type="email"
-              autoComplete="email"
+              type={showPassword ? 'text' : 'password'}
+              autoComplete="current-password"
               required
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="you@sdmcet.ac.in"
-              className="h-12 w-full rounded-[14px] border-[1.5px] border-[#3B2758] bg-[#1F1230] px-4 text-sm text-[#F4F2FA] placeholder:text-[#8A8599] focus:border-[#FFD60A] outline-none"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              placeholder="Password"
+              className="h-12 w-full rounded-[14px] border-[1.5px] border-[#3B2758] bg-[#1F1230] pl-4 pr-12 text-sm text-[#F4F2FA] outline-none focus:border-[#FFD60A]"
             />
-          </div>
-
-          <div className="space-y-1.5">
-            <label
-              htmlFor="login-password"
-              className="block text-xs font-bold uppercase tracking-[0.06em] text-[#BDB8CF]"
+            <button
+              type="button"
+              onClick={() => setShowPassword((v) => !v)}
+              aria-label="Toggle password"
+              className="absolute top-1/2 right-2 -translate-y-1/2 p-1.5 text-[#9C97B0] cursor-pointer"
             >
-              Password
-            </label>
-            <div className="relative">
-              <input
-                id="login-password"
-                type={showPassword ? 'text' : 'password'}
-                autoComplete="current-password"
-                required
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder="••••••••"
-                className="h-12 w-full rounded-[14px] border-[1.5px] border-[#3B2758] bg-[#1F1230] pl-4 pr-12 text-sm text-[#F4F2FA] placeholder:text-[#8A8599] focus:border-[#FFD60A] outline-none"
-              />
-              <button
-                type="button"
-                onClick={() => setShowPassword((prev) => !prev)}
-                aria-label={showPassword ? 'Hide password' : 'Show password'}
-                className="absolute top-1/2 right-1.5 flex size-9 -translate-y-1/2 items-center justify-center rounded-lg text-[#9C97B0] hover:text-[#F4F2FA] cursor-pointer"
-              >
-                {showPassword ? (
-                  <EyeOff className="size-4" aria-hidden="true" />
-                ) : (
-                  <Eye className="size-4" aria-hidden="true" />
-                )}
-              </button>
-            </div>
+              {showPassword ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
+            </button>
           </div>
-
           <div className="flex items-center justify-between text-xs pt-1">
-            <Link href="/reset" className="font-bold text-[#FFD60A] hover:underline">
+            <Link href="/reset/" className="font-bold text-[#FFD60A] hover:underline">
               Forgot password?
             </Link>
-            <Link href="/signup" className="font-bold text-[#CFCBDD] hover:text-[#F4F2FA]">
+            <Link href="/signup/" className="font-bold text-[#CFCBDD]">
               Create account →
             </Link>
           </div>
-
           <button
             type="submit"
             disabled={loadingEmail || loadingGoogle}
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-[16px] border-[1.5px] border-[#3B2758] bg-[#1F1230] text-sm font-extrabold text-[#F4F2FA] hover:border-[#FFD60A] disabled:opacity-60 cursor-pointer"
+            className="flex h-12 w-full items-center justify-center gap-2 rounded-[16px] border-[1.5px] border-[#3B2758] bg-[#1F1230] text-sm font-extrabold text-[#F4F2FA] hover:border-[#FFD60A] cursor-pointer"
           >
-            {loadingEmail && (
-              <Loader2 className="size-4 animate-spin" aria-hidden="true" />
-            )}
+            {loadingEmail && <Loader2 className="size-4 animate-spin" />}
             Log in with email
           </button>
         </form>
       </div>
-
-      <p className="pt-6 text-center text-xs text-[#9C97B0]">
-        Just want to check the schedule?{' '}
-        <Link href="/" className="font-bold text-[#FFD60A] underline">
-          Continue browsing
-        </Link>
-      </p>
     </div>
   );
 }

@@ -8,7 +8,7 @@ A game for fest day: about **10 hidden places** on campus. Each place has a **QR
 - A volunteer or host makes the QR stickers **once** (screen 46, "Hunt stickers"), prints them and sticks them up. **The QR never changes.** Nobody regenerates anything during the fest.
 - The QR is open to everyone. Secrecy is not the point; finding the place is.
 - The place name is **hidden** until the student scans it. They only see the clue.
-- The QR opens the app at `/s/<place id>.<code>` (the code is a long random string, so nobody can guess a QR they haven't seen).
+- The QR opens the app at `/s/?t=<place id>.<code>` (the code is a long random string, so nobody can guess a QR they haven't seen).
 
 ## Rules for players (put these on the Hunt page and the posters)
 1. Sign in (Google or email) to play. Browsing needs no sign-in.
@@ -37,8 +37,8 @@ A game for fest day: about **10 hidden places** on campus. Each place has a **QR
 
 ## Screens (see the design canvas)
 - **Hunt** (`/hunt`, screen 22): points, rank, places found, the list of clues: found places show their name, the current clue shows a hint and a Scan button, later clues are collapsed. Top hunters preview.
-- **Scan** (screen 20) and **result** (`/s/<id>.<code>`, screen 21): celebration, "+10!", progress, the next clue.
-- **Hunt stickers** (`/admin/hunt/qr`, volunteers, hosts and organisers, screen 46): list of places with Print buttons and "Print all 10 (PDF)". Uses `list_stamp_qrs()`.
+- **Scan** (screen 20) and **result** (`/s/?t=<id>.<code>`, screen 21): celebration, "+10!", progress, the next clue.
+- **Hunt stickers** (`/admin/hunt/qr/`, volunteers, hosts and organisers, screen 46): list of places with Print buttons and "Print all 10 (PDF)". Uses `list_stamp_qrs()`.
 - **Winners** (`/admin/hunt/winners`, volunteers and organisers, screen 49): top hunters with name, email, places, score and minutes taken. Uses `hunt_winners()`.
 - **Organiser editor** (`/admin/hunt`): add places (hidden name, clue, hint, "found" message, mascot, order), turn places on or off, rotate a code, open and close time, sequential mode, delete stamps.
 - **Leaderboard** (`/hunt/board`, screen 23): big board for a TV, auto-refresh.

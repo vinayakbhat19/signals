@@ -4,6 +4,7 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { ArrowLeft, Loader2, Mail } from 'lucide-react';
 import { toast } from 'sonner';
+import { createClient } from '@/lib/supabase/client';
 
 export default function ResetPasswordPage() {
   const [email, setEmail] = useState('');
@@ -15,41 +16,33 @@ export default function ResetPasswordPage() {
     if (!email.trim()) return;
     setLoading(true);
     try {
-      const res = await fetch('/api/auth/reset', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: email.trim() }),
+      const supabase = createClient();
+      const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || window.location.origin;
+      await supabase.auth.resetPasswordForEmail(email.trim().toLowerCase(), {
+        redirectTo: `${siteUrl.replace(/\/$/, '')}/auth/callback/?next=/reset/new/`,
       });
-      const json = (await res.json()) as { ok?: boolean; error?: string; message?: string };
-      setLoading(false);
-      if (!res.ok) {
-        toast.error(json.error || 'Please try again later.');
-      } else {
-        setSent(true);
-        toast.success('Check your inbox');
-      }
     } catch {
-      setLoading(false);
-      toast.error('Network error. Please try again.');
+      // Never disclose account existence
     }
+    setLoading(false);
+    setSent(true);
+    toast.success('Check your inbox');
   }
 
   return (
     <div className="mx-auto flex min-h-dvh max-w-md flex-col justify-center gap-6 px-5">
       <Link
-        href="/login"
+        href="/login/"
         className="inline-flex size-11 items-center justify-center rounded-[14px] border border-[#3B2758] bg-[#1F1230] text-[#F4F2FA]"
       >
         <ArrowLeft className="size-5" />
       </Link>
-
       <div className="space-y-1.5">
         <h1 className="font-display text-3xl text-[#F4F2FA]">RESET PASSWORD</h1>
         <p className="text-sm text-[#BDB8CF]">
           Enter your email and we&apos;ll send a link to choose a new password.
         </p>
       </div>
-
       {sent ? (
         <div className="rounded-2xl border border-[#FFD60A]/40 bg-[#1F1230] p-5 space-y-2 text-sm">
           <Mail className="size-6 text-[#FFD60A]" />
@@ -66,7 +59,7 @@ export default function ResetPasswordPage() {
             required
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            placeholder="you@sdmcet.ac.in"
+            placeholder="you@gmail.com"
             className="h-12 w-full rounded-[14px] border-[1.5px] border-[#3B2758] bg-[#1F1230] px-4 text-sm text-[#F4F2FA] outline-none focus:border-[#FFD60A]"
           />
           <button

@@ -1,60 +1,63 @@
-import { requireOrganiser } from '@/lib/auth';
-import { createClient } from '@/lib/supabase/server';
+'use client';
 
-export const dynamic = 'force-dynamic';
+import { useEffect, useState } from 'react';
+import { createClient } from '@/lib/supabase/client';
 
-export default async function AdminStatsPage() {
-  await requireOrganiser();
-  const supabase = await createClient();
+export default function AdminStatsPage() {
+  const [counts, setCounts] = useState({
+    events: 0,
+    venues: 0,
+    users: 0,
+    stamps: 0,
+    notices: 0,
+  });
 
-  const [profilesRes, verifiedRes, eventsRes, stampsRes, votesRes] =
-    await Promise.all([
-      supabase.from('profiles').select('id', { count: 'exact', head: true }),
-      supabase
-        .from('profiles')
-        .select('id', { count: 'exact', head: true })
-        .eq('college_verified', true),
+  useEffect(() => {
+    const supabase = createClient();
+    Promise.all([
       supabase.from('events').select('id', { count: 'exact', head: true }),
+      supabase.from('venues').select('id', { count: 'exact', head: true }),
+      supabase.from('profiles').select('id', { count: 'exact', head: true }),
       supabase.from('stamps').select('user_id', { count: 'exact', head: true }),
-      supabase.from('votes').select('user_id', { count: 'exact', head: true }),
-    ]);
-
-  const cards = [
-    { label: 'Total Accounts', value: profilesRes.count ?? 0, color: '#FFD60A' },
-    {
-      label: 'Verified @sdmcet.ac.in',
-      value: verifiedRes.count ?? 0,
-      color: '#22D3EE',
-    },
-    { label: 'Published Events', value: eventsRes.count ?? 0, color: '#9B6CFF' },
-    { label: 'Stamps Claimed', value: stampsRes.count ?? 0, color: '#FF4FD8' },
-    { label: 'Audience Votes', value: votesRes.count ?? 0, color: '#FF9F43' },
-  ];
+      supabase.from('announcements').select('id', { count: 'exact', head: true }),
+    ]).then(([e, v, u, s, n]) => {
+      setCounts({
+        events: e.count ?? 0,
+        venues: v.count ?? 0,
+        users: u.count ?? 0,
+        stamps: s.count ?? 0,
+        notices: n.count ?? 0,
+      });
+    });
+  }, []);
 
   return (
-    <div className="space-y-5">
-      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
-        {cards.map((c) => (
+    <div className="space-y-4">
+      <h2 className="font-display text-2xl text-[#F4F2FA]">LIVE STATS</h2>
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-5">
+        {[
+          { label: 'Events', value: counts.events, color: '#FFD60A' },
+          { label: 'Venues', value: counts.venues, color: '#22D3EE' },
+          { label: 'Accounts', value: counts.users, color: '#FF4FD8' },
+          { label: 'Hunt Stamps', value: counts.stamps, color: '#9B6CFF' },
+          { label: 'Notices', value: counts.notices, color: '#FFE14D' },
+        ].map((item) => (
           <div
-            key={c.label}
-            className="rounded-[20px] border border-[#3B2758] bg-[#1F1230] p-4"
+            key={item.label}
+            className="rounded-2xl border border-[#3B2758] bg-[#1F1230] p-4 text-center"
           >
-            <div
-              className="font-heading text-3xl font-extrabold"
-              style={{ color: c.color }}
+            <p
+              className="font-display text-3xl"
+              style={{ color: item.color }}
             >
-              {c.value}
-            </div>
-            <div className="mt-1 text-xs font-bold text-[#BDB8CF]">
-              {c.label}
-            </div>
+              {item.value}
+            </p>
+            <p className="mt-1 text-xs font-bold uppercase text-[#9C97B0]">
+              {item.label}
+            </p>
           </div>
         ))}
       </div>
-      <p className="text-xs text-[#9C97B0]">
-        For live page views and <code>?src=qr-...</code> scan breakdown, open{' '}
-        <strong>Vercel Dashboard → Analytics</strong>.
-      </p>
     </div>
   );
 }

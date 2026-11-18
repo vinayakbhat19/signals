@@ -1,136 +1,318 @@
-import { cookies } from 'next/headers';
-import { requireOrganiser } from '@/lib/auth';
-import { AdminSafetyClient, type AuditRow } from '@/components/admin-safety-client';
-import { getLastRateLimitSource } from '@/lib/ratelimit';
-import { getSnapshotAgeSeconds } from '@/lib/snapshot';
+'use client';
+
+import { useCallback, useEffect, useState } from 'react';
 import {
-  CAMPUS_PREVIEW_COOKIE,
-  getPublicAppStatus,
-  verifyCampusPreviewToken,
-} from '@/lib/status';
-import { createAdminClient } from '@/lib/supabase/admin';
-import { createPublicClient } from '@/lib/supabase/public';
+  Activity,
+  AlertTriangle,
+  Gauge,
+  PauseCircle,
+  PlayCircle,
+  Trash2,
+} from 'lucide-react';
+import { toast } from 'sonner';
+import { createClient } from '@/lib/supabase/client';
 
-export const dynamic = 'force-dynamic';
-
-async function pingDatabase(): Promise<{
-  db: 'ok' | 'down';
-  dbLatencyMs: number | null;
-}> {
-  try {
-    const start = Date.now();
-    const pub = createPublicClient();
-    const { error } = await pub.from('venues').select('id').limit(1);
-    if (!error) {
-      return { db: 'ok', dbLatencyMs: Date.now() - start };
-    }
-  } catch {
-    // ignore
-  }
-  return { db: 'down', dbLatencyMs: null };
+interface AuditRow {
+  id: number;
+  at: string;
+  action: string;
+  target: string | null;
 }
 
-export default async function AdminSafetyPage() {
-  await requireOrganiser();
+export default function AdminSafetyPage() {
+  const [writesPaused, setWritesPaused] = useState(false);
+  const [modeOverride, setModeOverride] = useState<'auto' | 'fest' | 'campus'>('auto');
+  const [activeMode, setActiveMode] = useState<'fest' | 'campus'>('fest');
+  const [pollSeconds, setPollSeconds] = useState(30);
+  const [bannerMessage, setBannerMessage] = useState('');
+  const [bannerLevel, setBannerLevel] = useState<'info' | 'warning' | 'critical'>('info');
+  const [auditLogs, setAuditLogs] = useState<AuditRow[]>([]);
+  const [purgeConfirm, setPurgeConfirm] = useState('');
+  const [busy, setBusy] = useState(false);
 
-  const { db, dbLatencyMs } = await pingDatabase();
-  let auth: 'ok' | 'down' = 'down';
+  const load = useCallback(async () => {
+    const supabase = createClient();
+    const [cfgRes, statusRes, logRes] = await Promise.all([
+      supabase
+        .from('app_config')
+        .select('writes_paused, mode_override, banner_message, banner_level, poll_seconds')
+        .eq('id', 1)
+        .maybeSingle(),
+      supabase.rpc('app_status'),
+      supabase
+        .from('audit_log')
+        .select('id, at, action, target')
+        .order('at', { ascending: false })
+        .limit(10),
+    ]);
 
-  try {
-    const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-    if (url) {
-      const r = await fetch(`${url.replace(/\/$/, '')}/auth/v1/health`, {
-        headers: { apikey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '' },
-        signal: AbortSignal.timeout(2000),
-        cache: 'no-store',
-      });
-      if (r.ok) auth = 'ok';
+    if (cfgRes.data) {
+      setWritesPaused(Boolean(cfgRes.data.writes_paused));
+      setModeOverride(
+        (cfgRes.data.mode_override as 'auto' | 'fest' | 'campus') || 'auto'
+      );
+      setBannerMessage(cfgRes.data.banner_message ?? '');
+      setBannerLevel(
+        (cfgRes.data.banner_level as 'info' | 'warning' | 'critical') || 'info'
+      );
+      setPollSeconds(Number(cfgRes.data.poll_seconds ?? 30));
     }
-  } catch {
-    auth = 'down';
-  }
+    if (statusRes.data) {
+      setActiveMode(
+        (statusRes.data as { mode?: string }).mode === 'campus'
+          ? 'campus'
+          : 'fest'
+      );
+    }
+    setAuditLogs((logRes.data ?? []) as AuditRow[]);
+  }, []);
 
-  const { status } = await getPublicAppStatus();
-  let opsSchemaReady = false;
-  let modeOverride: 'auto' | 'fest' | 'campus' = 'auto';
-  let hostsUntil = '2026-11-30T23:59:59+05:30';
-  let pushQueueCount = 0;
-  let pushDeviceCount = 0;
-  let auditLogs: AuditRow[] = [];
+  useEffect(() => {
+    const raf = window.requestAnimationFrame(() => void load());
+    return () => window.cancelAnimationFrame(raf);
+  }, [load]);
 
-  try {
-    const admin = createAdminClient();
-    const untyped = admin as unknown as {
-      from: (t: string) => {
-        select: (c: string, opts?: Record<string, unknown>) => {
-          eq?: (k: string, v: unknown) => { maybeSingle: () => Promise<{ data: Record<string, unknown> | null; error: unknown }> };
-          is?: (k: string, v: null) => Promise<{ count: number | null }>;
-          order?: (k: string, o: { ascending: boolean }) => {
-            limit: (n: number) => Promise<{ data: AuditRow[] | null }>;
-          };
-        } & Promise<{ count: number | null }>;
-      };
-    };
-
-    const cfgRes = await untyped
+  async function saveConfig(nextPaused = writesPaused, nextMode = modeOverride) {
+    setBusy(true);
+    const supabase = createClient();
+    const { error } = await supabase
       .from('app_config')
-      .select('mode_override, hosts_until')
-      .eq!('id', 1)
-      .maybeSingle();
-
-    if (!cfgRes.error && cfgRes.data) {
-      opsSchemaReady = true;
-      const mo = cfgRes.data.mode_override;
-      if (mo === 'auto' || mo === 'fest' || mo === 'campus') modeOverride = mo;
-      if (typeof cfgRes.data.hosts_until === 'string') {
-        hostsUntil = cfgRes.data.hosts_until;
-      }
-
-      const [qRes, dRes, logRes] = await Promise.all([
-        untyped.from('push_queue').select('id', { count: 'exact', head: true }).is!('sent_at', null),
-        untyped.from('push_subscriptions').select('id', { count: 'exact', head: true }),
-        untyped
-          .from('audit_log')
-          .select('id, at, action, target, detail')
-          .order!('at', { ascending: false })
-          .limit(10),
-      ]);
-      pushQueueCount = qRes.count ?? 0;
-      pushDeviceCount = dRes.count ?? 0;
-      auditLogs = logRes.data ?? [];
+      .update({
+        writes_paused: nextPaused,
+        mode_override: nextMode,
+        banner_message: bannerMessage.trim() || null,
+        banner_level: bannerLevel,
+        poll_seconds: pollSeconds,
+      })
+      .eq('id', 1);
+    setBusy(false);
+    if (error) toast.error(error.message);
+    else {
+      toast.success('Safety settings saved! All phones pick it up automatically.');
+      await load();
     }
-  } catch {
-    opsSchemaReady = false;
   }
 
-  const cookieStore = await cookies();
-  const isCampusPreview = Boolean(
-    verifyCampusPreviewToken(cookieStore.get(CAMPUS_PREVIEW_COOKIE)?.value)
-  );
+  async function runPurge() {
+    if (purgeConfirm.trim() !== 'DELETE FEST DATA') return;
+    setBusy(true);
+    const supabase = createClient();
+    const { data, error } = await supabase.rpc('archive_and_purge_fest');
+    setBusy(false);
+    if (error) {
+      toast.error(error.message);
+    } else {
+      const d = data as {
+        votes_deleted?: number;
+        push_deleted?: number;
+        contacts_cleared?: number;
+      };
+      toast.success(
+        `Purged: ${d.votes_deleted ?? 0} votes, ${d.push_deleted ?? 0} push devices, ${d.contacts_cleared ?? 0} contacts cleared.`
+      );
+      setPurgeConfirm('');
+      await load();
+    }
+  }
 
   return (
-    <AdminSafetyClient
-      health={{
-        db,
-        dbLatencyMs,
-        auth,
-        snapshotAgeS: getSnapshotAgeSeconds(),
-        limiter: getLastRateLimitSource(),
-        pushQueueCount,
-        pushDeviceCount,
-      }}
-      config={{
-        mode: status.mode,
-        mode_override: modeOverride,
-        writes_paused: status.writes_paused,
-        banner_message: status.banner ?? '',
-        banner_level: status.banner_level,
-        campus_from: status.campus_from,
-        hosts_until: hostsUntil,
-      }}
-      isCampusPreview={isCampusPreview}
-      auditLogs={auditLogs}
-      opsSchemaReady={opsSchemaReady}
-    />
+    <div className="space-y-6">
+      {/* Kill Switch & Poll Interval Slider (HOSTING_CLOUDFLARE.md §5) */}
+      <div className="grid gap-4 md:grid-cols-2">
+        <section className="rounded-[22px] border border-[#3B2758] bg-[#1F1230] p-5 space-y-3">
+          <div className="flex items-center justify-between">
+            <h2 className="flex items-center gap-2 font-heading text-lg font-extrabold text-[#F4F2FA]">
+              <AlertTriangle className="size-5 text-[#FFE14D]" />
+              Votes &amp; Stamps Kill Switch
+            </h2>
+            <span
+              className={`rounded-full px-2.5 py-0.5 text-[11px] font-extrabold ${
+                writesPaused
+                  ? 'bg-[#FF4F5E] text-white'
+                  : 'bg-[#FFD60A] text-[#12091E]'
+              }`}
+            >
+              {writesPaused ? 'PAUSED' : 'ACTIVE'}
+            </span>
+          </div>
+          <p className="text-xs text-[#BDB8CF]">
+            Instantly stops new votes and stamp claims at the database while
+            schedule browsing stays online.
+          </p>
+          <button
+            type="button"
+            disabled={busy}
+            onClick={() => void saveConfig(!writesPaused, modeOverride)}
+            className={`flex h-11 w-full items-center justify-center gap-2 rounded-xl text-sm font-extrabold cursor-pointer ${
+              writesPaused
+                ? 'bg-[#FFD60A] text-[#12091E]'
+                : 'bg-[#FF4F5E] text-white'
+            }`}
+          >
+            {writesPaused ? (
+              <>
+                <PlayCircle className="size-4" />
+                Resume votes &amp; stamps
+              </>
+            ) : (
+              <>
+                <PauseCircle className="size-4" />
+                Pause votes &amp; stamps
+              </>
+            )}
+          </button>
+        </section>
+
+        <section className="rounded-[22px] border border-[#3B2758] bg-[#1F1230] p-5 space-y-3">
+          <div className="flex items-center justify-between">
+            <h2 className="flex items-center gap-2 font-heading text-lg font-extrabold text-[#F4F2FA]">
+              <Gauge className="size-5 text-[#22D3EE]" />
+              Free Egress Guard (Polling Slider)
+            </h2>
+            <span className="font-heading text-lg font-extrabold text-[#FFD60A]">
+              {pollSeconds}s
+            </span>
+          </div>
+          <p className="text-xs text-[#BDB8CF]">
+            If Supabase egress climbs faster than expected, slide this up to
+            60–90 s and every phone slows down automatically without redeploy.
+          </p>
+          <input
+            type="range"
+            min={10}
+            max={300}
+            step={5}
+            value={pollSeconds}
+            onChange={(e) => setPollSeconds(Number(e.target.value))}
+            className="w-full accent-[#FFD60A]"
+          />
+          <div className="flex justify-between text-[10px] text-[#9C97B0]">
+            <span>10s (Fast)</span>
+            <span>30s (Default)</span>
+            <span>90s (Save egress)</span>
+            <span>300s</span>
+          </div>
+        </section>
+      </div>
+
+      {/* Banner + Mode */}
+      <section className="rounded-[22px] border border-[#3B2758] bg-[#1F1230] p-5 space-y-4">
+        <h2 className="font-heading text-lg font-extrabold text-[#F4F2FA]">
+          Top Banner &amp; App Mode (Currently: {activeMode.toUpperCase()})
+        </h2>
+        <div className="grid gap-3 md:grid-cols-3">
+          <input
+            type="text"
+            maxLength={200}
+            value={bannerMessage}
+            onChange={(e) => setBannerMessage(e.target.value)}
+            placeholder="Optional global top banner…"
+            className="h-11 md:col-span-2 rounded-xl border border-[#3B2758] bg-[#12091E] px-3 text-sm text-[#F4F2FA]"
+          />
+          <select
+            value={bannerLevel}
+            onChange={(e) =>
+              setBannerLevel(e.target.value as 'info' | 'warning' | 'critical')
+            }
+            className="h-11 rounded-xl border border-[#3B2758] bg-[#12091E] px-3 text-sm text-[#F4F2FA]"
+          >
+            <option value="info">Info (Violet)</option>
+            <option value="warning">Warning (Yellow)</option>
+            <option value="critical">Critical (Red)</option>
+          </select>
+        </div>
+
+        <div className="grid grid-cols-3 gap-2">
+          {(['auto', 'fest', 'campus'] as const).map((m) => (
+            <button
+              key={m}
+              type="button"
+              onClick={() => setModeOverride(m)}
+              className={`h-10 rounded-xl border text-xs font-extrabold uppercase cursor-pointer ${
+                modeOverride === m
+                  ? 'border-[#FFD60A] bg-[#FFD60A] text-[#12091E]'
+                  : 'border-[#3B2758] bg-[#12091E] text-[#CFCBDD]'
+              }`}
+            >
+              {m === 'auto' ? 'Automatic' : m === 'fest' ? 'Force Fest' : 'Force Campus'}
+            </button>
+          ))}
+        </div>
+
+        <button
+          type="button"
+          disabled={busy}
+          onClick={() => void saveConfig(writesPaused, modeOverride)}
+          className="h-11 rounded-xl bg-[#FFD60A] px-5 text-sm font-extrabold text-[#12091E] cursor-pointer"
+        >
+          Save banner, mode &amp; polling interval
+        </button>
+
+        <p className="text-[11px] text-[#9C97B0]">
+          <strong>Emergency DB-down backup:</strong> Edit{' '}
+          <code>public/emergency.json</code> directly on GitHub to overlay
+          emergency banners &amp; delays while Cloudflare Pages stays online.
+        </p>
+      </section>
+
+      {/* Post-Fest Archive & Purge */}
+      <section className="rounded-[22px] border border-[#FF4F5E]/40 bg-[#1F1230] p-5 space-y-3">
+        <h2 className="flex items-center gap-2 font-heading text-lg font-extrabold text-[#F4F2FA]">
+          <Trash2 className="size-5 text-[#FF4F5E]" />
+          Archive Results &amp; Purge Personal Data
+        </h2>
+        <p className="text-xs text-[#CFCBDD]">
+          Available only in <strong>campus mode</strong>. Keeps vote totals &amp;
+          leaderboard; deletes individual votes, push devices, and participant
+          emails/phones.
+        </p>
+        <div className="flex flex-wrap gap-2">
+          <input
+            type="text"
+            value={purgeConfirm}
+            onChange={(e) => setPurgeConfirm(e.target.value)}
+            disabled={activeMode !== 'campus'}
+            placeholder="Type DELETE FEST DATA"
+            className="h-11 flex-1 min-w-[200px] rounded-xl border border-[#3B2758] bg-[#12091E] px-3 text-xs text-[#F4F2FA] disabled:opacity-40"
+          />
+          <button
+            type="button"
+            disabled={
+              busy ||
+              activeMode !== 'campus' ||
+              purgeConfirm.trim() !== 'DELETE FEST DATA'
+            }
+            onClick={() => void runPurge()}
+            className="h-11 rounded-xl bg-[#FF4F5E] px-4 text-xs font-extrabold text-white disabled:opacity-40 cursor-pointer"
+          >
+            Archive &amp; Purge
+          </button>
+        </div>
+      </section>
+
+      {/* Audit Log */}
+      <section className="rounded-[22px] border border-[#3B2758] bg-[#1F1230] p-5 space-y-2.5">
+        <h2 className="flex items-center gap-2 font-heading text-lg font-extrabold text-[#F4F2FA]">
+          <Activity className="size-5 text-[#FFD60A]" />
+          Recent Audit Log
+        </h2>
+        {auditLogs.map((row) => (
+          <div
+            key={row.id}
+            className="flex justify-between rounded-xl bg-[#12091E] px-3 py-2 text-xs"
+          >
+            <span>
+              <strong className="text-[#FFD60A]">{row.action}</strong>{' '}
+              {row.target && <span className="text-[#9C97B0]">· {row.target}</span>}
+            </span>
+            <span className="text-[#9C97B0]">
+              {new Date(row.at).toLocaleString('en-IN', {
+                timeZone: 'Asia/Kolkata',
+              })}
+            </span>
+          </div>
+        ))}
+      </section>
+    </div>
   );
 }

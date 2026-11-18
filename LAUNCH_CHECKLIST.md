@@ -9,8 +9,9 @@
 - [ ] Get names and Google emails of the organisers who will post updates.
 
 ### 0.1b Free web address and people (do today, before anything is printed)
-- [ ] Pick the Vercel project name (it becomes `https://<name>.vercel.app`). Follow `ADDRESS_AND_PEOPLE.md` Part 1. **Print hunt stickers and posters only after the address is final.**
-- [ ] Give the organiser the **emails of hosts and volunteers** (`ADDRESS_AND_PEOPLE.md` Part 2). They must sign in with exactly those emails (Google is easiest).
+- [ ] Pick the Cloudflare Pages project name (it becomes `https://<name>.pages.dev`). Follow `ADDRESS_AND_PEOPLE.md` Part 1 and `HOSTING_CLOUDFLARE.md`. **Print hunt stickers and posters only after the address is final.**
+- [ ] **Make yourself the main admin:** put your own email in `supabase/bootstrap_admin.sql`, run it in the SQL Editor after `schema_ops.sql`, then sign in to the app once with that email.
+- [ ] Collect the **emails of hosts and volunteers** and choose a password for each (`ADDRESS_AND_PEOPLE.md` Part 2). You create the accounts yourself on Admin page → Staff; no one has to confirm an email. Hand over the passwords privately (WhatsApp).
 - [ ] Write the 10 hunt places, clues and hints (`STAMP_HUNT.md`).
 - [ ] Hosts update their own event timings (screen 50); tell each host how.
 
@@ -21,7 +22,7 @@
 - [ ] Sign up at supabase.com → New project → name `fest-live`, region **Mumbai (ap-south-1)**, generate a strong database password and save it.
 - [ ] SQL Editor → New query → paste `supabase/schema.sql` (the college domain stays empty: there is none) → Run. It should say "Success."
 - [ ] Run `supabase/seed.sql` the same way (sample data for building; deleted on 24 Nov).
-- [ ] Project Settings → API (or "API keys"): copy the **Project URL**, the **anon / publishable key** and the **service_role / secret key**. Keep the secret key private: never paste it in chat, WhatsApp or GitHub.
+- [ ] Project Settings → API (or "API keys"): copy the **Project URL**, the **anon / publishable key** and the **service_role / secret key**. Keep the secret key private: never paste it in chat, WhatsApp or GitHub. It goes **only** into the push Worker as a secret; never into the website or Cloudflare Pages variables.
 
 ### 0.4 Google sign-in (the step people get wrong)
 - [ ] Go to console.cloud.google.com → create a project `fest-live`.
@@ -30,8 +31,8 @@
 - [ ] **Credentials → Create credentials → OAuth client ID → Web application.** Authorized redirect URI: `https://<your-project-ref>.supabase.co/auth/v1/callback` (shown in Supabase → Authentication → Providers → Google).
 - [ ] Copy the Client ID and Client secret into Supabase → Authentication → Providers → **Google** → Enable → Save.
 - [ ] Supabase → Authentication → **URL Configuration**:
-  - Site URL: `http://localhost:3000` for now (change to the Vercel URL on 24 Nov)
-  - Redirect URLs: `http://localhost:3000/**` and later `https://<your-app>.vercel.app/**`
+  - Site URL: `http://localhost:3000` for now (change to the pages.dev address on 24 Nov)
+  - Redirect URLs: `http://localhost:3000/**` and later `https://<name>.pages.dev/**`
 
 ### 0.4b Email sign-up (email + password accounts)
 - [ ] Supabase → Authentication → Providers → **Email**: enabled, **Confirm email: ON**, minimum password length 8.
@@ -40,11 +41,10 @@
 - [ ] Storage: run `supabase/storage.sql` (or create public buckets `event-covers` and `contestants` in the dashboard).
 
 ### 0.4c Security and reliability accounts
-- [ ] **Upstash** (upstash.com, free): create a Redis database (Mumbai/Singapore region); copy `UPSTASH_REDIS_REST_URL` and `UPSTASH_REDIS_REST_TOKEN`.
-- [ ] **Cloudflare Turnstile** (free): create a widget for your domain; site key → `NEXT_PUBLIC_TURNSTILE_SITE_KEY`, secret → Supabase Authentication → Attack Protection (CAPTCHA) and `TURNSTILE_SECRET_KEY`.
+- [ ] **Cloudflare Turnstile** (free): create a widget for the pages.dev address; site key → `NEXT_PUBLIC_TURNSTILE_SITE_KEY`, secret → Supabase Authentication → Attack Protection (CAPTCHA) and `TURNSTILE_SECRET_KEY`.
 - [ ] **Web Push keys:** run `npx web-push generate-vapid-keys`; public → `NEXT_PUBLIC_VAPID_PUBLIC_KEY`, private → `VAPID_PRIVATE_KEY`, `VAPID_SUBJECT=mailto:<committee email>`.
-- [ ] **Vercel Blob** (Storage tab) for backup snapshots; `CRON_SECRET` = a long random string; `EMERGENCY_PIN_HASH` = hash of a PIN known only to you and the committee head.
-- [ ] **Uptime monitor** (UptimeRobot or Better Stack, free): check `/api/health` every minute, alert to your phone.
+- [ ] **Emergency control panel:** the committee head and you get write access to the GitHub repo (to edit `public/emergency.json` from a phone).
+- [ ] **Uptime monitor** (UptimeRobot or Better Stack, free): check the static `/status` page every minute, alert to your phone.
 - [ ] Supabase: Authentication → Rate Limits and Attack Protection set as in `SECURITY.md` section 1; Authentication → enable MFA (TOTP) for organisers.
 - [ ] Run `supabase/schema_ops.sql` **last** (after all the other SQL files). Check `app_config`: `campus_from` = 2026-11-28 00:00 IST, `hosts_until` = 2026-11-30 23:59 IST.
 - [ ] Set your own account's role to `admin` in the dashboard; make the committee head `organiser`.
@@ -54,11 +54,13 @@
 - [ ] Create a folder `fest-live`, copy in `PRD.md`, `PROJECT_RULES.md`, `PROMPTS.md`, `supabase/`, `templates/`.
 - [ ] After Prompt 1.1, create `.env.local` from `.env.local.example` and paste the Supabase values. `NEXT_PUBLIC_SITE_URL=http://localhost:3000`.
 
-### 0.6 Vercel (first deploy on 20 Nov, Prompt 2.3)
-- [ ] Sign up at vercel.com with GitHub → Add New → Project → import `fest-live`.
-- [ ] Environment variables: the same as `.env.local`, but `NEXT_PUBLIC_SITE_URL=https://<your-app>.vercel.app`.
-- [ ] Add the Vercel URL to Supabase Redirect URLs.
-- [ ] Turn on Vercel **Web Analytics** for the project.
+### 0.6 Cloudflare Pages and the push Worker (first deploy on 20 Nov, Prompt 2.3)
+- [ ] Sign up at cloudflare.com (free) → Workers & Pages → Create → Pages → connect GitHub → `fest-live`. Build command `npm run build`, output directory `out`.
+- [ ] Environment variables: only `NEXT_PUBLIC_*` ones, with `NEXT_PUBLIC_SITE_URL=https://<name>.pages.dev`. **Never the service-role key.**
+- [ ] Add the pages.dev address to Supabase Redirect URLs.
+- [ ] Turn on Cloudflare **Web Analytics** (a one-line script, no cookies).
+- [ ] Deploy the **staff Worker** first (`workers/staff/`, README inside; run `node workers/staff/test.mjs`), then the push Worker (`workers/push/`, Prompt N.1). The staff Worker's address becomes `NEXT_PUBLIC_STAFF_API`.
+- [ ] Supabase free plan: no backups, pauses after a week unused: set a reminder to open the project every few days and export on 24 Nov.
 
 ---
 
@@ -67,7 +69,7 @@
 | Date | Done when |
 | --- | --- |
 | 19 Nov | Prompts 1.1–1.3 done; seed data shows on Home on your phone |
-| 20 Nov | Prompts 2.1–2.3 done; Vercel link works over mobile data |
+| 20 Nov | Prompts 2.1–2.3 done; the pages.dev link works over mobile data |
 | 21 Nov | Prompts 3.1–3.3 done; **real schedule imported**; organisers' accounts set to `organiser` |
 | 22 Nov | Prompts 4.1–4.3 done; two-account Signals test passed; QR scanned from paper |
 | 23 Nov | Prompts 5.1–5.3 done; student test done; no open bugs |
@@ -93,7 +95,7 @@
 ## Go-live (24 Nov)
 
 - [ ] Delete seed data (SQL from Prompt 6.1) and import the final schedule. Check 5 random events against the committee's sheet.
-- [ ] Supabase → Authentication → URL Configuration: Site URL = Vercel URL.
+- [ ] Supabase → Authentication → URL Configuration: Site URL = the pages.dev address.
 - [ ] Set all organisers' `role` to `organiser` (Table editor → profiles; they must sign in once first).
 - [ ] Print QR posters (Prompt 4.3 page):
   - [ ] 1 big "Scan for the live schedule" poster at each entrance and the help desk
@@ -110,24 +112,24 @@
 **Roles**
 | Role | Person | Job |
 | --- | --- | --- |
-| App owner (you) | | Watch Vercel and Supabase dashboards, fix bugs, answer organisers |
+| App owner (you) | | Watch the Supabase usage page and Cloudflare analytics, fix bugs, answer organisers |
 | Organiser shift 1 (8 am–2 pm) | | Post delays, announcements and results |
 | Organiser shift 2 (2 pm–close) | | Same |
 | Help desk volunteer | | Show students the QR; collect feedback |
 
 **Every hour:**
 - [ ] Open the app as a student. Is "Happening now" correct?
-- [ ] Vercel → Deployments: no errors; Analytics: visitors climbing.
-- [ ] Supabase → Reports: API and database fine.
+- [ ] Cloudflare → Deployments: no errors; Web Analytics: visitors climbing.
+- [ ] Supabase → Usage: egress, API requests and database fine (egress under 70% of the month).
 - [ ] Admin → Signals: hide any reported or abusive Signal.
 
 **If something breaks:**
 | Problem | Do this |
 | --- | --- |
-| A page shows an error | Check Vercel logs. If the last deploy caused it, **Instant Rollback** to the previous deployment in Vercel |
+| A page shows an error | If the last deploy caused it, roll back to the previous deployment in Cloudflare Pages (Deployments → Rollback) |
 | Sign-in fails | Check Supabase redirect URLs and the Google provider; browsing still works, so post an announcement |
-| Data wrong or stale | The organiser re-saves the event (forces refresh); check the event's status and times |
-| Supabase down | Public pages keep showing cached data. Post updates in the fest WhatsApp group too, until it's back |
+| Data wrong or stale | Phones refresh at their next check (about 30 s); the organiser re-saves the event; check the event's status and times |
+| Supabase down | Phones keep showing the last data in "Backup mode". Edit `public/emergency.json` on GitHub for banners and delays, and post in the fest WhatsApp group until it's back |
 | Spam Signals | Admin → Signals → Hide; it auto-hides after 3 reports |
 
 **Backup plan:** keep a PDF/image of the schedule ready for the WhatsApp groups in case the site is unreachable.

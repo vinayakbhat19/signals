@@ -1,18 +1,23 @@
-import { createBrowserClient } from '@supabase/ssr';
-import type { Database } from '@/lib/types';
+import { createClient as createSupabaseClient, type SupabaseClient } from '@supabase/supabase-js';
 
-/**
- * Browser Supabase client for Client Components (OAuth sign-in, interactive mutations).
- */
-export function createClient() {
-  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+let browserClient: SupabaseClient | null = null;
 
-  if (!url || !anonKey) {
-    throw new Error(
-      'Missing NEXT_PUBLIC_SUPABASE_URL or NEXT_PUBLIC_SUPABASE_ANON_KEY.'
-    );
-  }
+export function createClient(): SupabaseClient {
+  if (browserClient) return browserClient;
 
-  return createBrowserClient<Database>(url, anonKey);
+  const url =
+    process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://placeholder.supabase.co';
+  const anon =
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'placeholder-anon-key';
+
+  browserClient = createSupabaseClient(url, anon, {
+    auth: {
+      persistSession: true,
+      autoRefreshToken: true,
+      detectSessionInUrl: true,
+      flowType: 'pkce',
+    },
+  });
+
+  return browserClient;
 }

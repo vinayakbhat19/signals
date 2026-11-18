@@ -36,29 +36,33 @@ Sample names and numbers in the designs are placeholders.
 | 05 | You're in | `/auth/callback?next=/verified` | After clicking the link | `profiles.college_verified` | Add to Home Screen → 06 · Go to the fest → 10 |
 | 06 | Add to Home Screen | sheet / `/install` | Browser visitors | `beforeinstallprompt`, display-mode | Add to Home Screen (Android) · iPhone steps · Maybe later |
 | 07 | Log in | `/login` | Signed out | `auth.signInWithPassword`, Google | Log in → previous page or 10 · Forgot password → `/reset` · Create account → 03 |
-| 10 | Home | `/` | Everyone | `/api/live` (now, next, **latest event changes + urgent notices**), open polls, my hunt summary | **Important updates alert (top) → 15** · Live card → 30 or 12 · Up next → 12 · Hunt card → 22 · Avatar → 14 · Add bar → 06 |
+| 10 | Home | `/` | Everyone | `rpc app_status` + `rpc live_feed` (now, next, **latest event changes + urgent notices**, open polls), my hunt summary | **Important updates alert (top) → 15** · Live card → 30 or 12 · Up next → 12 · Hunt card → 22 · Avatar → 14 · Add bar → 06 |
 | 15 | Updates and notices | `/updates` | Everyone | `event_changes` + announcements | Change → 12 · tabs All / Changes / Notices |
 | 11 | Events | `/events` | Everyone | events + venue + host + cover, poll/stamp flags | Card → 12 (or 30 when voting) · Scan → 20 · Tabs All/Live/Soon/Done · Search |
-| 12 | Event page | `/events/[id]` | Everyone | event, host, cover, poll, stamp point, line-up count | Line-up → 13 · Vote (when open) → 30 · Calendar · Directions · Share · Contact host |
-| 13 | Line-up | `/events/[id]/line-up` | Everyone | `participants_public` | Vote → 30 · Show all |
+| 12 | Event page | `/event/?id=` | Everyone | event, host, cover, poll, stamp point, line-up count | Line-up → 13 · Vote (when open) → 30 · Calendar · Directions · Share · Contact host |
+| 13 | Line-up | `/lineup/?id=` | Everyone | `participants_public` | Vote → 30 · Show all |
 | 14 | My account | `/account` | Signed in | profile, stamps, rank, votes cast | Edit profile · Change password · Hide from leaderboard · Cookies → 02 · Add to Home Screen → 06 · Sign out · Delete account |
 | 20 | QR scanner | `/scan` | Everyone (sign-in asked only when claiming) | camera | Stamp QR → 21 · Vote QR → 30 · Event QR → 12 · Enter code instead |
-| 21 | Stamp collected | `/stamp/[pointId]?c=…` | Signed in | `rpc claim_stamp` | See my passport → 22 · What's on now → 10 |
+| 21 | Stamp collected | `/s/?t=<id>.<code>` | Signed in | `rpc claim_stamp` | See my passport → 22 · What's on now → 10 |
 | 22 | Stamp Hunt | `/hunt` | Everyone (passport when signed in) | stamp points, my stamps, top 10 | Full leaderboard → 23 · Scan → 20 |
 | 23 | Leaderboard | `/hunt/leaderboard` | Everyone | `stamp_leaderboard` | Scan → 20 · Back → 22 |
-| 30 | Audience vote | `/vote/[eventId]` | Everyone views; signed in votes | `poll_results`, my vote | Vote · Back (the Vote button is on the event page) |
-| 31 | Stage screen | `/screen/vote/[eventId]` | Volunteer/organiser device, projector | `poll_results`, `rpc get_vote_code` | — (display only) |
-| 32 (later) | Vote saved offline | `/vote/[eventId]` (offline state) | Signed-in voters with no network | IndexedDB queue → `rpc cast_vote_offline` | Back to the fest → 10 |
-| 33 (later) | Stage screen, offline mode | `/screen/vote/[eventId]` (offline state) | Stage laptop with no network | codes from `rpc get_vote_codes` stored in advance | — (display only) |
+| 30 | Audience vote | `/vote/?id=` | Everyone views; signed in votes | `poll_results`, my vote | Vote · Back (the Vote button is on the event page) |
+| 31 | Stage screen | `/screen/vote/?id=` | Volunteer/organiser device, projector | `poll_results` | — (display only) |
+| 32 (later) | Vote saved offline | `/vote/?id=` (offline state) | Signed-in voters with no network | IndexedDB queue → `rpc cast_vote_offline` | Back to the fest → 10 |
+| 33 (later) | Stage screen, offline mode | `/screen/vote/?id=` (offline state) | Stage laptop with no network | codes from `rpc get_vote_codes` stored in advance | — (display only) |
 | 40 | Control room | `/admin` | Organiser | events now/next, stats | Tabs: Events · Participants → 42 · Voting → 43 · QR → 44 · Stations → 46 · New event / Edit → 41 |
-| 41 | Event editor | `/admin/events/[id]` | Organiser | event + cover upload | Preview → 12 · Save and publish |
-| 42 | Host: participants | `/host/events/[id]/participants` | Event host or organiser | `participants` (private fields) | Upload CSV/Excel · Import · Check in · Show line-up switch · Add · Export CSV/Excel |
+| 41 | Event editor | `/admin/event/?id=` | Organiser | event + cover upload | Preview → 12 · Save and publish |
+| 42 | Host: participants | `/host/participants/?id=` | Event host or organiser | `participants` (private fields) | Upload CSV/Excel · Import · Check in · Show line-up switch · Add · Export CSV/Excel |
 | 43 | Voting control | `/admin/voting` | Organiser | polls, contestants, counts | On/off per competition · Settings · Stage screen → 31 · Close now · Fraud review · Export |
 | 44 | QR generator | `/admin/qr` | Organiser | events, venues, polls, stamp points | Print · PNG · Copy link · All events |
 | 45 | QR poster (A4) | `/admin/qr/print` | Organiser | — | Print |
 | 46 | Hunt stickers | `/admin/hunt/qr` | Volunteer, host, organiser | `rpc list_stamp_qrs` | Print · Print all 10 · Back |
 | 08 | Alerts and camera | `/account/permissions` | Everyone | Notification and camera state, push subscription | Turn on alerts · Not now · Try scanning → 20 · Enter a code · Back → 14 |
-| 47 | Manage hosts | `/admin/hosts` | Organiser | `event_hosts`, `host_invites`, `rpc invite_host` | Invite · Remove · Cancel invite · Back → 40 |
+| 47 | Staff accounts | `/admin/staff` | **Admin only** | `profiles`, `event_hosts`; staff Worker (`/staff/create`, `/staff/reset-password`, `/staff/remove`) | Host/Volunteer · event · name · email · password (Generate) · Create account · Reset password · Remove access |
+| 51 | Signals: coming soon | `/signals` | Everyone | static | Notify me (push topic `signals`) · Back to the fest → 10 |
+| 52 | Host home | `/host` | Host, admin, organiser | my events from `event_hosts` | Time and venue → 50 · Voting on/off → 54 · People → 42 · hunt stickers → 46 |
+| 53 | Volunteer desk | `/volunteer` | Volunteer, admin | — | Hunt stickers → 46 · Winners → 49 · Test a sticker → 20 |
+| 54 | Host voting | `/host/voting/?id=` | Host of that event, admin, organiser | `polls`, `contestants`, `poll_results`; `host_set_voting`, `host_save_contestant` | ON/OFF · results visibility · open/close · add/edit teams |
 | 48 | Safety panel | `/admin/safety` | Organiser | health, `app_config`, `audit_log` | Pause writes · Banner · Mode (Automatic/Force) · Preview campus mode → 60 · Archive and purge · Emergency mode |
 | 60 | Fiesta'26 is a wrap | `/fest-over` | Everyone, first visit in campus mode | winners, `poll_results_archive` | Open Signals → 90 · Archive |
 | 90–94 | Signals, Raise a Signal, My schedule, Football, Scorer | — | **Later** | — | Not part of the first launch |
@@ -156,7 +160,7 @@ flowchart LR
 flowchart LR
   O[Organiser: +15 min / edit time / change venue / cancel] -->|save| DB[(events)]
   DB -->|trigger| CH[(event_changes: ready-made message)]
-  CH --> API[/api/live, cached 15 s, refreshed instantly on save/]
+  CH --> API[app_status version check, live_feed when the version changes]
   API --> HA[10 Home: Important updates alert at the top]
   API --> UP[15 Updates page]
   API --> EC[11 Events / 12 Event: CHANGED / MOVED / CANCELLED tags, old value crossed out]
@@ -181,54 +185,57 @@ flowchart LR
 | Visitor | Nobody signs in | Everything public: home, events, line-up, results, leaderboard, live vote results (when visible), scanner |
 | Student | Signs up or logs in | + vote, Stamp Hunt, My account; no verification, no badge |
 | Host | Organiser invites them by email (`invite_host`); active once that email is confirmed; expires at `hosts_until` | + manage that event's participants (upload, check in, order, export, show/hide line-up) |
-| Volunteer | Organiser invites their email | + print hunt QR stickers, see winners |
+| Volunteer | The admin creates the account (email + password) | + the Volunteer desk: print hunt QR stickers, see winners |
 | Organiser | Admin sets `role = organiser` | + everything in the control room |
 | Admin | Set in the Supabase dashboard | + make people organisers |
 
 ---
 
-## 5. App structure (Next.js App Router)
+## 5. App structure (static Next.js export on Cloudflare Pages: no [id] folders, ids come from the address)
 
 ```text
 app/
-  (public)/
-    page.tsx                         10 Home
-    updates/page.tsx                 15 Updates and notices
-    welcome/page.tsx                 01 Welcome (+ 02 cookie sheet component)
-    events/page.tsx                  11 Events
-    events/[id]/page.tsx             12 Event page
-    events/[id]/line-up/page.tsx     13 Line-up
-    scan/page.tsx                    20 Scanner
-    stamp/[pointId]/page.tsx         21 Stamp collected (claims on load)
-    hunt/page.tsx                    22 Passport
-    hunt/leaderboard/page.tsx        23 Leaderboard
-    hunt/board/page.tsx              TV leaderboard (help desk)
-    vote/page.tsx                    vote hub
-    vote/[eventId]/page.tsx          30 Audience vote
-    install/page.tsx                 06 Add to Home Screen (also a sheet)
-  (auth)/
-    signup/page.tsx                  03
-    signup/check-email/page.tsx      04
-    login/page.tsx                   07
-    reset/page.tsx, reset/new/page.tsx
-    verified/page.tsx                05
-  auth/callback/route.ts
+  page.tsx                           10 Home
+  updates/page.tsx                   15 Updates and notices
+  welcome/page.tsx                   01 Welcome (+ 02 cookie sheet component)
+  events/page.tsx                    11 Events
+  event/page.tsx                     12 Event page            (/event/?id=<uuid>)
+  lineup/page.tsx                    13 Line-up               (/lineup/?id=<uuid>)
+  scan/page.tsx                      20 Scanner
+  s/page.tsx                         21 Stamp collected       (/s/?t=<point id>.<code>; claims on load)
+  hunt/page.tsx                      22 Treasure hunt
+  hunt/leaderboard/page.tsx          23 Leaderboard
+  hunt/board/page.tsx                TV leaderboard (help desk)
+  vote/page.tsx                      30 Audience vote         (/vote/?id=<eventId>); no id = vote hub
+  install/page.tsx                   06 Add to Home Screen (also a sheet)
+  signup/page.tsx                    03
+  signup/check-email/page.tsx        04
+  login/page.tsx                     07
+  reset/page.tsx, reset/new/page.tsx
+  verified/page.tsx                  05
+  auth/callback/page.tsx             finishes sign-in in the browser
   account/page.tsx                   14
-  screen/vote/[eventId]/page.tsx     31 (no nav)
-  admin/
-    page.tsx                         40
-    events/[id]/page.tsx             41 (and /admin/events/new)
-    voting/page.tsx                  43
-    qr/page.tsx, qr/print/page.tsx   44, 45
-    station/[pointId]/page.tsx       46
-    import/page.tsx, stats/page.tsx, emergency/page.tsx
-  host/events/[id]/participants/page.tsx   42
-  api/live/route.ts, api/vote/[eventId]/route.ts, api/health/route.ts
+  screen/vote/page.tsx               31 (no nav)              (/screen/vote/?id=<eventId>)
+  admin/page.tsx                     40
+  admin/event/page.tsx               41 (and ?id=new)
+  admin/voting/page.tsx              43
+  admin/qr/page.tsx, admin/qr/print/page.tsx   44, 45
+  admin/hunt/page.tsx, admin/hunt/qr/page.tsx (46), admin/hunt/winners/page.tsx (49)
+  admin/import/page.tsx, admin/stats/page.tsx, admin/safety/page.tsx (48)
+  host/participants/page.tsx         42   (/host/participants/?id=<eventId>)
+  host/page.tsx                      52   Host home
+  host/event/page.tsx                50   (/host/event/?id=<eventId>)
+  host/voting/page.tsx               54   (/host/voting/?id=<eventId>)
+  volunteer/page.tsx                 53   Volunteer desk
+  signals/page.tsx                   51   Signals: coming soon
+  admin/staff/page.tsx               47   Staff accounts (admin only)
+  status/page.tsx                    static health page
 components/  BottomNav (with raised Scan), AddToHomeBar, CookieSheet, EventCard, CoverImage,
-             StatusChip, Mascot (SVG + CSS animation), QrScanner, QrCard, PodiumLeaderboard, VoteCard
-lib/         supabase/{public,server,client,admin}.ts, data/*, time.ts, resilience.ts, snapshot.ts, validation.ts
+             StatusChip, Mascot (SVG + CSS animation), QrScanner, QrCard, PodiumLeaderboard, VoteCard, RequireRole
+lib/         supabase.ts (one browser client), data/*, time.ts, resilience.ts, validation.ts
+workers/push/  the Cloudflare Worker that sends alerts (the only server code)
 supabase/    schema.sql, storage.sql, schema_participants.sql, schema_voting.sql, schema_stamps.sql, seed.sql
-public/      manifest icons, campus-map.jpg (optional), schedule.json (built)
+public/      _headers, manifest icons, covers/, live-fallback.json (built), emergency.json, sw.js
 ```
 
 **Database install order:** `schema.sql` → `schema_changes.sql` → `storage.sql` → `schema_participants.sql` → `schema_voting.sql` → `schema_stamps.sql` → **`schema_ops.sql` (last)** → `seed.sql` / `seed_hunt.sql` (development only).

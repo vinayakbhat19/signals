@@ -1,15 +1,15 @@
-// Fiesta'26 Live Service Worker — Offline shell + API fallback + Web Push
-const CACHE_NAME = 'fiesta26-live-v1';
+// Fiesta'26 Live Service Worker — Cloudflare Pages Static App Shell + Push
+const CACHE_NAME = 'fiesta26-static-v2';
 const SHELL_URLS = [
   '/',
-  '/events',
-  '/venues',
-  '/updates',
-  '/results',
-  '/hunt',
-  '/vote',
-  '/scan',
-  '/schedule.json',
+  '/events/',
+  '/venues/',
+  '/updates/',
+  '/results/',
+  '/hunt/',
+  '/vote/',
+  '/scan/',
+  '/live-fallback.json',
   '/manifest.webmanifest',
   '/brand/fiesta26-logo.png',
   '/brand/icon-192.png',
@@ -30,9 +30,7 @@ self.addEventListener('activate', (event) => {
       .keys()
       .then((keys) =>
         Promise.all(
-          keys
-            .filter((k) => k !== CACHE_NAME)
-            .map((k) => caches.delete(k))
+          keys.filter((k) => k !== CACHE_NAME).map((k) => caches.delete(k))
         )
       )
       .then(() => self.clients.claim())
@@ -46,12 +44,7 @@ self.addEventListener('fetch', (event) => {
   const url = new URL(req.url);
   if (url.origin !== self.location.origin) return;
 
-  // Network-first with cache fallback for live JSON APIs and HTML pages
-  if (
-    url.pathname.startsWith('/api/live') ||
-    url.pathname.startsWith('/api/vote/') ||
-    req.mode === 'navigate'
-  ) {
+  if (req.mode === 'navigate' || url.pathname === '/emergency.json') {
     event.respondWith(
       fetch(req)
         .then((res) => {
@@ -68,11 +61,10 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // Cache-first for static brand/assets
   if (
     url.pathname.startsWith('/brand/') ||
     url.pathname.startsWith('/_next/static/') ||
-    url.pathname === '/schedule.json'
+    url.pathname === '/live-fallback.json'
   ) {
     event.respondWith(
       caches.match(req).then(
@@ -90,12 +82,11 @@ self.addEventListener('fetch', (event) => {
   }
 });
 
-// Web Push notifications (PERMISSIONS_NOTIFICATIONS.md)
 self.addEventListener('push', (event) => {
   let payload = {
     title: "Fiesta'26 update",
     body: 'Check the latest schedule update.',
-    url: '/updates',
+    url: '/updates/',
     tag: 'fiesta26-update',
   };
   try {
@@ -103,9 +94,7 @@ self.addEventListener('push', (event) => {
       payload = { ...payload, ...event.data.json() };
     }
   } catch {
-    if (event.data) {
-      payload.body = event.data.text();
-    }
+    if (event.data) payload.body = event.data.text();
   }
 
   event.waitUntil(
@@ -114,7 +103,7 @@ self.addEventListener('push', (event) => {
       icon: '/brand/icon-192.png',
       badge: '/brand/icon-192.png',
       tag: payload.tag || 'fiesta26-update',
-      data: { url: payload.url || '/updates' },
+      data: { url: payload.url || '/updates/' },
     })
   );
 });
@@ -122,7 +111,7 @@ self.addEventListener('push', (event) => {
 self.addEventListener('notificationclick', (event) => {
   event.notification.close();
   const targetUrl =
-    (event.notification.data && event.notification.data.url) || '/updates';
+    (event.notification.data && event.notification.data.url) || '/updates/';
 
   event.waitUntil(
     self.clients

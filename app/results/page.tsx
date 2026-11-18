@@ -1,140 +1,93 @@
-import type { Metadata } from 'next';
+'use client';
+
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { ArrowRight, Trophy } from 'lucide-react';
-import { CategoryChip } from '@/components/category-chip';
-import { EmptyState } from '@/components/empty-state';
-import { PageHeader } from '@/components/page-header';
-import { Badge } from '@/components/ui/badge';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { listResults, type ResultWithEvent } from '@/lib/data/results';
-import { formatTime, formatTimeAgo } from '@/lib/time';
-import type { EventCategory } from '@/lib/types';
+import { Trophy } from 'lucide-react';
+import { createClient } from '@/lib/supabase/client';
+import { formatTime } from '@/lib/time';
 
-export const revalidate = 30;
-
-export const metadata: Metadata = {
-  title: 'Results',
-  description: 'Winners, standings, and live match scores across fest events.',
-};
-
-interface GroupedResult {
-  eventId: string;
-  eventTitle: string;
-  eventCategory: EventCategory | null;
-  hasLive: boolean;
-  items: ResultWithEvent[];
+interface ResultRow {
+  id: string;
+  event_id: string;
+  title: string;
+  body: string;
+  is_live: boolean;
+  updated_at: string;
+  events?: { title?: string } | Array<{ title?: string }> | null;
 }
 
-export default async function ResultsPage() {
-  let results: ResultWithEvent[] = [];
-  try {
-    results = await listResults();
-  } catch (error) {
-    console.error('[app/results] Failed to load results:', error);
-  }
+export default function ResultsPage() {
+  const [results, setResults] = useState<ResultRow[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const grouped = new Map<string, GroupedResult>();
-  for (const item of results) {
-    const existing = grouped.get(item.event_id);
-    if (existing) {
-      existing.items.push(item);
-      if (item.is_live) existing.hasLive = true;
-    } else {
-      grouped.set(item.event_id, {
-        eventId: item.event_id,
-        eventTitle: item.event_title,
-        eventCategory: item.event_category,
-        hasLive: item.is_live,
-        items: [item],
+  useEffect(() => {
+    let active = true;
+    const supabase = createClient();
+    supabase
+      .from('results')
+      .select('id, event_id, title, body, is_live, updated_at, events(title)')
+      .order('updated_at', { ascending: false })
+      .limit(40)
+      .then(({ data }) => {
+        if (!active) return;
+        setResults((data ?? []) as unknown as ResultRow[]);
+        setLoading(false);
       });
-    }
-  }
-
-  const eventGroups = Array.from(grouped.values()).sort(
-    (a, b) => Number(b.hasLive) - Number(a.hasLive)
-  );
-
-  const now = new Date();
+    return () => {
+      active = false;
+    };
+  }, []);
 
   return (
-    <div className="mx-auto max-w-2xl space-y-6">
-      <PageHeader
-        title="Results & Live Scores"
-        subtitle="Winners and live match updates from fest events."
-      />
+    <div className="mx-auto max-w-2xl space-y-5">
+      <header className="pt-1 space-y-1">
+        <h1 className="font-display text-3xl text-[#F4F2FA]">RESULTS</h1>
+        <p className="text-xs text-[#9C97B0]">
+          Official Fiesta&apos;26 winners &amp; competition results
+        </p>
+      </header>
 
-      {eventGroups.length > 0 ? (
-        <div className="space-y-4">
-          {eventGroups.map((group) => (
-            <Card key={group.eventId}>
-              <CardHeader className="pb-2">
-                <div className="flex flex-wrap items-start justify-between gap-2">
-                  <div className="space-y-1.5">
-                    <div className="flex flex-wrap items-center gap-2">
-                      {group.hasLive && (
-                        <Badge variant="destructive" className="gap-1.5 text-[11px]">
-                          <span className="size-1.5 rounded-full bg-white animate-pulse" />
-                          LIVE
-                        </Badge>
-                      )}
-                      {group.eventCategory && (
-                        <CategoryChip category={group.eventCategory} />
-                      )}
-                    </div>
-                    <CardTitle className="text-lg">
-                      <Link
-                        href={`/events/${group.eventId}`}
-                        className="hover:text-brand transition-colors"
-                      >
-                        {group.eventTitle}
-                      </Link>
-                    </CardTitle>
-                  </div>
-
-                  <Link
-                    href={`/events/${group.eventId}`}
-                    className="inline-flex min-h-9 items-center gap-1 text-xs font-medium text-brand hover:underline underline-offset-4"
-                  >
-                    Event
-                    <ArrowRight className="size-3.5" aria-hidden="true" />
-                  </Link>
-                </div>
-              </CardHeader>
-
-              <CardContent className="space-y-4">
-                {group.items.map((result) => (
-                  <div
-                    key={result.id}
-                    className="rounded-lg border bg-muted/30 p-3.5 space-y-1.5"
-                  >
-                    <div className="flex flex-wrap items-center justify-between gap-2">
-                      <h3 className="text-sm font-semibold text-foreground">
-                        {result.title}
-                      </h3>
-                      <span
-                        className="text-xs text-muted-foreground"
-                        title={`${formatTime(result.updated_at)} IST`}
-                      >
-                        Updated {formatTimeAgo(result.updated_at, now)}
-                      </span>
-                    </div>
-                    <p className="whitespace-pre-line text-sm leading-relaxed text-foreground/90">
-                      {result.body}
-                    </p>
-                  </div>
-                ))}
-              </CardContent>
-            </Card>
-          ))}
+      {loading ? (
+        <p className="py-10 text-center text-sm text-[#9C97B0]">
+          Loading results…
+        </p>
+      ) : results.length === 0 ? (
+        <div className="rounded-[22px] border border-dashed border-[#3B2758] bg-[#1F1230]/50 p-10 text-center space-y-2">
+          <Trophy className="mx-auto size-8 text-[#FFE14D]" />
+          <p className="font-heading text-lg font-extrabold text-[#F4F2FA]">
+            No results announced yet
+          </p>
+          <p className="text-xs text-[#9C97B0]">
+            Winners will appear here as competitions finish on 25–27 Nov.
+          </p>
         </div>
       ) : (
-        <EmptyState
-          icon={<Trophy className="size-5" aria-hidden="true" />}
-          title="No results posted yet"
-          description="Live scores and winners will show up here as soon as organisers publish them."
-          actionLabel="View schedule"
-          actionHref="/schedule"
-        />
+        <div className="space-y-3">
+          {results.map((r) => {
+            const evTitle = Array.isArray(r.events)
+              ? r.events[0]?.title
+              : r.events?.title;
+            return (
+              <Link
+                key={r.id}
+                href={`/event/?id=${r.event_id}`}
+                className="block rounded-[20px] border border-[#3B2758] bg-[#1F1230] p-4 space-y-2 hover:border-[#FFD60A]"
+              >
+                <div className="flex items-center justify-between gap-2">
+                  <span className="text-xs font-extrabold uppercase text-[#FFD60A]">
+                    {evTitle || 'Competition'} · {r.title}
+                  </span>
+                  <span className="text-[11px] text-[#9C97B0]">
+                    {formatTime(r.updated_at)} IST
+                  </span>
+                </div>
+                <p className="whitespace-pre-line text-sm text-[#CFCBDD]">
+                  {r.body}
+                </p>
+              </Link>
+            );
+          })}
+        </div>
       )}
     </div>
   );

@@ -1,35 +1,58 @@
-import { AdminVotingClient } from '@/components/admin-voting-client';
-import { requireOrganiser } from '@/lib/auth';
-import { listEvents } from '@/lib/data/events';
-import { listPolls } from '@/lib/data/voting';
-import { createClient } from '@/lib/supabase/server';
-import type { Contestant } from '@/lib/types';
+'use client';
 
-export const dynamic = 'force-dynamic';
+import Link from 'next/link';
+import { Vote } from 'lucide-react';
+import { useLiveFeed } from '@/lib/live-store';
 
-export default async function AdminVotingPage() {
-  await requireOrganiser();
-  const [events, polls, supabase] = await Promise.all([
-    listEvents(),
-    listPolls(false),
-    createClient(),
-  ]);
-
-  const { data: allContestants } = await supabase
-    .from('contestants')
-    .select('id, poll_id, name, subtitle, photo_url, sort, active')
-    .order('sort', { ascending: true });
-
-  const byPoll: Record<string, Contestant[]> = {};
-  for (const c of (allContestants ?? []) as Contestant[]) {
-    byPoll[c.poll_id] = [...(byPoll[c.poll_id] ?? []), c];
-  }
+export default function AdminVotingPage() {
+  const { feed } = useLiveFeed();
+  const openEventIds = new Set(feed.polls.map((p) => p.event_id));
 
   return (
-    <AdminVotingClient
-      events={events}
-      polls={polls}
-      contestantsByPoll={byPoll}
-    />
+    <div className="space-y-4">
+      <div>
+        <h2 className="font-display text-2xl text-[#F4F2FA]">
+          AUDIENCE VOTING CONTROLS
+        </h2>
+        <p className="text-xs text-[#9C97B0]">
+          Open any competition below to add contestants, turn voting ON/OFF, or
+          switch result visibility.
+        </p>
+      </div>
+
+      <div className="grid gap-3 md:grid-cols-2">
+        {feed.events.map((ev) => {
+          const isOpen = openEventIds.has(ev.id);
+          return (
+            <div
+              key={ev.id}
+              className="flex items-center justify-between gap-3 rounded-[18px] border border-[#3B2758] bg-[#1F1230] p-4"
+            >
+              <div className="min-w-0">
+                <span
+                  className={`inline-block rounded-full px-2 py-0.5 text-[10px] font-extrabold ${
+                    isOpen
+                      ? 'bg-[#FF4FD8] text-[#12091E]'
+                      : 'bg-[#2A1840] text-[#9C97B0]'
+                  }`}
+                >
+                  {isOpen ? 'OPEN' : 'OFF'}
+                </span>
+                <p className="mt-1 truncate font-heading text-base font-extrabold text-[#F4F2FA]">
+                  {ev.title}
+                </p>
+              </div>
+              <Link
+                href={`/host/voting/?id=${ev.id}`}
+                className="inline-flex h-10 shrink-0 items-center gap-1.5 rounded-xl bg-[#FFD60A] px-3.5 text-xs font-extrabold text-[#12091E]"
+              >
+                <Vote className="size-3.5" />
+                Manage
+              </Link>
+            </div>
+          );
+        })}
+      </div>
+    </div>
   );
 }

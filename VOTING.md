@@ -2,9 +2,9 @@
 
 Students vote for their favourite performer or team in selected competitions (solo singing, group dance, battle of bands and so on). Everyone can see who's leading, live on their phone and on the stage screen.
 
-**Voting is not on for every competition.** An organiser switches it on per competition, only where it makes sense.
+**Voting is not on for every competition.** **The host of each competition switches it on or off** (Host home → Voting) and lists the teams or people to vote for. Admin and organisers can do the same.
 
-## What organisers control (per competition)
+## What the host controls (per competition)
 | Setting | Options | Default |
 | --- | --- | --- |
 | Voting | On / off (one switch) | Off |
@@ -36,10 +36,11 @@ Students vote for their favourite performer or team in selected competitions (so
 
 ## Screens (see the design canvas)
 - **Event page:** a **Vote** button on the voting card: "Voting opens at 8:00 PM" before, "Vote now" while open. This is the only way in.
-- **Vote** (`/vote/[eventId]`): contestant cards with a vote button and "Your vote" tag, live percentage bars (if results are live), total votes, closing countdown, and messages for every result (voted, same, changed, locked, closed, sign in first).
+- **Vote** (`/vote/?id=<eventId>`): contestant cards with a vote button and "Your vote" tag, live percentage bars (if results are live), total votes, closing countdown, and messages for every result (voted, same, changed, locked, closed, sign in first).
 - **Live votes hub** (in Home and the More menu): all competitions currently voting.
-- **Stage screen** (`/screen/vote/[eventId]`, 16:9 for a projector): huge animated bars, leader highlighted, and a QR that opens the **event page** (a plain link, nothing secret) with the line "Tap Vote".
-- **Organiser** (`/admin/voting`): every competition with an on/off switch, settings, contestants, live counts (always visible to organisers), "Close now", "Export results CSV", and fraud review (remove a vote).
+- **Stage screen** (`/screen/vote/?id=<eventId>`, 16:9 for a projector): huge animated bars, leader highlighted, and a QR that opens the **event page** (a plain link, nothing secret) with the line "Tap Vote".
+- **Host** (`/host/voting/?id=<eventId>`, screen 54): a big ON/OFF switch, results Live / After close / Hidden, open and close times, the list of teams or people with live counts (hosts always see them), add and edit. Uses `host_set_voting` and `host_save_contestant`.
+- **Admin / organiser** (`/admin/voting`): every competition with an on/off switch, settings, contestants, live counts (always visible to organisers), "Close now", "Export results CSV", and fraud review (remove a vote).
 
 ## Data (written and tested: `supabase/schema_voting.sql`)
 | Object | Purpose |
@@ -53,7 +54,7 @@ Students vote for their favourite performer or team in selected competitions (so
 | role `volunteer` | Can run stage screens and Stamp Stations, nothing else |
 
 ## Load
-After a popular performance, hundreds of people may vote within a minute. That's a few writes per second, which Postgres handles easily, and each vote is one small row. Results are cached for 5 s (`s-maxage=5`, tag `votes:<eventId>`), so thousands of people watching the bars cost about one database read every 5 s per competition. The stage screen polls every 3 s.
+After a popular performance, hundreds of people may vote within a minute. That's a few writes per second, which Postgres handles easily, and each vote is one small row. Results come from the `poll_results` view, refreshed by each phone every 10 s while the vote page is open (a few thousand light reads per minute at the very peak; check the Supabase usage page). The stage screen polls every 5 s.
 
 ## Offline voting (halls with no network): LATER
 

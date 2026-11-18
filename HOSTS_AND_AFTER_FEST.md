@@ -1,6 +1,6 @@
 # Hosts, and coming back to the Signals app after the fest
 
-Screens: **47 Manage hosts**, **48 Safety panel**, **60 Fiesta'26 is a wrap**. Prompts: **HOST.1**, **END.1**, **END.2**. Database: `schema_ops.sql` (tested).
+Screens: **47 Staff accounts (admin)**, **52 Host home**, **54 Host voting**, **53 Volunteer desk**, , **48 Safety panel**, **60 Fiesta'26 is a wrap**. Prompts: **HOST.1**, **STAFF.1**, **STAFF.2**, **END.1**, **END.2**. Database: `schema_ops.sql` (tested).
 
 ---
 
@@ -10,12 +10,12 @@ A **host** is the person running one competition (a club coordinator). They are 
 
 | | |
 | --- | --- |
-| Who invites | Organisers, at **Admin → Hosts** (`rpc invite_host(event, email)`) |
-| How it becomes active | The invited person signs in with **that email** (Google, or email + password) and the email is **confirmed**. If they already have a confirmed account they become a host immediately. **Unconfirmed sign-ups never count**, so nobody can become a host by typing someone else's email |
-| What a host can do | Make the **hunt QR stickers**; for **their events only**: **update the time, venue, status (delayed/cancelled/done), description, contact, Google Form link and registration open/close times** (`rpc host_update_event`, screen 50; students are alerted automatically), upload registrations (CSV/Excel), check people in, mark on stage/performed/withdrawn, set the performing order, show or hide the line-up, export CSV/Excel |
+| Who creates hosts | The **admin**, on **Admin page → Staff**: email + password + the event (staff Worker; see `ADDRESS_AND_PEOPLE.md`) |
+| How it becomes active | At once. The host signs in at the normal login page with the email and password the admin gave them |
+| What a host can do | Make the **hunt QR stickers**; for **their events only**: **turn audience voting on or off and manage the teams or people to vote for (screen 54, `host_set_voting`, `host_save_contestant`)**, **update the time, venue, status (delayed/cancelled/done), description, contact, Google Form link and registration open/close times** (`rpc host_update_event`, screen 50; students are alerted automatically), upload registrations (CSV/Excel), check people in, mark on stage/performed/withdrawn, set the performing order, show or hide the line-up, export CSV/Excel |
 | What a host can't do | Change the title, category, cover publishing or delete the event (organisers); see other events' participants; see who voted for whom. Limits: times must be inside the fest dates, an event can't run over 48 hours, links must be https, **20 changes per hour per event**, every change is logged in the audit log |
 | How long | Until `app_config.hosts_until` (default **30 Nov 11:59 PM IST**: three days after the fest, so they can export). After that the host pages return 404 |
-| Removing | Organiser removes the host (access ends at once) or cancels a pending invite |
+| Removing | The admin removes access on the Staff page (ends at once) |
 | Logging | Host added/removed, exports and config changes go into `audit_log` |
 | Suggested setup | One host per competition, two at most. Send each host `templates/participants_template.csv` and the instructions to export Google Forms responses |
 

@@ -1,22 +1,22 @@
 # Free web address, sign-in and who can do what
 
-No domain is bought. No college email and no ID check. Anyone can sign in with an email or Google and vote. Hosts and volunteers are added by you, by email.
+No domain is bought. No college email and no ID check. Anyone can sign in with an email or Google and vote. Hosts and volunteers are accounts you create with an email and a password.
 
 ---
 
 ## Part 1: The free web address
 
-Vercel gives every project a free address with HTTPS: **`https://<project-name>.vercel.app`**.
+Cloudflare Pages gives every project a free address with HTTPS: **`https://<project-name>.pages.dev`** (see `HOSTING_CLOUDFLARE.md`).
 
 | Step | What to do |
 | --- | --- |
-| 1. Choose the project name **first** | Short and easy to type, for example `fiesta26` (it may be taken; try `fiesta26-sdmcet` or `fiesta26live`). The name is part of every QR code, so **decide it before anything is printed** |
-| 2. Create the Vercel project with that name | Vercel → Add New → Project → import the GitHub repo → name it. The address is shown after the first deploy |
-| 3. Tell the login system | Supabase → Authentication → URL Configuration: Site URL = `https://<name>.vercel.app`, add `https://<name>.vercel.app/**` to Redirect URLs. `NEXT_PUBLIC_SITE_URL` in Vercel = the same. Google sign-in keeps using Supabase's own callback, so no change in Google Cloud |
+| 1. Choose the project name **first** | Short and easy to type, for example `fiesta26` (names are unique worldwide, so it may be taken; try `fiesta26-sdmcet` or `fiesta26live`). The name is part of every QR code, so **decide it before anything is printed** |
+| 2. Create the Cloudflare Pages project with that name | Cloudflare → Workers & Pages → Create → Pages → connect the GitHub repo → name it. The address is shown after the first deploy |
+| 3. Tell the login system | Supabase → Authentication → URL Configuration: Site URL = `https://<name>.pages.dev`, add `https://<name>.pages.dev/**` to Redirect URLs. `NEXT_PUBLIC_SITE_URL` in the Pages variables = the same. Google sign-in keeps using Supabase's own callback, so no change in Google Cloud |
 | 4. Posters | Print posters and hunt stickers **only after** the address works and is final. Changing the project name later means reprinting every QR |
 | 5. Keep it short | The QR is easier to scan with a short address. Keep a spare page (Home → "Open in browser") for people without a camera |
 
-Later (optional, after the fest): buy a real domain and add it to Vercel; the free address keeps working as a backup.
+Later (optional, after the fest): buy a real domain and add it to Cloudflare Pages; the free address keeps working as a backup.
 
 ### Sending the confirmation email without our own domain
 Without a domain you can't use services that need a verified domain. Do this:
@@ -31,16 +31,29 @@ Without a domain you can't use services that need a verified domain. Do this:
 
 | Person | How they become one | What they can do |
 | --- | --- | --- |
-| **Student** (anyone) | Signs up with Google or email | Browse, **vote** (button on the event page), play the **treasure hunt**, see their account |
-| **Volunteer** | An organiser invites their **email** (Admin → Hosts → Volunteer) | Everything a student can, plus: make and print the **hunt QR stickers**, see the **winners list** |
-| **Host** (of one event) | An organiser invites their **email** for that event (Admin → Hosts → Host) | Update their event's **time, venue, status, registration window**, see/upload/export **participants**, make the hunt QR stickers. Access ends on 30 Nov |
-| **Organiser** (2–3 people) | You set the role by hand in Supabase (Table editor → profiles) | Everything: events, voting on/off, hunt places, hosts and volunteers, the safety panel, archive |
+| **Student** (anyone) | Signs up with Google or email | Browse, **vote** (Vote button on the event page), play the **treasure hunt**, see Signals coming soon |
+| **Volunteer** | The **admin creates the account** (email + password) on the Staff page | Everything a student can, plus the **Volunteer desk**: print the **hunt QR stickers**, see the **winners list** |
+| **Host** (of one event) | The **admin creates the account** (email + password) and picks the event | The **Host home**: change **time, venue, status and registration window** of their event, turn **voting on or off** and manage the teams or people to vote for, see and upload **participants**, make the hunt stickers. Access ends on 30 Nov |
+| **Admin** (you, the main admin; the admin page is yours alone) | You add your own email once in Supabase (`supabase/bootstrap_admin.sql`) and sign in with it | Everything: the **Admin page** (events, staff accounts, the **10 hunt places and their clues**, safety panel, polling slider, archive after the fest) |
+| Organiser (optional) | The admin can create one for a committee head | Same as admin for events, voting and announcements; no staff accounts |
 
-Rules for invites:
-- You provide the host and volunteer **emails**; the organiser types them in once.
-- The person must **sign in with exactly that email** (Google is easiest) and the email must be **confirmed**. Typing someone else's address does nothing.
-- If they already have an account, they get the role immediately. Otherwise it applies the first time they confirm that email.
-- Every role change is logged.
+### How you become the admin (once)
+1. Open `supabase/bootstrap_admin.sql`, replace `YOUR_EMAIL@gmail.com` with your own email, run it in Supabase's SQL Editor (after `schema_ops.sql`).
+2. Sign in to the app with that email (Continue with Google is easiest). Your role becomes `admin` the moment the email is confirmed, and `/admin/` opens.
+3. Nobody can make themselves admin from the app. Only the SQL Editor can.
+
+### How you create hosts and volunteers
+1. Admin page → **Staff** → choose Host or Volunteer, pick the event for a host, type their name, **email** and a **password** (the **Generate** button makes a good one) → **Create account**.
+2. The account works at once (no email is sent). Give them the email and password yourself, for example on WhatsApp.
+3. They sign in at the normal login page. They can change the password in My account. You can **Reset password** or **Remove access** from the same page.
+4. This needs the small **staff Worker** (`workers/staff/`): the website cannot hold the secret key needed to create accounts. Only the admin's own login can use it (checked on every call).
+5. The earlier "invite by email" functions (`invite_host`, `invite_volunteer`) still exist in the database but the app does not use them.
+
+### The hunt places
+The admin adds the 10 hunt places (hidden place name, clue, hint) on **Admin page → Hunt**, then volunteers print the stickers.
+
+### Voting on or off
+The **host of each competition** turns voting on or off and lists the teams or people on **Host home → Voting**. Nobody else needs to.
 
 ## Part 3: What changed from the earlier plan
 - **Removed:** college email domain, "verified student" badge, roster list, ID check at a prize desk, stage code for voting.

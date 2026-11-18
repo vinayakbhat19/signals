@@ -86,7 +86,7 @@ select '4 plain student can_make_qr', can_make_qr();
 do $$ begin begin perform list_stamp_qrs(); raise notice 'student list: ALLOWED'; exception when others then raise notice 'student list blocked'; end; end $$;
 reset role;
 set role authenticated; set request.jwt.claim.sub='00000000-0000-0000-0000-0000000000e1';
-select '4 volunteer list', sort, name, path ~ '^/s/[0-9a-f-]{36}\.[0-9a-f]{16}$' as path_ok from list_stamp_qrs();
+select '4 volunteer list', sort, name, path ~ '^/s/\?t=[0-9a-f-]{36}\.[0-9a-f]{16}$' as path_ok from list_stamp_qrs();
 select '4 volunteer one qr', get_stamp_qr(current_setting('t.p2')::uuid)->>'ok';
 reset role;
 select set_config('t.ev', id::text, false) from events where code='C01';
@@ -169,3 +169,105 @@ set role authenticated; set request.jwt.claim.sub='00000000-0000-0000-0000-00000
 do $$ declare i int; r jsonb; begin for i in 1..22 loop r := host_update_event(current_setting('t.ev')::uuid, p_description => 'edit ' || i); end loop; raise notice 'last result: %', r->>'reason'; end $$;
 reset role;
 select '9 audit host_event_update rows', count(*) from audit_log where action='host_event_update';
+
+-- 10 static hosting support: version, poll interval, live feed, push subscribe from the browser
+select '10 status has version and poll_seconds', (app_status()->>'version')::int > 0 as has_version, app_status()->>'poll_seconds' as poll_seconds;
+select set_config('t.v1', (app_status()->>'version'), false);
+update events set description = 'new text' where code='C01';
+select '10 version went up after an event change', (app_status()->>'version')::bigint > current_setting('t.v1')::bigint;
+select set_config('t.v2', (app_status()->>'version'), false);
+select set_config('t.cfgaudit', count(*)::text, false) from audit_log where action='config_change';
+update events set description = 'again' where code='C01';
+select '10 bump did not write config audit rows', count(*)::text = current_setting('t.cfgaudit') as same from audit_log where action='config_change';
+set role anon;
+select '10 live_feed (anon): top-level keys', array(select jsonb_object_keys(live_feed()) order by 1);
+select '10 live_feed events', jsonb_array_length(live_feed()->'events') as events, jsonb_array_length(live_feed()->'venues') as venues;
+select '10 live_feed event fields', array(select jsonb_object_keys(live_feed()->'events'->0) order by 1);
+select '10 live_feed size bytes', length(live_feed()::text);
+reset role;
+set role authenticated; set request.jwt.claim.sub='00000000-0000-0000-0000-00000000000f';
+update app_config set poll_seconds = 90;
+reset role;
+select '10 organiser set poll_seconds', app_status()->>'poll_seconds';
+set role authenticated; set request.jwt.claim.sub='00000000-0000-0000-0000-00000000000a';
+update app_config set poll_seconds = 10;
+reset role;
+select '10 student could NOT change poll_seconds', app_status()->>'poll_seconds';
+-- push
+set role anon;
+do $$ begin begin perform save_push_subscription('https://push.example/abc', repeat('a',30), repeat('b',12)); raise notice 'anon push: ALLOWED'; exception when others then raise notice 'anon push blocked'; end; end $$;
+reset role;
+set role authenticated; set request.jwt.claim.sub='00000000-0000-0000-0000-00000000000c';
+select '10 push ok', save_push_subscription('https://push.example/dev1', repeat('a',30), repeat('b',12), array['changes','urgent','event:00000000-0000-0000-0000-000000000001','evil','vote']);
+select '10 push topics sanitised', topics from push_subscriptions where endpoint='https://push.example/dev1';
+select '10 push http refused', save_push_subscription('http://push.example/x', repeat('a',30), repeat('b',12))->>'reason';
+select '10 push bad keys refused', save_push_subscription('https://push.example/x', 'short', 'x')->>'reason';
+do $$ declare i int; r jsonb; begin for i in 2..7 loop r := save_push_subscription('https://push.example/dev' || i, repeat('a',30), repeat('b',12)); end loop; raise notice 'push 7th device result: %', r->>'reason'; end $$;
+select '10 push devices stored for this user', count(*) from push_subscriptions where user_id='00000000-0000-0000-0000-00000000000c';
+select '10 push remove', remove_push_subscription('https://push.example/dev1');
+reset role;
+select '10 clients still cannot read push tables', count(*) from (select 1) x;
+set role authenticated; set request.jwt.claim.sub='00000000-0000-0000-0000-00000000000c';
+select '10 student sees own push rows (RLS: none)', count(*) from push_subscriptions;
+reset role;
+
+-- 11 delete my account
+select '11 before', count(*) from profiles where email='kid@school.edu' or email='newbie@gmail.com' or email='host2@gmail.com';
+set role authenticated; set request.jwt.claim.sub='00000000-0000-0000-0000-0000000000b2';
+select '11 student deletes self', delete_my_account();
+reset role;
+select '11 profile gone', count(*) from profiles where email='host2@gmail.com';
+set role authenticated; set request.jwt.claim.sub='00000000-0000-0000-0000-00000000000f';
+select '11 organiser refused', delete_my_account()->>'reason';
+reset role;
+
+-- 12 admin bootstrap and staff roles
+insert into staff_invites(email, role) values ('boss@gmail.com','admin');
+insert into auth.users(id,email,raw_user_meta_data,email_confirmed_at) values ('00000000-0000-0000-0000-0000000000a1','boss@gmail.com','{"full_name":"Boss"}',now());
+select '12 invited admin email becomes admin on sign-in', role from profiles where email='boss@gmail.com';
+insert into auth.users(id,email,raw_user_meta_data,email_confirmed_at) values ('00000000-0000-0000-0000-0000000000a2','imposter@gmail.com','{"full_name":"Imp"}',now());
+select '12 other sign-ups stay students', role from profiles where email='imposter@gmail.com';
+set role authenticated; set request.jwt.claim.sub='00000000-0000-0000-0000-00000000000a';
+do $$ begin begin insert into staff_invites(email, role) values ('me@gmail.com','admin'); raise notice 'student insert invite: ALLOWED'; exception when others then raise notice 'student insert invite blocked'; end; end $$;
+do $$ begin begin update profiles set role='admin' where id='00000000-0000-0000-0000-00000000000a'; raise notice 'student self-promote: ALLOWED'; exception when others then raise notice 'student self-promote blocked'; end; end $$;
+reset role;
+select '12 student still student', role from profiles where id='00000000-0000-0000-0000-00000000000a';
+
+-- 13 host controls voting for THEIR event only
+select set_config('t.ev', id::text, false) from events where code='C01';
+delete from polls;
+set role authenticated; set request.jwt.claim.sub='00000000-0000-0000-0000-0000000000b1';
+select '13 host turn on with no teams', host_set_voting(current_setting('t.ev')::uuid, true)->>'reason';
+select '13 host adds team', host_save_contestant(current_setting('t.ev')::uuid, null, 'The Raagas', 'CSE', null, 1, true)->>'ok';
+select '13 host adds person', host_save_contestant(current_setting('t.ev')::uuid, null, 'Meera R', 'ECE', 'https://img.example/m.webp', 2, true)->>'ok';
+select '13 bad photo link', host_save_contestant(current_setting('t.ev')::uuid, null, 'X', null, 'javascript:alert(1)', 3, true)->>'reason';
+select '13 host turns voting on, results hidden', host_set_voting(current_setting('t.ev')::uuid, true, 'Vote for your favourite', null, null, 'hidden');
+select '13 bad visibility', host_set_voting(current_setting('t.ev')::uuid, true, null, null, null, 'secret')->>'reason';
+select '13 bad times', host_set_voting(current_setting('t.ev')::uuid, true, null, now()+interval '2 hours', now()+interval '1 hour')->>'reason';
+select '13 host sees live counts although hidden', name, visible, votes from poll_results order by sort;
+reset role;
+select set_config('t.poll', id::text, false) from polls;
+select set_config('t.c1', id::text, false) from contestants order by sort limit 1;
+set role authenticated; set request.jwt.claim.sub='00000000-0000-0000-0000-0000000000d1';
+select '13 student vote while on', cast_vote(current_setting('t.poll')::uuid, current_setting('t.c1')::uuid)->>'ok';
+select '13 student sees hidden results as null', name, visible, votes from poll_results order by sort;
+reset role;
+set role authenticated; set request.jwt.claim.sub='00000000-0000-0000-0000-0000000000b1';
+select '13 host sees the vote', name, votes from poll_results order by sort;
+select '13 host turns voting off', host_set_voting(current_setting('t.ev')::uuid, false);
+reset role;
+set role authenticated; set request.jwt.claim.sub='00000000-0000-0000-0000-0000000000d1';
+select '13 student vote after off', cast_vote(current_setting('t.poll')::uuid, current_setting('t.c1')::uuid)->>'reason';
+reset role;
+-- other host and student cannot
+set role authenticated; set request.jwt.claim.sub='00000000-0000-0000-0000-0000000000e1';
+do $$ begin begin perform host_set_voting(current_setting('t.ev')::uuid, true); raise notice 'volunteer set voting: ALLOWED'; exception when others then raise notice 'volunteer set voting blocked'; end; end $$;
+reset role;
+set role authenticated; set request.jwt.claim.sub='00000000-0000-0000-0000-00000000000a';
+do $$ begin begin perform host_save_contestant(current_setting('t.ev')::uuid, null, 'Fake', null, null, 1, true); raise notice 'student save contestant: ALLOWED'; exception when others then raise notice 'student save contestant blocked'; end; end $$;
+reset role;
+-- push topic signals
+set role authenticated; set request.jwt.claim.sub='00000000-0000-0000-0000-0000000000d1';
+select '13 push topic signals kept', save_push_subscription('https://push.example/sig', repeat('a',30), repeat('b',12), array['signals','bogus'])->>'ok';
+reset role;
+select '13 signals topic stored', topics from push_subscriptions where endpoint='https://push.example/sig';

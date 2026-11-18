@@ -46,7 +46,49 @@ function parseFestQr(raw: string): ParsedQrTarget {
   if (url) {
     const path = url.pathname;
 
-    // /s/<pointId>.<code> (static Treasure Hunt QR sticker)
+    // /s/?t=<pointId>.<code> (Cloudflare static Treasure Hunt QR sticker)
+    if (path === '/s' || path === '/s/') {
+      const token = url.searchParams.get('t') ?? '';
+      if (token.includes('.')) {
+        return {
+          kind: 'stamp',
+          label: 'FOUND · TREASURE HUNT STICKER',
+          title: 'Hidden Spot QR Sticker',
+          subtitle: 'Tap below to unlock this place & claim points',
+          ctaLabel: 'Collect stamp',
+          href: `/s/?t=${encodeURIComponent(token)}`,
+          rawUrl: trimmed,
+        };
+      }
+    }
+
+    // /event/?id=<uuid>
+    if ((path === '/event' || path === '/event/') && url.searchParams.get('id')) {
+      return {
+        kind: 'event',
+        label: 'FOUND · FEST EVENT',
+        title: 'Event Page',
+        subtitle: 'See time, venue, line-up & updates',
+        ctaLabel: 'Open event',
+        href: `/event/?id=${encodeURIComponent(url.searchParams.get('id')!)}`,
+        rawUrl: trimmed,
+      };
+    }
+
+    // /vote/?id=<eventId>
+    if ((path === '/vote' || path === '/vote/') && url.searchParams.get('id')) {
+      return {
+        kind: 'vote',
+        label: 'FOUND · AUDIENCE VOTE',
+        title: 'Live Audience Poll',
+        subtitle: 'Tap below to cast your vote',
+        ctaLabel: 'Open vote',
+        href: `/vote/?id=${encodeURIComponent(url.searchParams.get('id')!)}`,
+        rawUrl: trimmed,
+      };
+    }
+
+    // /s/<pointId>.<code> (legacy path)
     const staticStampMatch = path.match(
       /^\/s\/([0-9a-f-]{36})\.([a-zA-Z0-9_-]{4,64})$/i
     );
@@ -57,7 +99,7 @@ function parseFestQr(raw: string): ParsedQrTarget {
         title: 'Hidden Spot QR Sticker',
         subtitle: 'Tap below to unlock this place & claim points',
         ctaLabel: 'Collect stamp',
-        href: `/s/${staticStampMatch[1]}.${staticStampMatch[2]}`,
+        href: `/s/?t=${staticStampMatch[1]}.${staticStampMatch[2]}`,
         rawUrl: trimmed,
       };
     }

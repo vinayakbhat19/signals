@@ -1,0 +1,22 @@
+{
+  "name": "Fiesta'26 Live · SDMCET",
+  "short_name": "Fiesta'26",
+  "description": "Live schedule, venues, audience voting, Treasure Hunt and updates for Fiesta'26 at SDMCET Dharwad.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#12091E",
+  "theme_color": "#12091E",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "/brand/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/brand/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}

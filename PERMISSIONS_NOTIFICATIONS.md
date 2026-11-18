@@ -21,9 +21,9 @@ Screen: **08 Alerts and camera** (`design/png/08-permissions.png`). Prompt: **N.
 | What triggers an alert | A change to an event's time, venue or status (`event_changes` → `push_queue`), or an **urgent** announcement. Normal announcements don't push |
 | Content | Title "Fiesta'26 update", body = the ready-made change message, tap opens `/events/<id>`; one alert per event is replaced by the next (notification `tag`) |
 | Frequency cap | At most 6 alerts per device per hour; TTL 1 hour (a late alert is useless) |
-| Delivery | After the organiser saves (Next.js `after()`), the server flushes `push_queue`. Backup: `/api/push/flush` (header `x-cron-secret`) for Vercel Cron (per-minute needs the Pro plan) or the **Resend alerts** button |
+| Delivery | A small **Cloudflare Worker** (cron every minute, the only server code) reads unsent `push_queue` rows with the service-role key (a Worker secret) and sends them in batches. Backup: the **Resend alerts** button on the Safety panel |
 | Cleanup | Delete a subscription on HTTP 404/410 from the push service; after 5 failures; and all of them at the end of the fest (purge) |
-| Privacy | The tables have **no client access**: only server routes with the service role read or write them. Subscriptions are anonymous unless the user is signed in |
+| Privacy | The tables have **no client access**. The browser subscribes through `save_push_subscription` (signed-in only, 5 devices per person, rate limited) and unsubscribes through `remove_push_subscription`; only the Worker reads the tables |
 
 Alert wording examples:
 - "Intro to Flutter Workshop now starts at 6:15 PM (was 6:00 PM)"
@@ -37,7 +37,7 @@ Alert wording examples:
 | --- | --- |
 | When | Only after the user taps **Open camera** on `/scan` (or the SCAN button then Open camera) |
 | How | `navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } })`; HTTPS only |
-| Privacy | Frames are decoded on the phone and never stored or uploaded. Stop all tracks when leaving the page or when the tab is hidden |
+| Privacy | The tables have **no client access**. The browser subscribes through `save_push_subscription` (signed-in only, 5 devices per person, rate limited) and unsubscribes through `remove_push_subscription`; only the Worker reads the tables |
 | Header | `Permissions-Policy: camera=(self)` |
 | States | **granted** → scan; **denied** → steps to allow (Chrome Android: lock/tune icon → Permissions → Camera → Allow; iPhone: Settings → Safari → Camera, or `aA` menu → Website Settings); **no camera** or old browser → fallbacks |
 | Fallbacks | 1) "Take a photo of the QR" using `<input type="file" accept="image/*" capture="environment">`, decoded in the browser; 2) "Enter a code" |

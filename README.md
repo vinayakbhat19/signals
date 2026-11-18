@@ -27,7 +27,7 @@ Everything needed to build **Fest Live** (the live fest guide plus the Signals "
 | `supabase/schema_participants.sql` | Event hosts, participants (private emails/phones), public line-up view (tested on Postgres 16) | Run after `storage.sql` |
 | `templates/participants_template.csv` | Columns for hosts' registration sheets (CSV or Excel) | Send to event hosts |
 | `supabase/schema_changes.sql` | Automatic change alerts: a trigger logs every time, venue or status change with a ready-made message (tested on Postgres 16) | Run right after `schema.sql` |
-| `supabase/schema_ops.sql` | **Run last.** Fest/campus mode, kill switch, host invites, audit log, database rate limiter, push storage, archive and purge (tested on Postgres 16) | After all other SQL files |
+| `supabase/schema_ops.sql` | **Run last.** Fest/campus mode, kill switch, host voting controls, bootstrap of the main admin, audit log, database rate limiter, push storage, archive and purge (tested on Postgres 16) | After all other SQL files |
 | `supabase/storage.sql` | Public buckets for event covers and contestant photos; only organisers can upload | Run after `schema.sql` |
 | `supabase/seed_hunt.sql` | Stamp Hunt test data: opens the hunt for 12 h and creates a stamp point per seeded event (safe to re-run) | After `schema_stamps.sql` and `seed.sql`, development only |
 | `supabase/seed.sql` | Sample venues, events, announcements and a live score | During building; deleted on 24 Nov |
@@ -40,11 +40,14 @@ Everything needed to build **Fest Live** (the live fest guide plus the Signals "
 3. Read **PRD section 0**: the first launch is the **fest only** (schedule, announcements, results, audience voting; Stamp Hunt as a bonus). Football, Signals and stars come later.
 4. `PROMPTS.md` → Phase 1 → Track R → Phases 2, 3 → **Track A (A.1–A.4)** → Track V → Prompt 4.3 → Phases 5, 6 → Track H (H.0–H.2). Attach the matching `design/png` screens to every prompt. Check each step on your phone before the next.
 
-## New in this version: 2,000 people, free address, simple hunt and voting, host timing
+## New in this version: free Cloudflare hosting, 2,000 people, simple hunt and voting, host timing
 | File | What it is |
 | --- | --- |
 | `PEAK_LOAD.md` | When the load comes (registration, voting, competitions), what breaks first, the rules, measured results, fest-week scaling checklist |
-| `ADDRESS_AND_PEOPLE.md` | Free vercel.app address, sign-in without a domain, who can do what (hosts and volunteers by email) |
+| `supabase/bootstrap_admin.sql` | Run once with your own email: you become the main admin |
+| `workers/staff/` | The staff Worker (creates host/volunteer accounts with email + password, resets, removes; tested offline with `node workers/staff/test.mjs`) |
+| `HOSTING_CLOUDFLARE.md` | **Read first for building.** Free hosting: static site on Cloudflare Pages + Supabase free plan + one tiny Worker for push. Limits, rules for the coding agent, step by step |
+| `ADDRESS_AND_PEOPLE.md` | Free pages.dev address, sign-in without a domain, who can do what (hosts and volunteers by email) |
 | `loadtest/` | k6 scripts for 2,000 readers, sign-ins, 1,200 votes in a minute, registration rush (run on staging only) |
 | `supabase/tests/` | `run_tests.sh` runs the SQL tests for the treasure hunt, volunteers by email, who can make QR stickers, winners, open voting and host timing edits on a throw-away Postgres 16 |
 Hosts now update their own event time, venue, status and registration window (`host_update_event`, screen 50); students see it on Home at once. Measured on the database alone: 2,000 distinct votes all counted once at about 5,100 per second; 2,000 stamps at about 4,400 per second; reads 1-4 ms. This does not prove the whole stack: run `loadtest/` on staging.
@@ -88,7 +91,7 @@ On a local Postgres 16 that copies Supabase's default permissions, installed in 
 - volunteers and hosts can print hunt stickers; volunteers see the winners list; students can't.
 
 ## What was tested for accounts and covers
-- Volunteers and hosts get their role only when their invited email is confirmed.
+- Hosts and volunteers are created by the admin through the staff Worker (email + password); the admin role can only be set in the SQL Editor (`bootstrap_admin.sql`).
 - Events have `cover_url`, `host_name` and `host_coordinator`, readable by everyone.
 - `storage.sql` was not tested locally (it needs Supabase's storage schema).
 
@@ -118,4 +121,6 @@ Installed in launch order on a local Postgres 16 with Supabase-style permissions
 - the database rate limiter allows N hits and then blocks, with a retry time; clients can't call it;
 - delays and urgent announcements create push-queue rows; normal announcements don't; students can't read push tables;
 - the archive/purge refuses in fest mode and for students, and in campus mode keeps vote totals, deletes votes, push subscriptions and participants' contact details.
-Not tested here (needs real services or phones): Google/Email sign-in, MFA, Upstash, Web Push delivery, camera, headers. They are covered by `PRE_TEST_CHECKLIST.md`.
+Also tested: the admin email in `staff_invites` makes that sign-in the admin (others stay students, students can't promote themselves); a host turns voting on and off for THEIR event only (needs a team first, bad links, bad visibility and bad times refused, hosts see live counts even when results are hidden, other roles refused); the staff Worker's 7 offline tests (admin-only, origin check, weak passwords, duplicates, reset, remove, no password in the audit log).
+Also tested for static hosting: `app_status()` carries a version and the polling interval; the version goes up on every event, venue, notice, change, poll or result change and the bump does not fill the audit log; `live_feed()` returns the public feed (about 4 KB for 6 events, no private columns) and works signed out; organisers can change `poll_seconds`, students can't; browser push subscribe (signed-in only, bad endpoints and keys refused, topics cleaned, 5 devices per person, remove works, tables unreadable by clients); `delete_my_account()` removes the user and refuses organisers.
+Not tested here (needs real services or phones): Google/Email sign-in, MFA, the Cloudflare Worker, Web Push delivery, camera, headers. They are covered by `PRE_TEST_CHECKLIST.md`.

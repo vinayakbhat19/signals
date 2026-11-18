@@ -199,9 +199,9 @@ join counts k on k.contestant_id = c.id
 cross join lateral (
   select (p.results_visibility = 'live'
           or (p.results_visibility = 'after_close' and p.closes_at is not null and now() > p.closes_at)
-          or public.is_organiser()) as visible
+          or public.is_organiser() or public.is_event_host(p.event_id)) as visible
 ) vis
-where p.enabled or public.is_organiser();
+where p.enabled or public.is_organiser() or public.is_event_host(p.event_id);
 -- Order in the client: votes desc, then sort, then name.
 
 -- ---------------------------------------------------------------- access

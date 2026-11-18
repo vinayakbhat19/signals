@@ -1,3 +1,5 @@
+> **Superseded for hosting.** This document was written for Vercel + Upstash + Blob. The app is now a static site on Cloudflare Pages + Supabase: follow `HOSTING_CLOUDFLARE.md`, `PEAK_LOAD.md` and `RESILIENCE.md` instead. The football and score parts are only for the later Track S.
+
 # Football live scores and reliability plan
 
 > **Update:** football is **postponed** (not part of the first launch). Part A is kept for later. **Part B (reliability) applies to the fest and voting now**; read "football" endpoints in Part B as `/api/live` and `/api/vote/<eventId>`. Ignore the revised timeline at the end; use the build order in `PROMPTS.md`.

@@ -14,7 +14,7 @@ Replace these placeholders everywhere before you start:
 | --- | --- |
 | `{{FEST_NAME}}` | **Fiesta'26** (official name: Fiesta 2026) |
 | `{{COLLEGE_NAME}}` | **SDM College of Engineering and Technology, Dharwad (SDMCET)**: confirm |
-| Web address | **Free** `https://<project>.vercel.app` (no domain bought; the college gives none). See `ADDRESS_AND_PEOPLE.md` |
+| Web address | **Free** `https://<project>.pages.dev` (no domain bought; the college gives none). See `ADDRESS_AND_PEOPLE.md` and `HOSTING_CLOUDFLARE.md` |
 | `{{BRAND_COLOR}}` | #FFD60A (Fiesta yellow; full palette in BRAND.md) |
 
 ---
@@ -29,7 +29,7 @@ The first launch is **Fiesta'26** (Fiesta 2026, intra college cultural fest, SDM
 | **Audience voting** for selected **outdoor** competitions (`VOTING.md`); switched off for auditorium competitions (no network inside) | **Signals** (F11, F14) and **My schedule / stars** (F10) |
 | **Sign-in and security:** Google, email + password, CAPTCHA, MFA for organisers, headers, audit log (`SECURITY.md`) | |
 | **Phone alerts (push) and camera permission** with explanations (`PERMISSIONS_NOTIFICATIONS.md`) | |
-| **Host management** (invite, scope, expiry) and **after-fest mode switch** back to the Signals app on 28 Nov (`HOSTS_AND_AFTER_FEST.md`) | |
+| **Admin page** (yours alone), **host** and **volunteer** accounts created by the admin with email + password, hosts turn voting on/off, a **Signals: coming soon** teaser, black background like Signals; **Host management** (scope, expiry) and **after-fest mode switch** back to the Signals app on 28 Nov (`HOSTS_AND_AFTER_FEST.md`) | |
 | **Change alerts:** every delay, time change, venue change or cancellation appears automatically at the top of Home and on an Updates page (`schema_changes.sql`) | |
 | Organiser panel, CSV import, **event editor with cover photos and hosts**, **QR generator**, PWA with an **install bar** | Nearby, personal QR connect, communities, workshops |
 | **Accounts:** Google or email + password (email confirmed, check-email and verified screens), cookie notice, My account page, **in-app QR scanner** (raised SCAN button in the bottom bar) | |
@@ -75,7 +75,8 @@ On fest day, students don't know what's happening, where, and when. The schedule
 | --- | --- |
 | **Student (visitor)** | See now/next, schedule, venues, results, announcements, without logging in |
 | **Student (signed in)** | Star events → "My schedule"; post and answer Signals |
-| **Organiser** (fest committee, club coordinators) | Add/edit events, import the schedule, post announcements and results, hide bad Signals, print QR codes |
+| **Admin** (the app owner; the Admin page is theirs alone) creates **hosts** and **volunteers** with an email and password; hosts run their own event (time, venue, voting on/off, participants); volunteers print hunt stickers and see winners |
+| **Organiser** (optional committee head, same rights as admin for events) | Add/edit events, import the schedule, post announcements and results, hide bad Signals, print QR codes |
 | **Admin** (you) | Everything an organiser can do, plus make people organisers |
 
 ## 5. Scope
@@ -121,11 +122,11 @@ Native apps, push notifications, chat, nearby/location matching, personal QR con
 - Search by title or venue (client-side).
 - Cancelled events are shown crossed out; delayed ones with a "Delayed" badge.
 
-### F3 Event page (`/events/[id]`)
+### F3 Event page (`/event/?id=<uuid>`)
 - All fields above, plus: "Add to Google Calendar" link, share button (Web Share API, falling back to copy link), ⭐ button, result block if present, "Raise a Signal for this event" button.
 - Open Graph tags so WhatsApp shows a preview.
 
-### F4 Venues (`/venues`, `/venues/[id]`)
+### F4 Venues (`/venues`, `/venue/?id=<uuid>`)
 - List of venues; each page shows today's events at that venue in order, plus a Google Maps link if set.
 - Optional: a static campus map image at `/public/campus-map.jpg`.
 
@@ -176,7 +177,7 @@ Native apps, push notifications, chat, nearby/location matching, personal QR con
 - "Add to home screen" hint on the second visit (dismissible).
 
 ### F15 Analytics
-- Vercel Web Analytics for page views and `src` query values.
+- Cloudflare Web Analytics (cookie-free) for page views and `src` query values.
 - Database counts for stars, Signals and responses (admin page `/admin/stats`).
 
 ## 7. Non-functional requirements
@@ -184,7 +185,7 @@ Native apps, push notifications, chat, nearby/location matching, personal QR con
 | Area | Requirement |
 | --- | --- |
 | Performance | Home first load under 2.5 s on a mid-range Android over 4G; JS under 200 KB gzip on public pages |
-| Scale | 5,000 visitors on the day, 1,000 at once. Public data is **cached at the edge** (revalidate 15–30 s, plus instant on-demand revalidation when organisers save), so the database load does not grow with visitors |
+| Scale | 5,000 visitors on the day, 1,000 at once. The website is **static files on Cloudflare Pages** (free, unlimited); phones fetch the big data feed only when a version number changes, so the database load grows very slowly with visitors |
 | Freshness | Organiser changes visible to students within 30 s |
 | Time zone | Stored as `timestamptz`; always shown in **Asia/Kolkata** |
 | Security | Row Level Security on every table; organiser actions checked on the server and in the database; Signal contacts protected (see schema) |
@@ -198,8 +199,8 @@ Native apps, push notifications, chat, nearby/location matching, personal QR con
 | Layer | Choice |
 | --- | --- |
 | Frontend and server | Next.js (latest stable, App Router), TypeScript, Tailwind CSS, shadcn/ui |
-| Data and auth | Supabase (Postgres, Google OAuth, Row Level Security), `@supabase/ssr` |
-| Hosting | Vercel (Hobby, free), Vercel Web Analytics |
+| Data and auth | Supabase (Postgres, Google OAuth, Row Level Security), `@supabase/supabase-js` in the browser |
+| Hosting | Cloudflare Pages (free, static export of Next.js), a tiny Cloudflare Worker for push alerts, Supabase free plan, Cloudflare Web Analytics. See `HOSTING_CLOUDFLARE.md` |
 | Libraries | `swr` (polling), `papaparse` (CSV), `qrcode` (QR), `zod` (validation), `date-fns` + `date-fns-tz` (time zone) |
 | Source control | GitHub (new repository `fest-live`) |
 
@@ -223,8 +224,8 @@ Tables (full SQL with security in `supabase/schema.sql`):
 | --- | --- |
 | `/` | Everyone |
 | `/schedule` | Everyone |
-| `/events/[id]` | Everyone |
-| `/venues`, `/venues/[id]` | Everyone |
+| `/event/?id=` | Everyone |
+| `/venues`, `/venue/?id=` | Everyone |
 | `/announcements` | Everyone |
 | `/results` | Everyone |
 | `/signals` | Everyone can read; signed in to post or respond |
