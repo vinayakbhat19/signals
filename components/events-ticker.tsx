@@ -49,9 +49,27 @@ export function EventsTicker({ events, changes = [] }: EventsTickerProps) {
   return (
     <div
       aria-label="Live event timings ticker"
-      className="-mx-4 overflow-hidden py-2.5 lg:mx-0 lg:rounded-2xl"
+      className="-mx-4 lg:-mx-5"
+      style={{
+        overflowX: 'clip',
+        overflowY: 'visible',
+        paddingTop: '14px',
+        paddingBottom: '14px',
+      }}
     >
-      <div className="-rotate-[1.3deg] scale-[1.03] bg-[#D9FF1A] py-2.5 text-[#0B0A12] shadow-[0_6px_20px_rgba(0,0,0,0.35)]">
+      <div
+        style={{
+          width: '108%',
+          marginLeft: '-4%',
+          transform: 'rotate(-1.8deg)',
+          backgroundColor: '#FFD60A',
+          color: '#0B0A12',
+          paddingTop: '11px',
+          paddingBottom: '11px',
+          boxShadow: '0 8px 22px rgba(0, 0, 0, 0.45)',
+          overflow: 'hidden',
+        }}
+      >
         <div
           className="ticker-track inline-flex w-max items-center hover:[animation-play-state:paused] focus-within:[animation-play-state:paused]"
           style={{ animationDuration: `${durationSec}s` }}
@@ -63,17 +81,22 @@ export function EventsTicker({ events, changes = [] }: EventsTickerProps) {
               className="flex shrink-0 items-center"
             >
               {items.map((item) => (
-                <span key={`${dup}-${item.key}`} className="inline-flex items-center">
+                <span
+                  key={`${dup}-${item.key}`}
+                  className="inline-flex items-center"
+                >
                   <Link
                     href={item.href}
                     tabIndex={dup === 1 ? -1 : undefined}
-                    className="whitespace-nowrap px-3 font-heading text-[13px] font-extrabold uppercase tracking-[0.06em] text-[#0B0A12] hover:underline"
+                    className="whitespace-nowrap px-3 font-heading text-[13px] font-extrabold uppercase tracking-[0.06em] hover:underline"
+                    style={{ color: '#0B0A12' }}
                   >
                     {item.label}
                   </Link>
                   <span
                     aria-hidden="true"
-                    className="px-2 text-sm leading-none text-[#0B0A12]"
+                    className="px-2 text-sm leading-none"
+                    style={{ color: '#0B0A12' }}
                   >
                     ✦
                   </span>
