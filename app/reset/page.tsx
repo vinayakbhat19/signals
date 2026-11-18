@@ -17,7 +17,7 @@ export default function ResetPasswordPage() {
     setLoading(true);
     try {
       const supabase = createClient();
-      const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || window.location.origin;
+      const siteUrl = window.location.origin || process.env.NEXT_PUBLIC_SITE_URL || '';
       await supabase.auth.resetPasswordForEmail(email.trim().toLowerCase(), {
         redirectTo: `${siteUrl.replace(/\/$/, '')}/auth/callback/?next=/reset/new/`,
       });

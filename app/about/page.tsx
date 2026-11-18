@@ -28,7 +28,7 @@ export default function AboutPage() {
         <CardContent className="space-y-3 pt-4 text-sm leading-relaxed text-foreground/90">
           <p>
             <strong>{festName} Live</strong> is the official real-time campus
-            guide for {festName} (25–27 Nov 2026). See what is happening right
+            guide for {festName} (25–28 Nov 2026). See what is happening right
             now, what starts next, where every venue is, live updates, and
             official results without hunting across posters or WhatsApp groups.
           </p>

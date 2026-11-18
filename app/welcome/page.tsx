@@ -29,7 +29,7 @@ export default function WelcomePage() {
           priority
         />
         <span className="-rotate-2 rounded-full bg-[#FFD60A] px-3.5 py-1 text-xs font-extrabold uppercase tracking-[0.1em] text-[#12091E]">
-          SDMCET DHARWAD · 25–27 NOV 2026
+          SDMCET DHARWAD · 25–28 NOV 2026
         </span>
       </div>
 

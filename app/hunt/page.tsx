@@ -42,7 +42,7 @@ interface LeaderRow {
 }
 
 export default function HuntPage() {
-  const { user, profile, refresh: refreshAuth } = useAuth();
+  const { user, profile, loading: authLoading, refresh: refreshAuth } = useAuth();
   const [huntName, setHuntName] = useState('Fiesta Treasure Hunt');
   const [closesAt, setClosesAt] = useState<string | null>(null);
   const [stampValue, setStampValue] = useState(10);
@@ -61,6 +61,7 @@ export default function HuntPage() {
   }, [profile]);
 
   const loadHunt = useCallback(async () => {
+    if (!user) return;
     const supabase = createClient();
     const [cfgRes, clueRes, lbRes] = await Promise.all([
       supabase
@@ -89,9 +90,10 @@ export default function HuntPage() {
     if (Array.isArray(lbRes.data)) {
       setLeaders(lbRes.data as LeaderRow[]);
     }
-  }, []);
+  }, [user]);
 
   useEffect(() => {
+    if (!user) return;
     const raf = window.requestAnimationFrame(() => void loadHunt());
     // Refresh leaderboard every 30 s (HOSTING_CLOUDFLARE.md §3.4)
     const timer = window.setInterval(() => {
@@ -101,7 +103,7 @@ export default function HuntPage() {
       window.cancelAnimationFrame(raf);
       window.clearInterval(timer);
     };
-  }, [loadHunt, user?.id]);
+  }, [loadHunt, user]);
 
   async function toggleHidden(next: boolean) {
     if (!user) return;
@@ -130,6 +132,53 @@ export default function HuntPage() {
     basePts + (totalCount > 0 && foundCount >= totalCount ? completeBonus : 0);
   const myRankIdx = user ? leaders.findIndex((l) => l.user_id === user.id) : -1;
   const myRank = myRankIdx >= 0 ? myRankIdx + 1 : null;
+
+  if (authLoading) {
+    return (
+      <div className="mx-auto max-w-xl py-16 text-center text-sm text-[#BDB8CF]">
+        Loading Treasure Hunt…
+      </div>
+    );
+  }
+
+  if (!user) {
+    return (
+      <div className="mx-auto max-w-lg space-y-6 pt-4">
+        <section className="rounded-[26px] border-[1.5px] border-[#9B6CFF] bg-[#1F1230] p-6 text-center space-y-4 shadow-[5px_5px_0_#FFD60A]">
+          <span className="mx-auto flex size-16 items-center justify-center rounded-2xl bg-[#9B6CFF]/20 text-[#FFD60A]">
+            <Lock className="size-8" />
+          </span>
+          <div className="space-y-1.5">
+            <p className="text-[11px] font-extrabold uppercase tracking-[0.14em] text-[#FF4FD8]">
+              FIESTA&apos;26 TREASURE HUNT
+            </p>
+            <h1 className="font-display text-3xl leading-tight text-[#F4F2FA]">
+              LOG IN TO UNLOCK
+            </h1>
+            <p className="text-sm text-[#BDB8CF]">
+              Treasure Hunt clues, hidden spots, and the live leaderboard are
+              unlocked once you sign in with your Fiesta&apos;26 account.
+            </p>
+          </div>
+          <div className="flex flex-col gap-2.5 sm:flex-row sm:justify-center">
+            <Link
+              href="/login/?next=/hunt/"
+              className="inline-flex h-12 items-center justify-center gap-2 rounded-2xl bg-[#FFD60A] px-6 text-sm font-extrabold text-[#12091E] shadow-[4px_4px_0_#FF4FD8]"
+            >
+              <Sparkles className="size-4" />
+              Log in to play
+            </Link>
+            <Link
+              href="/signup/"
+              className="inline-flex h-12 items-center justify-center rounded-2xl border-[1.5px] border-[#3B2758] bg-[#12091E] px-6 text-sm font-bold text-[#F4F2FA] hover:border-[#FFD60A]"
+            >
+              Create account
+            </Link>
+          </div>
+        </section>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">

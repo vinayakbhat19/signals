@@ -29,7 +29,7 @@ export default function SignUpPage() {
     setLoadingGoogle(true);
     setErrorMsg(null);
     const supabase = createClient();
-    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || window.location.origin;
+    const siteUrl = window.location.origin || process.env.NEXT_PUBLIC_SITE_URL || '';
     const { error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {
@@ -38,7 +38,11 @@ export default function SignUpPage() {
       },
     });
     if (error) {
-      setErrorMsg('Could not start Google sign-in.');
+      setErrorMsg(
+        error.message?.toLowerCase().includes('provider')
+          ? 'Google sign-in is not enabled yet. Please use email & password below.'
+          : error.message || 'Could not start Google sign-in.'
+      );
       setLoadingGoogle(false);
     }
   }
@@ -62,7 +66,7 @@ export default function SignUpPage() {
     setLoading(true);
     try {
       const supabase = createClient();
-      const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || window.location.origin;
+      const siteUrl = window.location.origin || process.env.NEXT_PUBLIC_SITE_URL || '';
       const { data, error } = await supabase.auth.signUp({
         email: email.trim().toLowerCase(),
         password,
@@ -72,7 +76,20 @@ export default function SignUpPage() {
         },
       });
       if (error) {
-        setErrorMsg('Unable to create account right now. Please try again.');
+        const msg = (error.message || '').toLowerCase();
+        if (msg.includes('rate limit') || error.status === 429) {
+          setErrorMsg(
+            'Email sending limit reached right now. Please wait a few minutes or try logging in with Google.'
+          );
+        } else if (msg.includes('already registered')) {
+          setErrorMsg(
+            'This email already has an account. Tap "Log in" at the top.'
+          );
+        } else {
+          setErrorMsg(
+            error.message || 'Unable to create account right now. Please try again.'
+          );
+        }
         setLoading(false);
         return;
       }

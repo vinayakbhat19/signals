@@ -9,6 +9,7 @@ import {
   Bell,
   ChevronRight,
   ExternalLink,
+  Lock,
   MapPin,
   Megaphone,
   RefreshCw,
@@ -16,6 +17,7 @@ import {
   Vote,
   WifiOff,
 } from 'lucide-react';
+import { AccountAvatar } from '@/components/account-avatar';
 import { CATEGORY_DOT_COLOR, CATEGORY_LABELS } from '@/components/category-chip';
 import { EventsTicker } from '@/components/events-ticker';
 import {
@@ -24,6 +26,7 @@ import {
   TechMascot,
 } from '@/components/mascots';
 import { useLiveFeed } from '@/lib/live-store';
+import { useAuth } from '@/lib/use-auth';
 import { formatTime, isLive, isUpNext, minutesUntil } from '@/lib/time';
 import { cn } from '@/lib/utils';
 
@@ -60,6 +63,7 @@ function splitCountdownBadge(
 
 export default function HomePage() {
   const router = useRouter();
+  const { user } = useAuth();
   const { feed, source, offline, refresh } = useLiveFeed();
   const [nowMs, setNowMs] = useState<number>(() =>
     new Date(feed.server_time).getTime()
@@ -171,13 +175,7 @@ export default function HomePage() {
               )}
             </button>
           )}
-          <Link
-            href="/account/"
-            aria-label="My account"
-            className="flex size-[42px] items-center justify-center rounded-[14px] bg-[#FF4FD8] text-sm font-extrabold text-[#12091E] rotate-4 hover:rotate-0 transition-transform"
-          >
-            ME
-          </Link>
+          <AccountAvatar size="md" />
         </div>
       </header>
 
@@ -278,135 +276,147 @@ export default function HomePage() {
         </Link>
       )}
 
-      {/* Happening now */}
-      <section aria-labelledby="heading-now" className="space-y-3">
-        <div className="flex items-center justify-between">
-          <h1
-            id="heading-now"
-            className="flex items-center gap-2.5 font-heading text-[26px] font-extrabold tracking-[-0.02em] text-[#F4F2FA]"
-          >
-            <span className="live-dot inline-block size-3 rounded-full bg-[#FF4FD8]" />
-            Happening now
-          </h1>
-          <span className="text-xs font-semibold text-[#9C97B0]">
-            {formatTime(syncedNow)} IST
-          </span>
-        </div>
+      {/* Countdown (before 25 Nov) OR Happening now (once countdown finishes) */}
+      {festCountdown.active && !featuredLive ? (
+        <section aria-labelledby="heading-countdown" className="space-y-3">
+          <div className="rounded-[24px] border-[1.5px] border-[#3B2758] bg-[#1F1230] p-5 text-center space-y-4 shadow-[4px_4px_0_#9B6CFF]">
+            <div className="space-y-1">
+              <p
+                id="heading-countdown"
+                className="text-[11px] font-extrabold uppercase tracking-[0.14em] text-[#FF4FD8]"
+              >
+                COUNTDOWN TO {festName.toUpperCase()} · 25–28 NOV
+              </p>
+              <h1 className="font-heading text-2xl font-extrabold text-[#F4F2FA]">
+                Get ready for 4 days of Fiesta&apos;26
+              </h1>
+            </div>
 
-        {featuredLive ? (
-          <div className="space-y-3 lg:grid lg:grid-cols-2 lg:gap-4 lg:space-y-0">
-            <Link
-              href={`/event/?id=${featuredLive.id}`}
-              className="relative flex flex-col gap-2 overflow-hidden rounded-[24px] bg-[#FF4FD8] p-[18px] text-[#12091E] shadow-[5px_5px_0_#9B6CFF]"
+            <div
+              aria-label="Countdown to 25 November"
+              className="grid grid-cols-4 gap-2"
             >
-              <span className="self-start rounded-full bg-[#12091E] px-2.5 py-1 text-[11px] font-extrabold uppercase tracking-[0.1em] text-[#FF4FD8]">
-                LIVE · {CATEGORY_LABELS[featuredLive.category]}
-              </span>
-              <span className="max-w-[240px] font-heading text-[32px] font-extrabold leading-[0.96] tracking-[-0.03em]">
-                {featuredLive.title}
-              </span>
-              <span className="text-sm font-semibold">
-                {featuredLive.venue_name ?? 'Campus'} · ends{' '}
-                {formatTime(featuredLive.ends_at)}
-              </span>
-              <span className="mt-1 self-start rounded-[12px] bg-[#12091E] px-3 py-2 text-[13px] font-extrabold text-[#FFD60A]">
-                OPEN LIVE EVENT →
-              </span>
-              <MusicMascot
-                size={112}
-                className="pointer-events-none absolute -right-1.5 -bottom-2"
-              />
-            </Link>
-
-            <div className="flex flex-col gap-3">
-              {otherLive.map((event) => (
-                <Link
-                  key={event.id}
-                  href={`/event/?id=${event.id}`}
-                  className="flex items-center gap-3 rounded-[22px] border-[1.5px] border-[#3B2758] bg-[#1F1230] px-4 py-3.5 text-[#F4F2FA] hover:border-[#22D3EE]"
+              {[
+                { value: festCountdown.days, label: 'DAYS' },
+                { value: festCountdown.hours, label: 'HRS' },
+                { value: festCountdown.minutes, label: 'MIN' },
+                { value: festCountdown.seconds, label: 'SEC' },
+              ].map((unit) => (
+                <div
+                  key={unit.label}
+                  className="flex flex-col items-center justify-center rounded-[16px] border-[1.5px] border-[#3B2758] bg-[#12091E] py-2.5"
                 >
-                  <TechMascot size={50} className="shrink-0" />
-                  <div className="min-w-0 flex-1 space-y-0.5">
-                    <span
-                      className="block text-[11px] font-extrabold uppercase tracking-[0.1em]"
-                      style={{ color: CATEGORY_DOT_COLOR[event.category] }}
-                    >
-                      LIVE · {CATEGORY_LABELS[event.category]} · ends{' '}
-                      {formatTime(event.ends_at)}
-                    </span>
-                    <span className="block truncate text-[17px] font-bold text-[#F4F2FA]">
-                      {event.title}
-                    </span>
-                    <span className="block truncate text-[13px] text-[#9C97B0]">
-                      {event.venue_name ?? 'Venue TBA'}
-                    </span>
-                  </div>
-                  <ChevronRight className="size-5 shrink-0 text-[#9C97B0]" />
-                </Link>
+                  <span className="font-display text-2xl leading-none text-[#FFD60A] sm:text-3xl">
+                    {unit.value}
+                  </span>
+                  <span className="mt-1 text-[10px] font-extrabold tracking-[0.1em] text-[#9C97B0]">
+                    {unit.label}
+                  </span>
+                </div>
               ))}
             </div>
+
+            <p className="text-sm text-[#BDB8CF]">
+              {festName} hasn&apos;t started yet — events go live when the
+              countdown finishes. Explore all 21 competitions &amp; register
+              now!
+            </p>
+            <Link
+              href="/events/"
+              className="inline-flex min-h-11 items-center rounded-xl bg-[#FFD60A] px-5 text-sm font-extrabold text-[#12091E] shadow-[3px_3px_0_#FF4FD8]"
+            >
+              Browse events
+            </Link>
           </div>
-        ) : (
-          <div className="rounded-[24px] border-[1.5px] border-[#3B2758] bg-[#1F1230] p-5 text-center space-y-3.5 shadow-[4px_4px_0_#9B6CFF]">
-            <div className="space-y-1">
+        </section>
+      ) : (
+        <section aria-labelledby="heading-now" className="space-y-3">
+          <div className="flex items-center justify-between">
+            <h1
+              id="heading-now"
+              className="flex items-center gap-2.5 font-heading text-[26px] font-extrabold tracking-[-0.02em] text-[#F4F2FA]"
+            >
+              <span className="live-dot inline-block size-3 rounded-full bg-[#FF4FD8]" />
+              Happening now
+            </h1>
+            <span className="text-xs font-semibold text-[#9C97B0]">
+              {formatTime(syncedNow)} IST
+            </span>
+          </div>
+
+          {featuredLive ? (
+            <div className="space-y-3 lg:grid lg:grid-cols-2 lg:gap-4 lg:space-y-0">
+              <Link
+                href={`/event/?id=${featuredLive.id}`}
+                className="relative flex flex-col gap-2 overflow-hidden rounded-[24px] bg-[#FF4FD8] p-[18px] text-[#12091E] shadow-[5px_5px_0_#9B6CFF]"
+              >
+                <span className="self-start rounded-full bg-[#12091E] px-2.5 py-1 text-[11px] font-extrabold uppercase tracking-[0.1em] text-[#FF4FD8]">
+                  LIVE · {CATEGORY_LABELS[featuredLive.category]}
+                </span>
+                <span className="max-w-[240px] font-heading text-[32px] font-extrabold leading-[0.96] tracking-[-0.03em]">
+                  {featuredLive.title}
+                </span>
+                <span className="text-sm font-semibold">
+                  {featuredLive.venue_name ?? 'Campus'} · ends{' '}
+                  {formatTime(featuredLive.ends_at)}
+                </span>
+                <span className="mt-1 self-start rounded-[12px] bg-[#12091E] px-3 py-2 text-[13px] font-extrabold text-[#FFD60A]">
+                  OPEN LIVE EVENT →
+                </span>
+                <MusicMascot
+                  size={112}
+                  className="pointer-events-none absolute -right-1.5 -bottom-2"
+                />
+              </Link>
+
+              <div className="flex flex-col gap-3">
+                {otherLive.map((event) => (
+                  <Link
+                    key={event.id}
+                    href={`/event/?id=${event.id}`}
+                    className="flex items-center gap-3 rounded-[22px] border-[1.5px] border-[#3B2758] bg-[#1F1230] px-4 py-3.5 text-[#F4F2FA] hover:border-[#22D3EE]"
+                  >
+                    <TechMascot size={50} className="shrink-0" />
+                    <div className="min-w-0 flex-1 space-y-0.5">
+                      <span
+                        className="block text-[11px] font-extrabold uppercase tracking-[0.1em]"
+                        style={{ color: CATEGORY_DOT_COLOR[event.category] }}
+                      >
+                        LIVE · {CATEGORY_LABELS[event.category]} · ends{' '}
+                        {formatTime(event.ends_at)}
+                      </span>
+                      <span className="block truncate text-[17px] font-bold text-[#F4F2FA]">
+                        {event.title}
+                      </span>
+                      <span className="block truncate text-[13px] text-[#9C97B0]">
+                        {event.venue_name ?? 'Venue TBA'}
+                      </span>
+                    </div>
+                    <ChevronRight className="size-5 shrink-0 text-[#9C97B0]" />
+                  </Link>
+                ))}
+              </div>
+            </div>
+          ) : (
+            <div className="rounded-[24px] border-[1.5px] border-[#3B2758] bg-[#1F1230] p-5 text-center space-y-3.5 shadow-[4px_4px_0_#9B6CFF]">
               <p className="font-heading text-lg font-extrabold text-[#F4F2FA]">
                 Nothing live right now
               </p>
-              {festCountdown.active && (
-                <p className="text-[11px] font-extrabold uppercase tracking-[0.12em] text-[#FF4FD8]">
-                  COUNTDOWN TO {festName.toUpperCase()} · 25 NOV
-                </p>
-              )}
-            </div>
-
-            {festCountdown.active && (
-              <div
-                aria-label="Countdown to 25 November"
-                className="grid grid-cols-4 gap-2"
-              >
-                {[
-                  { value: festCountdown.days, label: 'DAYS' },
-                  { value: festCountdown.hours, label: 'HRS' },
-                  { value: festCountdown.minutes, label: 'MIN' },
-                  { value: festCountdown.seconds, label: 'SEC' },
-                ].map((unit) => (
-                  <div
-                    key={unit.label}
-                    className="flex flex-col items-center justify-center rounded-[16px] border-[1.5px] border-[#3B2758] bg-[#12091E] py-2.5"
-                  >
-                    <span className="font-display text-2xl leading-none text-[#FFD60A] sm:text-3xl">
-                      {unit.value}
-                    </span>
-                    <span className="mt-1 text-[10px] font-extrabold tracking-[0.1em] text-[#9C97B0]">
-                      {unit.label}
-                    </span>
-                  </div>
-                ))}
-              </div>
-            )}
-
-            <p className="text-sm text-[#BDB8CF]">
-              {festCountdown.active
-                ? `${festName} hasn't started yet — events go live when the countdown finishes. Explore all 21 competitions & register now!`
-                : nextEvent
+              <p className="text-sm text-[#BDB8CF]">
+                {nextEvent
                   ? `Next up: ${nextEvent.title} at ${formatTime(nextEvent.starts_at)}${nextEvent.venue_name ? ` (${nextEvent.venue_name})` : ''}.`
                   : 'Explore all 21 official competitions and register now.'}
-            </p>
-            <Link
-              href={
-                !festCountdown.active && nextEvent
-                  ? `/event/?id=${nextEvent.id}`
-                  : '/events/'
-              }
-              className="inline-flex min-h-11 items-center rounded-xl bg-[#FFD60A] px-5 text-sm font-extrabold text-[#12091E] shadow-[3px_3px_0_#FF4FD8]"
-            >
-              {!festCountdown.active && nextEvent
-                ? 'See next event'
-                : 'Browse events'}
-            </Link>
-          </div>
-        )}
-      </section>
+              </p>
+              <Link
+                href={nextEvent ? `/event/?id=${nextEvent.id}` : '/events/'}
+                className="inline-flex min-h-11 items-center rounded-xl bg-[#FFD60A] px-5 text-sm font-extrabold text-[#12091E] shadow-[3px_3px_0_#FF4FD8]"
+              >
+                {nextEvent ? 'See next event' : 'Browse events'}
+              </Link>
+            </div>
+          )}
+        </section>
+      )}
 
       {/* Up next */}
       <section aria-labelledby="heading-next" className="space-y-2.5">
@@ -486,65 +496,48 @@ export default function HomePage() {
         )}
       </section>
 
-      {/* Treasure Hunt Card */}
+      {/* Treasure Hunt Card (details hidden until logged in) */}
       <section aria-label="Treasure Hunt">
-        <Link
-          href="/hunt/"
-          className="flex items-center gap-3 rounded-[24px] bg-[#9B6CFF] px-[18px] py-4 text-[#12091E] shadow-[5px_5px_0_#FFD60A]"
-        >
-          <div className="min-w-0 flex-1 space-y-1">
-            <span className="block text-[11px] font-extrabold uppercase tracking-[0.1em]">
-              TREASURE HUNT · 10 HIDDEN SPOTS
-            </span>
-            <span className="block font-heading text-[22px] font-extrabold leading-[1.06] tracking-[-0.02em]">
-              Solve clues &amp; win prizes
-            </span>
-            <span className="block text-sm font-semibold">
-              Scan hidden QR stickers across campus →
-            </span>
-          </div>
-          <HuntMascots />
-        </Link>
-      </section>
-
-      {/* Signals Coming Soon Card (Screen 10 -> Screen 51) */}
-      <section aria-label="Signals">
-        <Link
-          href="/signals/"
-          className="flex items-center gap-3 rounded-[22px] border-[1.5px] border-dashed border-[#9B6CFF] bg-[#1F1230] px-4 py-3 text-[#F4F2FA] hover:border-[#FFD60A] transition-colors"
-        >
-          <span
-            aria-hidden="true"
-            className="flex size-[42px] shrink-0 items-center justify-center rounded-[14px] bg-[#9B6CFF]"
+        {user ? (
+          <Link
+            href="/hunt/"
+            className="flex items-center gap-3 rounded-[24px] bg-[#9B6CFF] px-[18px] py-4 text-[#12091E] shadow-[5px_5px_0_#FFD60A]"
           >
-            <svg
-              width="24"
-              height="24"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="#0B0A12"
-              strokeWidth="2.4"
-              strokeLinecap="round"
-            >
-              <path d="M5 12a7 7 0 0 1 14 0M8.5 12a3.5 3.5 0 0 1 7 0" />
-              <circle cx="12" cy="16" r="1.6" fill="#0B0A12" />
-            </svg>
-          </span>
-          <span className="min-w-0 flex-1 space-y-0.5">
-            <span className="flex items-center gap-2">
-              <strong className="text-base font-extrabold text-[#F4F2FA]">
-                Signals
-              </strong>
-              <span className="rounded-full bg-[#FFD60A] px-2 py-0.5 text-[10px] font-extrabold uppercase tracking-[0.08em] text-[#0B0A12]">
-                COMING SOON
+            <div className="min-w-0 flex-1 space-y-1">
+              <span className="block text-[11px] font-extrabold uppercase tracking-[0.1em]">
+                TREASURE HUNT · UNLOCKED
               </span>
+              <span className="block font-heading text-[22px] font-extrabold leading-[1.06] tracking-[-0.02em]">
+                Solve clues &amp; win prizes
+              </span>
+              <span className="block text-sm font-semibold">
+                Open your clues &amp; leaderboard →
+              </span>
+            </div>
+            <HuntMascots />
+          </Link>
+        ) : (
+          <Link
+            href="/login/?next=/hunt/"
+            className="flex items-center gap-3 rounded-[24px] border-[1.5px] border-[#9B6CFF]/60 bg-[#1F1230] px-[18px] py-4 text-[#F4F2FA] shadow-[4px_4px_0_#9B6CFF] hover:border-[#FFD60A]"
+          >
+            <span className="flex size-12 shrink-0 items-center justify-center rounded-2xl bg-[#9B6CFF]/20 text-[#9B6CFF]">
+              <Lock className="size-6" />
             </span>
-            <span className="block text-[13px] text-[#BDB8CF]">
-              Our campus app. Find your people.
-            </span>
-          </span>
-          <ChevronRight className="size-6 shrink-0 text-[#FFD60A]" />
-        </Link>
+            <div className="min-w-0 flex-1 space-y-0.5">
+              <span className="block text-[11px] font-extrabold uppercase tracking-[0.1em] text-[#FFD60A]">
+                TREASURE HUNT · SIGN IN REQUIRED
+              </span>
+              <span className="block font-heading text-lg font-extrabold leading-tight">
+                Log in to unlock Hunt &amp; Leaderboard
+              </span>
+              <span className="block text-xs text-[#BDB8CF]">
+                Clues and rankings are revealed after you sign in.
+              </span>
+            </div>
+            <ChevronRight className="size-5 shrink-0 text-[#FFD60A]" />
+          </Link>
+        )}
       </section>
 
       {/* Secondary Quick Access Strip */}
@@ -579,6 +572,45 @@ export default function HomePage() {
           <Megaphone className="size-4 text-[#22D3EE]" />
           Updates
         </Link>
+      </section>
+
+      {/* Signals — compact footer teaser at the very bottom of Home */}
+      <section aria-label="About Signals" className="pt-2">
+        <div className="flex items-center gap-3 rounded-[20px] border border-[#3B2758] bg-[#0B0714] px-4 py-3">
+          <span
+            aria-hidden="true"
+            className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-black border border-[#3B2758]"
+          >
+            <svg width="26" height="26" viewBox="0 0 120 120" aria-hidden="true">
+              <g fill="none" strokeWidth="10" strokeLinecap="round">
+                <path d="M21.8 53.8A54 54 0 0 1 98.2 53.8" stroke="#9B6CFF" />
+                <path d="M33.1 65.1A38 38 0 0 1 86.9 65.1" stroke="#FF4FD8" />
+                <path d="M44.4 76.4A22 22 0 0 1 75.6 76.4" stroke="#FFD60A" />
+              </g>
+              <circle cx="60" cy="92" r="9" fill="#22D3EE" />
+            </svg>
+          </span>
+          <div className="min-w-0 flex-1">
+            <div className="flex items-center gap-1.5">
+              <strong className="text-sm font-extrabold text-[#F4F2FA]">
+                Signals
+              </strong>
+              <span className="rounded-full bg-[#FFD60A] px-1.5 py-0.5 text-[9px] font-extrabold uppercase tracking-[0.08em] text-[#0B0A12]">
+                COMING SOON
+              </span>
+            </div>
+            <p className="text-xs text-[#9C97B0] leading-snug">
+              Our upcoming campus app — find teammates, builders &amp; clubs
+              without sharing phone numbers.
+            </p>
+          </div>
+          <Link
+            href="/signals/"
+            className="shrink-0 rounded-xl bg-[#FFD60A] px-3 py-2 text-xs font-extrabold text-[#0B0A12] hover:bg-[#FFE14D]"
+          >
+            Open →
+          </Link>
+        </div>
       </section>
     </div>
   );

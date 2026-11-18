@@ -26,7 +26,7 @@ function CheckEmailInner() {
     if (!email || cooldown > 0 || resending) return;
     setResending(true);
     const supabase = createClient();
-    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || window.location.origin;
+    const siteUrl = window.location.origin || process.env.NEXT_PUBLIC_SITE_URL || '';
     const { error } = await supabase.auth.resend({
       type: 'signup',
       email,

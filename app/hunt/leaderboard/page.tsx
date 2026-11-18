@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { ArrowLeft, QrCode, Trophy } from 'lucide-react';
+import { ArrowLeft, Lock, QrCode, Trophy } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
 import { useAuth } from '@/lib/use-auth';
 
@@ -15,10 +15,11 @@ interface LeaderRow {
 }
 
 export default function HuntLeaderboardPage() {
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const [rows, setRows] = useState<LeaderRow[]>([]);
 
   useEffect(() => {
+    if (!user) return;
     let active = true;
     async function load() {
       const supabase = createClient();
@@ -38,7 +39,40 @@ export default function HuntLeaderboardPage() {
       active = false;
       window.clearInterval(timer);
     };
-  }, []);
+  }, [user]);
+
+  if (authLoading) {
+    return (
+      <div className="mx-auto max-w-xl py-16 text-center text-sm text-[#BDB8CF]">
+        Loading leaderboard…
+      </div>
+    );
+  }
+
+  if (!user) {
+    return (
+      <div className="mx-auto max-w-lg pt-4">
+        <section className="rounded-[26px] border-[1.5px] border-[#9B6CFF] bg-[#1F1230] p-6 text-center space-y-4 shadow-[5px_5px_0_#FFD60A]">
+          <span className="mx-auto flex size-16 items-center justify-center rounded-2xl bg-[#9B6CFF]/20 text-[#FFD60A]">
+            <Lock className="size-8" />
+          </span>
+          <h1 className="font-display text-2xl text-[#F4F2FA]">
+            LEADERBOARD LOCKED
+          </h1>
+          <p className="text-sm text-[#BDB8CF]">
+            Sign in to view the Fiesta&apos;26 Treasure Hunt rankings and your
+            position.
+          </p>
+          <Link
+            href="/login/?next=/hunt/leaderboard/"
+            className="inline-flex h-12 items-center justify-center rounded-2xl bg-[#FFD60A] px-6 text-sm font-extrabold text-[#12091E] shadow-[4px_4px_0_#FF4FD8]"
+          >
+            Log in to view
+          </Link>
+        </section>
+      </div>
+    );
+  }
 
   return (
     <div className="mx-auto max-w-2xl space-y-5">
@@ -76,7 +110,7 @@ export default function HuntLeaderboardPage() {
       ) : (
         <div className="space-y-2">
           {rows.map((r, idx) => {
-            const isMe = r.user_id === user?.id;
+            const isMe = r.user_id === user.id;
             return (
               <div
                 key={r.user_id}

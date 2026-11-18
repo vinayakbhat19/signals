@@ -35,8 +35,8 @@ const DEFAULT_STATUS = {
   mode: 'fest',
   fest_name: process.env.NEXT_PUBLIC_FEST_NAME || "Fiesta'26",
   fest_starts_at: '2026-11-25T00:00:00+05:30',
-  fest_ends_at: '2026-11-27T23:59:59+05:30',
-  campus_from: '2026-11-28T00:00:00+05:30',
+  fest_ends_at: '2026-11-28T23:59:59+05:30',
+  campus_from: '2026-11-29T00:00:00+05:30',
   writes_paused: false,
   banner: null,
   banner_level: 'info',
@@ -97,7 +97,7 @@ function fallbackFromCsv() {
       {
         id: 'fallback-ann-1',
         message:
-          "Welcome to Fiesta'26 at SDMCET Dharwad (25–27 Nov)! Register at https://linktr.ee/sdmcetFiesta26",
+          "Welcome to Fiesta'26 at SDMCET Dharwad (25–28 Nov)! Register at https://linktr.ee/sdmcetFiesta26",
         priority: 'normal',
         event_id: null,
         created_at: new Date().toISOString(),

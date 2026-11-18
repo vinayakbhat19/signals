@@ -45,7 +45,7 @@ export default function FestOverPage() {
         />
         <span className="inline-flex items-center gap-1.5 rounded-full bg-[#FFD60A] px-3 py-1 text-[11px] font-extrabold uppercase text-[#12091E]">
           <Sparkles className="size-3.5" />
-          25–27 NOV 2026 · SDMCET DHARWAD
+          25–28 NOV 2026 · SDMCET DHARWAD
         </span>
         <h1 className="font-display text-4xl leading-none text-[#F4F2FA]">
           WHAT A WRAP!

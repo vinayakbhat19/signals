@@ -1,9 +1,11 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import Link from 'next/link';
 import QRCode from 'qrcode';
-import { Trophy } from 'lucide-react';
+import { Lock, Trophy } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
+import { useAuth } from '@/lib/use-auth';
 
 interface LeaderRow {
   user_id: string;
@@ -13,10 +15,12 @@ interface LeaderRow {
 }
 
 export default function HuntTvBoardPage() {
+  const { user, loading: authLoading } = useAuth();
   const [rows, setRows] = useState<LeaderRow[]>([]);
   const [qrUrl, setQrUrl] = useState<string>('');
 
   useEffect(() => {
+    if (!user) return;
     const target = `${window.location.origin}/hunt/`;
     QRCode.toDataURL(target, { width: 180, margin: 1 })
       .then(setQrUrl)
@@ -39,7 +43,35 @@ export default function HuntTvBoardPage() {
       active = false;
       window.clearInterval(timer);
     };
-  }, []);
+  }, [user]);
+
+  if (authLoading) {
+    return (
+      <div className="flex min-h-dvh items-center justify-center bg-[#12091E] text-sm text-[#BDB8CF]">
+        Loading leaderboard board…
+      </div>
+    );
+  }
+
+  if (!user) {
+    return (
+      <div className="flex min-h-dvh items-center justify-center bg-[#12091E] p-6 text-[#F4F2FA]">
+        <div className="max-w-md rounded-3xl border border-[#9B6CFF] bg-[#1F1230] p-8 text-center space-y-4">
+          <Lock className="mx-auto size-10 text-[#FFD60A]" />
+          <h1 className="font-display text-2xl">SIGN IN REQUIRED</h1>
+          <p className="text-sm text-[#BDB8CF]">
+            Log in to display the live Treasure Hunt leaderboard.
+          </p>
+          <Link
+            href="/login/?next=/hunt/board/"
+            className="inline-flex h-11 items-center rounded-xl bg-[#FFD60A] px-5 text-sm font-extrabold text-[#12091E]"
+          >
+            Log in
+          </Link>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-dvh bg-[#12091E] p-6 text-[#F4F2FA] space-y-6">

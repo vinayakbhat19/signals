@@ -291,8 +291,8 @@ const EVENTS = [
       "Official Fiesta'26 Duet performance competition. Exact time & venue TBA — register now via the official form or https://linktr.ee/sdmcetFiesta26.",
     category: 'cultural',
     venue: 'Campus Venue (TBA)',
-    starts_at: '2026-11-27T14:00:00+05:30',
-    ends_at: '2026-11-27T15:30:00+05:30',
+    starts_at: '2026-11-28T14:00:00+05:30',
+    ends_at: '2026-11-28T15:30:00+05:30',
     registration_url: 'https://forms.gle/XpG3V7YVuzxXAwVv6',
   },
   {
@@ -302,8 +302,8 @@ const EVENTS = [
       "Official Fiesta'26 Western Group Dance competition. Exact time & venue TBA — register now via the official form or https://linktr.ee/sdmcetFiesta26.",
     category: 'cultural',
     venue: 'Campus Venue (TBA)',
-    starts_at: '2026-11-27T15:30:00+05:30',
-    ends_at: '2026-11-27T17:30:00+05:30',
+    starts_at: '2026-11-28T15:30:00+05:30',
+    ends_at: '2026-11-28T17:30:00+05:30',
     registration_url: 'https://forms.gle/vAophKYDRveQC6Ho8',
   },
   {
@@ -313,8 +313,8 @@ const EVENTS = [
       "Official Fiesta'26 Eastern Group Dance competition. Exact time & venue TBA — register now via the official form or https://linktr.ee/sdmcetFiesta26.",
     category: 'cultural',
     venue: 'Campus Venue (TBA)',
-    starts_at: '2026-11-27T17:30:00+05:30',
-    ends_at: '2026-11-27T19:30:00+05:30',
+    starts_at: '2026-11-28T17:30:00+05:30',
+    ends_at: '2026-11-28T19:30:00+05:30',
     registration_url: 'https://forms.gle/Xqc3SDnHeQbLgLpK6',
   },
 ];
@@ -379,7 +379,7 @@ async function main() {
   console.log('4. Inserting official Fiesta\'26 welcome announcement...');
   const { error: annErr } = await supabase.from('announcements').insert({
     message:
-      "Welcome to Fiesta'26 at SDMCET Dharwad (25–27 Nov)! Register for all 21 events right here or at https://linktr.ee/sdmcetFiesta26",
+      "Welcome to Fiesta'26 at SDMCET Dharwad (25–28 Nov)! Register for all 21 events right here or at https://linktr.ee/sdmcetFiesta26",
     priority: 'normal',
   });
   if (annErr) {

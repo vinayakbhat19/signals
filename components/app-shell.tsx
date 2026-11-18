@@ -10,6 +10,7 @@ import {
   Stamp,
   Vote,
 } from 'lucide-react';
+import { AccountAvatar } from '@/components/account-avatar';
 import { AddToHomeBar } from '@/components/add-to-home-bar';
 import { CookieSheet } from '@/components/cookie-sheet';
 import { cn } from '@/lib/utils';
@@ -24,6 +25,7 @@ const CHROMELESS_PREFIXES = [
   '/stamp/',
   '/hunt/board',
   '/screen/',
+  '/signals',
   '/admin/qr/print',
   '/admin/station/',
 ];
@@ -118,13 +120,7 @@ export function AppShell({
             })}
           </nav>
 
-          <Link
-            href="/account"
-            aria-label="My account"
-            className="flex size-10 items-center justify-center rounded-[13px] bg-[#FF4FD8] text-sm font-extrabold text-[#12091E] rotate-3 hover:rotate-0 transition-transform"
-          >
-            ME
-          </Link>
+          <AccountAvatar size="sm" />
         </div>
       </header>
 

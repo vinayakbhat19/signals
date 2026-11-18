@@ -2,6 +2,7 @@
 
 import { Suspense, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
+import type { EmailOtpType } from '@supabase/supabase-js';
 import { Loader2 } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
 
@@ -20,15 +21,33 @@ function CallbackInner() {
   useEffect(() => {
     const oauthErr = params.get('error');
     const code = params.get('code');
+    const tokenHash = params.get('token_hash');
+    const otpType = params.get('type') as EmailOtpType | null;
     const next = getSafeNext(params.get('next'));
 
     if (oauthErr === 'access_denied') {
-      router.replace(`/login/?error=access_denied&next=${encodeURIComponent(next)}`);
+      router.replace(
+        `/login/?error=access_denied&next=${encodeURIComponent(next)}`
+      );
       return;
     }
 
     const supabase = createClient();
+
     async function finish() {
+      // 1. Token-hash OTP flow (works across browsers/devices for email confirmation & reset)
+      if (tokenHash && otpType) {
+        const { error } = await supabase.auth.verifyOtp({
+          token_hash: tokenHash,
+          type: otpType,
+        });
+        if (!error) {
+          router.replace(next);
+          return;
+        }
+      }
+
+      // 2. PKCE code exchange flow (Google OAuth & same-browser email links)
       if (code) {
         const { error } = await supabase.auth.exchangeCodeForSession(code);
         if (!error) {
@@ -36,12 +55,27 @@ function CallbackInner() {
           return;
         }
       }
+
+      // 3. Implicit hash fragment (#access_token=...) or already-hydrated session
       const { data } = await supabase.auth.getSession();
       if (data.session) {
         router.replace(next);
-      } else {
-        router.replace(`/login/?error=auth_failed&next=${encodeURIComponent(next)}`);
+        return;
       }
+
+      // Give Supabase's detectSessionInUrl a brief moment if hash tokens are present
+      if (typeof window !== 'undefined' && window.location.hash.includes('access_token')) {
+        await new Promise((r) => setTimeout(r, 600));
+        const retry = await supabase.auth.getSession();
+        if (retry.data.session) {
+          router.replace(next);
+          return;
+        }
+      }
+
+      router.replace(
+        `/login/?error=auth_failed&next=${encodeURIComponent(next)}`
+      );
     }
 
     void finish();

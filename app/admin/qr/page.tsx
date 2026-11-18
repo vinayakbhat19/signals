@@ -91,7 +91,7 @@ export default function AdminQrPostersPage() {
       {/* Printable Poster Card */}
       <div className="rounded-[28px] border-4 border-[#FFD60A] bg-white p-8 text-center text-[#12091E] space-y-4">
         <p className="text-xs font-extrabold uppercase tracking-[0.2em] text-[#FF4FD8]">
-          SDM COLLEGE OF ENGINEERING &amp; TECHNOLOGY · 25–27 NOV
+          SDM COLLEGE OF ENGINEERING &amp; TECHNOLOGY · 25–28 NOV
         </p>
         <h3 className="font-display text-3xl text-[#12091E]">{headline}</h3>
         {qrDataUrl && (

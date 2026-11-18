@@ -21,7 +21,10 @@ import { cn } from '@/lib/utils';
 
 type StatusTab = 'all' | 'live' | 'soon' | 'done';
 const VALID_TABS = new Set<StatusTab>(['all', 'live', 'soon', 'done']);
-const VALID_CATEGORIES = new Set<string>(EVENT_CATEGORIES);
+const VISIBLE_FILTER_CATEGORIES: readonly EventCategory[] = EVENT_CATEGORIES.filter(
+  (c) => c !== 'sports' && c !== 'workshop' && c !== 'talk'
+);
+const VALID_CATEGORIES = new Set<string>(VISIBLE_FILTER_CATEGORIES);
 const OFFICIAL_REGISTRATION_HUB = 'https://linktr.ee/sdmcetFiesta26';
 
 function isSafeHttpUrl(url: string | null | undefined): url is string {
@@ -205,7 +208,7 @@ function EventsInner() {
         </div>
 
         <div className="flex items-center gap-1.5 overflow-x-auto pb-1 no-scrollbar">
-          {EVENT_CATEGORIES.map((cat) => {
+          {VISIBLE_FILTER_CATEGORIES.map((cat) => {
             const active = selectedCategories.includes(cat);
             return (
               <button

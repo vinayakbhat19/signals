@@ -58,7 +58,7 @@ export default function ResultsPage() {
             No results announced yet
           </p>
           <p className="text-xs text-[#9C97B0]">
-            Winners will appear here as competitions finish on 25–27 Nov.
+            Winners will appear here as competitions finish on 25–28 Nov.
           </p>
         </div>
       ) : (

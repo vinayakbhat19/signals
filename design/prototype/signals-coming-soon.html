@@ -1,0 +1,326 @@
+<!doctype html>
+<html lang="en" class="play">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#000000">
+<title>Signals · Coming soon</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bungee&family=Bricolage+Grotesque:opsz,wght@12..96,500..800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#000000;--card:#1F1230;--line:#3B2758;--text:#F4F2FA;--muted:#BDB8CF;--dim:#9C8FB0;--y:#FFD60A;--pink:#FF4FD8;--purple:#9B6CFF;--cyan:#22D3EE;--lime:#C6FF3D;--orange:#FF9F43}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth;background:#000}
+body{margin:0;background:#000;color:var(--text);font-family:Inter,system-ui,sans-serif;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+a{color:var(--y)}
+.wrap{max-width:520px;margin:0 auto;padding:0 20px}
+h1,h2,h3,p{margin:0}
+.display{font-family:Bungee,'Bricolage Grotesque',sans-serif;font-weight:400}
+.head{font-family:'Bricolage Grotesque',sans-serif;font-weight:800;letter-spacing:-0.02em}
+
+/* ------------------------------------------------ top bar */
+.top{position:fixed;z-index:20;left:0;right:0;top:0;padding:max(10px,env(safe-area-inset-top)) 14px 10px;display:flex;align-items:center;justify-content:space-between;pointer-events:none}
+.back{pointer-events:auto;height:40px;padding:0 14px 0 10px;border-radius:14px;border:1.5px solid var(--line);background:rgba(0,0,0,.72);backdrop-filter:blur(8px);color:var(--text);text-decoration:none;display:flex;align-items:center;gap:6px;font-size:13px;font-weight:700}
+.pill{pointer-events:auto;height:40px;padding:0 14px;border-radius:14px;border:0;background:var(--y);color:#000;font:inherit;font-size:13px;font-weight:800;box-shadow:3px 3px 0 var(--pink);display:flex;align-items:center;gap:8px;opacity:0;transform:translateY(-8px);transition:.3s}
+.pill.show{opacity:1;transform:none}
+.pill svg{width:20px;height:20px}
+
+/* ------------------------------------------------ hero (pure black, no glow) */
+.hero{position:relative;min-height:84svh;display:grid;place-items:center;overflow:hidden;text-align:center;background:#000}
+.stage{position:relative;z-index:2;display:flex;flex-direction:column;align-items:center;gap:20px;padding:64px 16px 72px}
+.logo{position:relative;width:min(40vw,160px);aspect-ratio:1;cursor:pointer;-webkit-tap-highlight-color:transparent}
+.logo svg{position:relative;width:100%;height:100%;overflow:visible;z-index:2}
+.ripple{position:absolute;left:50%;top:76.7%;width:30%;aspect-ratio:1;margin:-15% 0 0 -15%;border-radius:50%;border:2px solid var(--purple);opacity:0;z-index:1}
+.arc{fill:none;stroke-width:9;stroke-linecap:round}
+.a1{stroke:var(--y)}.a2{stroke:var(--pink)}.a3{stroke:var(--purple)}
+.dot{fill:var(--cyan);transform-box:fill-box;transform-origin:center}
+
+.wordbox{position:relative;display:inline-block;padding:0 4px}
+.word{position:relative;display:flex;justify-content:center;font-size:clamp(34px,11.6vw,62px);line-height:1;user-select:none}
+.l{display:inline-block;width:.82em;text-align:center;cursor:pointer;-webkit-tap-highlight-color:transparent;text-shadow:3px 3px 0 rgba(255,255,255,.08)}
+.l:nth-child(1){color:var(--purple)}.l:nth-child(2){color:var(--text)}.l:nth-child(3){color:var(--y)}.l:nth-child(4){color:var(--pink)}.l:nth-child(5){color:var(--cyan)}.l:nth-child(6){color:var(--lime)}.l:nth-child(7){color:var(--orange)}
+.frame{position:absolute;inset:-14px -16px -10px;border:3px solid var(--y);border-radius:20px;box-shadow:5px 5px 0 var(--pink);pointer-events:none}
+.boom{position:absolute;left:50%;top:50%;width:1.5em;height:1.5em;margin:-.75em 0 0 -.75em;border-radius:50%;border:3px solid var(--y);opacity:0;pointer-events:none}
+.boom::before,.boom::after{content:"";position:absolute;inset:-.35em;border-radius:50%;border:2px dashed var(--pink)}
+.boom::after{inset:-.7em;border-color:var(--cyan);border-style:dotted}
+
+.soon{display:inline-block;font-family:Bungee,sans-serif;font-size:clamp(15px,4.6vw,20px);letter-spacing:.06em;color:#000;background:var(--y);padding:9px 18px 7px;border-radius:12px;box-shadow:4px 4px 0 var(--pink);transform:rotate(-4deg)}
+.tag{max-width:300px;font-size:15px;line-height:22px;color:var(--muted)}
+.cue{position:absolute;z-index:3;left:50%;bottom:14px;margin-left:-22px;width:44px;height:44px;border-radius:50%;border:1.5px solid var(--line);color:var(--text);display:flex;align-items:center;justify-content:center;text-decoration:none}
+.cue svg{width:22px;height:22px;animation:bounce 1.6s ease-in-out infinite}
+
+/* ------------------------------------------------ the opening (only while html.play): letters crash, fall, join, get framed; then COMING SOON; then the logo is built */
+.play .l{animation:letter 2.5s both;animation-delay:calc(.1s + var(--i) * .04s)}
+.play .boom{animation:boom .9s ease-out .95s both}
+.play .word{animation:shake .5s .98s both}
+.play .frame{animation:framein .55s cubic-bezier(.2,1.4,.4,1) 2.95s both}
+.play .soon{animation:stamp .6s cubic-bezier(.2,1.6,.4,1) 3.45s both}
+.play .dot{animation:pop .6s cubic-bezier(.3,1.8,.5,1) 4.0s both}
+.play .arc{stroke-dasharray:1;animation-name:draw,ping;animation-duration:.6s,2.4s;animation-iteration-count:1,infinite;animation-fill-mode:both,none}
+.play .a1{animation-delay:4.3s,6.2s}.play .a2{animation-delay:4.6s,6.4s}.play .a3{animation-delay:4.9s,6.6s}
+.play .ripple{animation:ripple 3s ease-out infinite}
+.play .r1{animation-delay:5.4s}.play .r2{animation-delay:6.4s}.play .r3{animation-delay:7.4s}
+.play .tag{animation:rise .8s ease-out 5.5s both}
+.play .cue{animation:rise .8s ease-out 6s both}
+.done .l{animation:none!important}
+.done .l.hop{animation:hop .6s cubic-bezier(.3,1.7,.5,1)!important}
+@keyframes letter{
+  0%{transform:translate(var(--sx),var(--sy)) rotate(var(--sr));opacity:0;animation-timing-function:cubic-bezier(.15,.8,.3,1)}
+  8%{opacity:1}
+  30%{transform:translate(var(--cx),var(--cy)) rotate(var(--cr));animation-timing-function:cubic-bezier(.2,.9,.4,1)}
+  42%{transform:translate(var(--bx),var(--by)) rotate(var(--br));animation-timing-function:cubic-bezier(.55,0,.9,.6)}
+  60%{transform:translate(var(--fx),var(--fy)) rotate(var(--fr));animation-timing-function:ease-out}
+  68%{transform:translate(var(--fx),calc(var(--fy) - .22em)) rotate(var(--fr));animation-timing-function:ease-in}
+  74%{transform:translate(var(--fx),var(--fy)) rotate(var(--fr));animation-timing-function:cubic-bezier(.3,1.35,.5,1)}
+  100%{transform:none}
+}
+@keyframes boom{0%{transform:scale(.2);opacity:.95}100%{transform:scale(3.4);opacity:0}}
+@keyframes shake{0%,100%{transform:none}20%{transform:translate(-4px,2px)}40%{transform:translate(4px,-3px)}60%{transform:translate(-3px,-2px)}80%{transform:translate(2px,3px)}}
+@keyframes framein{0%{clip-path:inset(0 100% 0 0);transform:scale(1.12)}60%{clip-path:inset(0 0 0 0)}100%{clip-path:inset(0 0 0 0);transform:none}}
+@keyframes pop{0%{transform:scale(0)}70%{transform:scale(1.5)}100%{transform:scale(1)}}
+@keyframes draw{0%{stroke-dashoffset:1;opacity:0}1%{stroke-dashoffset:1;opacity:1}100%{stroke-dashoffset:0;opacity:1}}
+@keyframes ping{0%,70%,100%{opacity:1}35%{opacity:.35}}
+@keyframes ripple{0%{transform:scale(.4);opacity:.6}100%{transform:scale(5);opacity:0}}
+@keyframes hop{0%{transform:none}40%{transform:translateY(-26px) rotate(-6deg)}70%{transform:translateY(4px)}100%{transform:none}}
+@keyframes stamp{0%{transform:scale(2.6) rotate(-16deg);opacity:0}60%{transform:scale(.92) rotate(-2deg);opacity:1}80%{transform:scale(1.06) rotate(-5deg)}100%{transform:scale(1) rotate(-4deg)}}
+@keyframes rise{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+@keyframes bounce{0%,100%{transform:translateY(0)}50%{transform:translateY(6px)}}
+
+/* ------------------------------------------------ sections (tight spacing) */
+.sec{padding:40px 0 0}
+.kicker{font-size:11px;font-weight:800;letter-spacing:.14em;color:var(--y);margin-bottom:10px}
+.big{font-size:clamp(30px,9.4vw,44px);line-height:1.04}
+.lead{font-size:16px;line-height:25px;color:var(--muted);margin-top:14px}
+.lead strong{color:var(--text)}
+.reveal{opacity:0;transform:translateY(26px);transition:opacity .7s ease,transform .7s cubic-bezier(.2,.8,.2,1);transition-delay:var(--d,0s)}
+.reveal.in{opacity:1;transform:none}
+
+/* use cases */
+.uses{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:20px}
+.u{border-radius:22px;padding:15px 14px;color:#000;display:flex;flex-direction:column;gap:6px;min-height:138px}
+.u svg{width:32px;height:32px}
+.u strong{font-family:'Bricolage Grotesque',sans-serif;font-size:18px;line-height:1.05;font-weight:800}
+.u span{font-size:13px;line-height:18px;font-weight:600}
+
+/* sample post */
+.sig{margin-top:22px;background:var(--card);border:1.5px solid var(--line);border-radius:24px;padding:16px;display:flex;flex-direction:column;gap:12px;box-shadow:6px 6px 0 var(--purple)}
+.sig .row{display:flex;justify-content:space-between;align-items:center;font-size:11px;font-weight:800;letter-spacing:.1em}
+.chip{color:#000;background:var(--pink);padding:4px 9px;border-radius:999px}
+.sig p{font-size:16px;line-height:23px;font-weight:600}
+.who{display:flex;align-items:center;gap:10px}
+.av{width:34px;height:34px;border-radius:12px;background:var(--cyan);color:#000;font-weight:800;display:flex;align-items:center;justify-content:center;flex:none}
+.who small{color:var(--dim);font-size:12px}
+.btnrow{display:flex;gap:10px;align-items:center}
+.imin{height:44px;padding:0 18px;border-radius:14px;border:0;background:var(--y);color:#000;font:inherit;font-weight:800;font-size:15px;display:flex;align-items:center;gap:8px;transition:.3s}
+.sig.match .imin{background:var(--lime)}
+.count{font-size:13px;color:var(--muted)}.count b{color:var(--y);font-size:18px}
+.private{display:flex;align-items:center;gap:10px;background:#000;border-radius:14px;padding:10px 12px;font-size:13px;color:var(--muted)}
+.cap{margin-top:10px;font-size:12px;color:var(--dim);text-align:center}
+
+
+/* raise a signal */
+.raise{margin-top:20px;display:flex;flex-direction:column;gap:10px}
+.rw{display:flex;gap:12px;align-items:center;border-radius:20px;padding:12px 14px;color:#000}
+.rw svg{width:34px;height:34px;flex:none}
+.rw strong{display:block;font-family:'Bricolage Grotesque',sans-serif;font-size:18px;line-height:1.05;font-weight:800}
+.rw span{display:block;font-size:13px;line-height:18px;font-weight:600;margin-top:2px}
+.posts{margin-top:18px;display:flex;flex-direction:column;gap:12px}
+.post{background:var(--card);border:1.5px solid var(--line);border-radius:22px;padding:14px;display:flex;flex-direction:column;gap:10px}
+.post .row{display:flex;justify-content:space-between;align-items:center;font-size:11px;font-weight:800;letter-spacing:.1em}
+.post .chip{color:#000;padding:4px 9px;border-radius:999px}
+.post p{font-size:15px;line-height:22px;font-weight:600}
+.post .btnrow{gap:10px}
+.post .imin{height:40px;padding:0 14px;font-size:14px}
+.post.match .imin{background:var(--lime)}
+.sub{margin-top:30px}
+
+/* steps */
+.steps{position:relative;margin-top:22px;display:flex;flex-direction:column;gap:18px}
+.steps::before{content:"";position:absolute;left:21px;top:20px;bottom:20px;width:3px;background:var(--line);border-radius:2px}
+.step{position:relative;display:flex;gap:16px;align-items:flex-start}
+.num{position:relative;z-index:1;width:44px;height:44px;border-radius:14px;background:var(--y);color:#000;font-family:Bungee,sans-serif;font-size:20px;display:flex;align-items:center;justify-content:center;flex:none;box-shadow:3px 3px 0 var(--pink)}
+.step h3{font-size:19px;line-height:1.1;margin-top:2px}.step p{font-size:14px;line-height:21px;color:var(--muted);margin-top:4px}
+
+.notify{margin-top:34px;width:100%;height:58px;border-radius:18px;border:0;background:var(--y);color:#000;font:inherit;font-size:18px;font-weight:800;box-shadow:5px 5px 0 var(--pink);display:flex;align-items:center;justify-content:center;gap:10px}
+.notify.on{background:var(--lime);box-shadow:5px 5px 0 var(--purple)}
+.small{margin-top:10px;font-size:12px;color:var(--dim);text-align:center}
+
+/* the developer: a small card */
+.me{margin-top:34px;background:var(--card);border:1.5px solid var(--line);border-radius:20px;padding:12px 14px;display:flex;align-items:center;gap:12px;box-shadow:4px 4px 0 var(--pink)}
+.me .av2{width:46px;height:46px;border-radius:16px;background:var(--y);color:#000;font-family:Bungee,sans-serif;font-size:18px;display:flex;align-items:center;justify-content:center;flex:none}
+.me .info{flex:1;min-width:0;display:flex;flex-direction:column;gap:1px}
+.me strong{font-size:15px}.me .role{font-size:11px;font-weight:800;letter-spacing:.08em;color:var(--y)}
+.me .mail{font-size:13px;color:var(--muted);text-decoration:none;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.me .go{width:44px;height:44px;border-radius:14px;background:var(--y);color:#000;display:flex;align-items:center;justify-content:center;flex:none;text-decoration:none}
+.me-note{margin-top:10px;font-size:12px;color:var(--dim);text-align:center}
+.foot{padding:34px 0 calc(36px + env(safe-area-inset-bottom));text-align:center;font-size:12px;color:var(--dim)}
+
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation:none!important;transition:none!important}
+  .reveal{opacity:1!important;transform:none!important}
+  .ripple,.boom{display:none}
+  html{scroll-behavior:auto}
+}
+</style>
+<noscript><style>.reveal{opacity:1;transform:none}</style></noscript>
+</head>
+<body>
+
+<div class="top">
+  <a class="back" href="#" aria-label="Back to Fiesta'26 Live"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 6l-6 6 6 6"/></svg>Fiesta'26</a>
+  <button class="pill" id="topNotify" type="button"><svg viewBox="0 0 120 120" aria-hidden="true"><g fill="none" stroke-width="12" stroke-linecap="round"><path d="M44.4 76.4A22 22 0 0 1 75.6 76.4" stroke="#000"/><path d="M21.8 53.8A54 54 0 0 1 98.2 53.8" stroke="#000"/></g><circle cx="60" cy="92" r="11" fill="#000"/></svg><span>Notify me</span></button>
+</div>
+
+<!-- ================================================= 1. the opening animation -->
+<header class="hero" id="hero">
+  <div class="stage">
+    <div class="logo" id="logo" role="img" aria-label="Signals logo. Tap to replay the animation">
+      <span class="ripple r1"></span><span class="ripple r2"></span><span class="ripple r3"></span>
+      <svg viewBox="0 0 120 120" aria-hidden="true">
+        <path class="arc a3" pathLength="1" d="M21.8 53.8A54 54 0 0 1 98.2 53.8"/>
+        <path class="arc a2" pathLength="1" d="M33.1 65.1A38 38 0 0 1 86.9 65.1"/>
+        <path class="arc a1" pathLength="1" d="M44.4 76.4A22 22 0 0 1 75.6 76.4"/>
+        <circle class="dot" cx="60" cy="92" r="9"/>
+      </svg>
+    </div>
+    <div class="wordbox">
+      <h1 class="word display" id="word" aria-label="Signals">
+      <span class="l" style="--i:0;--sx:-60vw;--sy:-34vh;--sr:-540deg;--cx:2.46em;--cy:-0.15em;--cr:-20deg;--bx:0.33em;--by:-0.95em;--br:60deg;--fx:0.51em;--fy:1.05em;--fr:-100deg" aria-hidden="true">S</span>
+      <span class="l" style="--i:1;--sx:68vw;--sy:10vh;--sr:630deg;--cx:1.79em;--cy:0.25em;--cr:30deg;--bx:1.97em;--by:-1.15em;--br:-80deg;--fx:1.12em;--fy:1.17em;--fr:160deg" aria-hidden="true">I</span>
+      <span class="l" style="--i:2;--sx:-76vw;--sy:-18vh;--sr:-720deg;--cx:0.72em;--cy:-0.30em;--cr:-40deg;--bx:-0.99em;--by:-1.35em;--br:100deg;--fx:-0.46em;--fy:1.05em;--fr:-220deg" aria-hidden="true">G</span>
+      <span class="l" style="--i:3;--sx:60vw;--sy:24vh;--sr:540deg;--cx:0.00em;--cy:0.10em;--cr:50deg;--bx:0.90em;--by:-0.95em;--br:-60deg;--fx:0.35em;--fy:1.17em;--fr:100deg" aria-hidden="true">N</span>
+      <span class="l" style="--i:4;--sx:-68vw;--sy:-30vh;--sr:-630deg;--cx:-0.72em;--cy:0.30em;--cr:-20deg;--bx:-1.56em;--by:-1.15em;--br:80deg;--fx:-0.84em;--fy:1.05em;--fr:-160deg" aria-hidden="true">A</span>
+      <span class="l" style="--i:5;--sx:76vw;--sy:6vh;--sr:720deg;--cx:-1.79em;--cy:-0.20em;--cr:30deg;--bx:0.58em;--by:-1.35em;--br:-100deg;--fx:0.18em;--fy:1.17em;--fr:220deg" aria-hidden="true">L</span>
+      <span class="l" style="--i:6;--sx:-60vw;--sy:-12vh;--sr:-540deg;--cx:-2.41em;--cy:0.20em;--cr:-40deg;--bx:-2.13em;--by:-0.95em;--br:60deg;--fx:-1.21em;--fy:1.05em;--fr:-100deg" aria-hidden="true">S</span>
+      </h1>
+      <span class="boom" aria-hidden="true"></span>
+      <span class="frame" aria-hidden="true"></span>
+    </div>
+    <span class="soon">COMING SOON</span>
+    <p class="tag">Something on campus is about to light up.</p>
+  </div>
+  <a class="cue" href="#what" aria-label="Scroll down"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></a>
+</header>
+
+<main class="wrap">
+
+<!-- ================================================= 2. what it is -->
+<section class="sec" id="what">
+  <div class="kicker reveal">WHAT IS SIGNALS?</div>
+  <h2 class="head big reveal" style="--d:.05s">Your campus. <span style="color:var(--purple)">Your people.</span> No phone numbers.</h2>
+  <p class="lead reveal" style="--d:.1s">Signals is a place <strong>only for people on our campus</strong>. Raise a Signal to find the people you need. Start a community, make a group for your friends, run a meme page that only we can see. <strong>Post anything. Join anything. Connect with anyone</strong>, without ever handing out your number.</p>
+</section>
+
+<!-- ================================================= 2. raise a signal -->
+<section class="sec" id="raise">
+  <div class="kicker reveal">RAISE A SIGNAL</div>
+  <h2 class="head big reveal" style="--d:.05s">Need someone? <span style="color:var(--y)">Raise a Signal.</span></h2>
+  <p class="lead reveal" style="--d:.1s">One short post that reaches everyone on campus who can say <strong>"I'm in"</strong>.</p>
+
+  <div class="raise">
+    <div class="rw reveal" style="background:var(--orange);--d:.04s"><svg viewBox="0 0 24 24" fill="none" stroke="#000" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14.5 5.5l4 4-9 9H5.5v-4z"/><path d="M12.5 7.5l4 4"/></svg><div><strong>Builders for your idea</strong><span>Developer, designer, someone who ships. Find them here.</span></div></div>
+    <div class="rw reveal" style="background:var(--cyan);--d:.1s"><svg viewBox="0 0 24 24" fill="none" stroke="#000" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="8" r="3.2"/><path d="M3 20c0-3.5 2.7-5.5 6-5.5s6 2 6 5.5M17 7v6M14 10h6"/></svg><div><strong>Teammates for any event</strong><span>Hackathon, dance, quiz, sports, a fest contest: fill your team.</span></div></div>
+    <div class="rw reveal" style="background:var(--pink);--d:.16s"><svg viewBox="0 0 24 24" fill="none" stroke="#000" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 20V5M5 5h11l-2 4 2 4H5"/></svg><div><strong>Clubs finding their team</strong><span>Recruit members, volunteers or a crew for your club.</span></div></div>
+    <div class="rw reveal" style="background:var(--lime);--d:.22s"><svg viewBox="0 0 24 24" fill="none" stroke="#000" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="8" cy="9" r="3"/><circle cx="17" cy="10" r="2.4"/><path d="M2.5 19c0-3 2.5-5 5.5-5s5.5 2 5.5 5M14.5 15.2c.8-.4 1.6-.6 2.5-.6 2.4 0 4.5 1.5 4.5 4.4"/></svg><div><strong>Communities to join</strong><span>Find groups you like and tap "I'm in" to join them.</span></div></div>
+  </div>
+
+  <div class="posts" id="posts">
+    <div class="post reveal" style="--d:.02s"><div class="row"><span class="chip" style="background:var(--cyan)">NEED A TEAMMATE</span><span style="color:var(--dim)">ends in 5 h</span></div><p>Hackathon team needs 1 ML person. Idea and frontend ready, we just need brains for the model.</p><div class="btnrow"><span class="imin"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>I'm in</span><span class="count"><b class="cnt" data-to="4">0</b> interested</span></div></div>
+    <div class="post reveal" style="--d:.02s"><div class="row"><span class="chip" style="background:var(--pink)">CLUB TEAM</span><span style="color:var(--dim)">ends in 2 days</span></div><p>Dance club is looking for 3 new members for our fest team. Beginners welcome.</p><div class="btnrow"><span class="imin"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>I'm in</span><span class="count"><b class="cnt" data-to="9">0</b> interested</span></div></div>
+    <div class="post reveal" style="--d:.02s"><div class="row"><span class="chip" style="background:var(--orange)">WANT TO BUILD</span><span style="color:var(--dim)">ends in 3 days</span></div><p>Canteen pre-order app for our campus. No more 20-minute queues. Need a Flutter dev and a designer.</p><div class="btnrow"><span class="imin"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>I'm in</span><span class="count"><b class="cnt" data-to="6">0</b> interested</span></div></div>
+    <div class="private reveal"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#FFD60A" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg><span>Nobody sees your phone number. You only talk after the poster accepts you.</span></div>
+    <p class="cap reveal">Example Signals.</p>
+  </div>
+</section>
+
+<!-- ================================================= 3. and more -->
+<section class="sec" id="more">
+  <div class="kicker reveal">AND MUCH MORE</div>
+  <h2 class="head big reveal" style="--d:.05s">Make it <span style="color:var(--purple)">yours.</span></h2>
+  <div class="uses">
+    <div class="u reveal" style="background:var(--cyan);--d:.04s"><svg viewBox="0 0 24 24" fill="none" stroke="#000" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="8" cy="9" r="3"/><circle cx="17" cy="10" r="2.4"/><path d="M2.5 19c0-3 2.5-5 5.5-5s5.5 2 5.5 5M14.5 15.2c.8-.4 1.6-.6 2.5-.6 2.4 0 4.5 1.5 4.5 4.4"/></svg><strong>Start a community</strong><span>For your college, branch, club or hostel.</span></div>
+    <div class="u reveal" style="background:var(--pink);--d:.1s"><svg viewBox="0 0 24 24" fill="none" stroke="#000" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.4A4 4 0 0 1 19 10c0 5.6-7 10-7 10z"/></svg><strong>Friend groups</strong><span>A private corner for your gang.</span></div>
+    <div class="u reveal" style="background:var(--y);--d:.16s"><svg viewBox="0 0 24 24" fill="none" stroke="#000" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M8.5 14c1 1.8 2.2 2.5 3.5 2.5s2.5-.7 3.5-2.5M9 9.5v.5M15 9.5v.5"/></svg><strong>Meme pages</strong><span>Memes that only campus people see.</span></div>
+    <div class="u reveal" style="background:var(--lime);--d:.22s"><svg viewBox="0 0 24 24" fill="none" stroke="#000" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 5h16v11H9l-5 4z"/><path d="M8 9h8M8 12h5"/></svg><strong>Post anything</strong><span>A thought, a plan, a question, a need.</span></div>
+  </div>
+</section>
+
+<!-- ================================================= 3. how -->
+<section class="sec">
+  <div class="kicker reveal">HOW IT WORKS</div>
+  <h2 class="head big reveal" style="--d:.05s">Post it. Join it. Talk.</h2>
+  <div class="steps">
+    <div class="step reveal"><span class="num">1</span><div><h3 class="head">Raise a Signal</h3><p>Say who you need, or start a community or group in a few taps.</p></div></div>
+    <div class="step reveal" style="--d:.1s"><span class="num">2</span><div><h3 class="head">People join in</h3><p>Anyone on campus who likes it taps "I'm in".</p></div></div>
+    <div class="step reveal" style="--d:.2s"><span class="num">3</span><div><h3 class="head">Connect, privately</h3><p>Talk without sharing your number with strangers.</p></div></div>
+  </div>
+  <button class="notify reveal" id="notify" type="button" aria-pressed="false"><svg width="24" height="24" viewBox="0 0 120 120" aria-hidden="true"><g fill="none" stroke-width="12" stroke-linecap="round"><path d="M44.4 76.4A22 22 0 0 1 75.6 76.4" stroke="currentColor"/><path d="M21.8 53.8A54 54 0 0 1 98.2 53.8" stroke="currentColor"/></g><circle cx="60" cy="92" r="11" fill="currentColor"/></svg><span id="notifyText">Notify me when it opens</span></button>
+  <p class="small reveal">One alert when Signals opens. Nothing else.</p>
+</section>
+
+<!-- ================================================= 4. the developer, small card -->
+<section class="sec" id="maker">
+  <div class="me reveal">
+    <div class="av2" aria-hidden="true">VB</div>
+    <div class="info"><span class="role">DEVELOPER</span><strong>Vinayak Bhat</strong><a class="mail" href="mailto:vinayakkbhatt@gmail.com?subject=Signals%20app">vinayakkbhatt@gmail.com</a></div>
+    <a class="go" href="mailto:vinayakkbhatt@gmail.com?subject=Signals%20app" aria-label="Email Vinayak"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/></svg></a>
+  </div>
+  <p class="me-note reveal">Got an idea or want to help build it? Write to me.</p>
+</section>
+
+<footer class="foot">Signals · coming soon</footer>
+</main>
+
+<script>
+(function(){
+  var html=document.documentElement, reduce=window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var letters=[].slice.call(document.querySelectorAll('.l'));
+
+  /* small wave of hops after the opening, and on tap */
+  function hop(el){el.classList.remove('hop');void el.offsetWidth;el.classList.add('hop');}
+  function wave(){letters.forEach(function(l,i){setTimeout(function(){hop(l)},i*70)});}
+  letters.forEach(function(l){l.addEventListener('click',function(){hop(l)});});
+  if(!reduce){
+    setTimeout(function(){html.classList.add('done')},3000);
+    setTimeout(function loop(){wave();setTimeout(loop,8000)},9000);
+  } else { html.classList.add('done'); }
+
+  /* tap the logo to replay the opening */
+  document.getElementById('logo').addEventListener('click',function(){
+    if(reduce) return;
+    html.classList.remove('play','done');void html.offsetWidth;html.classList.add('play');
+    setTimeout(function(){html.classList.add('done')},3000);
+  });
+
+  /* reveal on scroll */
+  var els=[].slice.call(document.querySelectorAll('.reveal'));
+  if('IntersectionObserver' in window){
+    var io=new IntersectionObserver(function(es){es.forEach(function(e){
+      if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target);if(e.target.classList.contains('post'))countUp(e.target);}
+    });},{threshold:.18,rootMargin:'0px 0px -6% 0px'});
+    els.forEach(function(e){io.observe(e)});
+  } else {els.forEach(function(e){e.classList.add('in');if(e.classList.contains('post'))countUp(e);});}
+
+  /* example Signals: the "interested" number counts up when each card appears */
+  function countUp(card){
+    var b=card.querySelector('.cnt'); if(!b||b.dataset.done) return; b.dataset.done='1';
+    var to=parseInt(b.getAttribute('data-to'),10), n=0;
+    var t=setInterval(function(){n++;b.textContent=n;if(n>=to){clearInterval(t);card.classList.add('match');}},reduce?1:260);
+  }
+
+  /* sticky Notify pill after the hero */
+  var pill=document.getElementById('topNotify'), hero=document.getElementById('hero');
+  function onScroll(){pill.classList.toggle('show',window.scrollY>hero.offsetHeight*0.8);}
+  window.addEventListener('scroll',onScroll,{passive:true});onScroll();
+  pill.addEventListener('click',function(){document.getElementById('notify').scrollIntoView({behavior:reduce?'auto':'smooth',block:'center'});});
+
+  /* notify me (in the real app this subscribes the device to the push topic "signals") */
+  var nb=document.getElementById('notify'), nt=document.getElementById('notifyText'), on=false;
+  try{on=localStorage.getItem('signals_notify')==='1';}catch(e){}
+  function paint(){nb.classList.toggle('on',on);nb.setAttribute('aria-pressed',on);nt.textContent=on?"You're on the list. We'll ping you.":"Notify me when it opens";}
+  paint();
+  nb.addEventListener('click',function(){on=!on;try{localStorage.setItem('signals_notify',on?'1':'0');}catch(e){}paint();});
+})();
+</script>
+</body>
+</html>

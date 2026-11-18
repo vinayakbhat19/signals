@@ -38,7 +38,7 @@ export function LoginForm({ nextPath, initialError }: LoginFormProps) {
     try {
       const supabase = createClient();
       const siteUrl =
-        process.env.NEXT_PUBLIC_SITE_URL || window.location.origin;
+        window.location.origin || process.env.NEXT_PUBLIC_SITE_URL || '';
       const redirectTo = `${siteUrl.replace(/\/$/, '')}/auth/callback/?next=${encodeURIComponent(safeNext)}`;
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
@@ -48,7 +48,11 @@ export function LoginForm({ nextPath, initialError }: LoginFormProps) {
         },
       });
       if (error) {
-        setErrorMsg('Could not start Google sign-in. Try email & password below.');
+        setErrorMsg(
+          error.message?.toLowerCase().includes('provider')
+            ? 'Google sign-in is not enabled yet. Please use email & password below.'
+            : error.message || 'Could not start Google sign-in. Try email & password below.'
+        );
         setLoadingGoogle(false);
       }
     } catch {
