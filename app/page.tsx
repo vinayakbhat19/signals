@@ -507,6 +507,46 @@ export default function HomePage() {
         </Link>
       </section>
 
+      {/* Signals Coming Soon Card (Screen 10 -> Screen 51) */}
+      <section aria-label="Signals">
+        <Link
+          href="/signals/"
+          className="flex items-center gap-3 rounded-[22px] border-[1.5px] border-dashed border-[#9B6CFF] bg-[#1F1230] px-4 py-3 text-[#F4F2FA] hover:border-[#FFD60A] transition-colors"
+        >
+          <span
+            aria-hidden="true"
+            className="flex size-[42px] shrink-0 items-center justify-center rounded-[14px] bg-[#9B6CFF]"
+          >
+            <svg
+              width="24"
+              height="24"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="#0B0A12"
+              strokeWidth="2.4"
+              strokeLinecap="round"
+            >
+              <path d="M5 12a7 7 0 0 1 14 0M8.5 12a3.5 3.5 0 0 1 7 0" />
+              <circle cx="12" cy="16" r="1.6" fill="#0B0A12" />
+            </svg>
+          </span>
+          <span className="min-w-0 flex-1 space-y-0.5">
+            <span className="flex items-center gap-2">
+              <strong className="text-base font-extrabold text-[#F4F2FA]">
+                Signals
+              </strong>
+              <span className="rounded-full bg-[#FFD60A] px-2 py-0.5 text-[10px] font-extrabold uppercase tracking-[0.08em] text-[#0B0A12]">
+                COMING SOON
+              </span>
+            </span>
+            <span className="block text-[13px] text-[#BDB8CF]">
+              Our campus app. Find your people.
+            </span>
+          </span>
+          <ChevronRight className="size-6 shrink-0 text-[#FFD60A]" />
+        </Link>
+      </section>
+
       {/* Secondary Quick Access Strip */}
       <section aria-label="Explore more" className="grid grid-cols-4 gap-2 pt-1">
         <a

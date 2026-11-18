@@ -34,6 +34,7 @@ const DESKTOP_LINKS = [
   { href: '/scan', label: 'Scan' },
   { href: '/vote', label: 'Vote' },
   { href: '/hunt', label: 'Hunt' },
+  { href: '/signals', label: 'Signals' },
   { href: '/venues', label: 'Venues' },
   { href: '/results', label: 'Results' },
   { href: '/updates', label: 'Updates' },
