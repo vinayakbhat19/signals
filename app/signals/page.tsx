@@ -1,11 +1,10 @@
 'use client';
 
 import type { CSSProperties } from 'react';
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { toast } from 'sonner';
 import { useAuth } from '@/lib/use-auth';
-import './signals-teaser.css';
 
 type LetterSpec = {
   char: string;
@@ -38,6 +37,54 @@ export default function SignalsPage() {
       return false;
     }
   });
+
+  // Key demo state for "Host Your Event in Signals"
+  const [kdChars, setKdChars] = useState<string[]>([]);
+  const [kdMsg, setKdMsg] = useState('Only people with the key can get in.');
+  const [kdBtnText, setKdBtnText] = useState('Join event');
+  const [kdIn, setKdIn] = useState(false);
+  const kdBusyRef = useRef(false);
+  const kdTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  const handleKeyDemoPlay = useCallback(() => {
+    if (kdTimerRef.current) {
+      clearInterval(kdTimerRef.current);
+      kdTimerRef.current = null;
+    }
+    kdBusyRef.current = true;
+    setKdIn(false);
+    setKdChars([]);
+    setKdMsg('Typing secret access key...');
+    setKdBtnText('Checking key...');
+
+    const KEY = 'FESTAB26XK';
+    let idx = 0;
+    const timer = setInterval(() => {
+      idx++;
+      setKdChars(KEY.slice(0, idx).split(''));
+      if (idx >= 10) {
+        clearInterval(timer);
+        kdTimerRef.current = null;
+        setKdBtnText('Access granted ✓');
+        setKdMsg('Key verified!');
+        setTimeout(() => {
+          setKdIn(true);
+          kdBusyRef.current = false;
+        }, 550);
+      }
+    }, 140);
+    kdTimerRef.current = timer;
+  }, []);
+
+  useEffect(() => {
+    const t = setTimeout(() => {
+      handleKeyDemoPlay();
+    }, 1200);
+    return () => {
+      clearTimeout(t);
+      if (kdTimerRef.current) clearInterval(kdTimerRef.current);
+    };
+  }, [handleKeyDemoPlay]);
 
   // Opening timer + 8s letter hop wave
   useEffect(() => {
@@ -263,7 +310,7 @@ export default function SignalsPage() {
           </div>
 
           <span className="sig-soon">COMING SOON</span>
-          <p className="sig-tag">Something on campus is about to light up.</p>
+          <p className="sig-tag">Find your people. Host your event.</p>
         </div>
 
         <a className="sig-cue" href="#what" aria-label="Scroll down">
@@ -282,6 +329,54 @@ export default function SignalsPage() {
       </header>
 
       <main className="sig-wrap">
+        {/* 1b. Two Doors: Students and Organisers */}
+        <section className="sig-sec" id="two">
+          <div className="sig-kicker sig-reveal">ONE APP, TWO THINGS</div>
+          <h2
+            className="sig-head sig-big sig-reveal"
+            style={{ '--d': '.05s' } as CSSProperties}
+          >
+            Signals is for <span style={{ color: 'var(--purple)' }}>students</span> and for{' '}
+            <span style={{ color: 'var(--y)' }}>organisers</span>.
+          </h2>
+          <div className="sig-two">
+            <a
+              className="sig-door a sig-reveal"
+              href="#what"
+              style={{ '--d': '.05s' } as CSSProperties}
+            >
+              <svg viewBox="13 29 94 76" aria-hidden="true">
+                <g fill="none" strokeWidth="10" strokeLinecap="round">
+                  <path d="M44.4 76.4A22 22 0 0 1 75.6 76.4" stroke="#000" />
+                  <path d="M33.1 65.1A38 38 0 0 1 86.9 65.1" stroke="#000" />
+                  <path d="M21.8 53.8A54 54 0 0 1 98.2 53.8" stroke="#000" />
+                </g>
+                <circle cx="60" cy="92" r="10" fill="#000" />
+              </svg>
+              <div>
+                <strong>Find your people</strong>
+                <span>Raise a Signal, join groups.</span>
+              </div>
+            </a>
+            <a
+              className="sig-door b sig-reveal"
+              href="#host"
+              style={{ '--d': '.12s' } as CSSProperties}
+            >
+              <em>NEW</em>
+              <svg viewBox="0 0 24 24" fill="none" stroke="#000" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <rect x="3" y="5" width="18" height="16" rx="2" />
+                <path d="M3 10h18M8 3v4M16 3v4" />
+                <circle cx="12" cy="15.5" r="1.8" fill="#000" />
+              </svg>
+              <div>
+                <strong>Host your event</strong>
+                <span>A private space for your event.</span>
+              </div>
+            </a>
+          </div>
+        </section>
+
         {/* 2. What is Signals */}
         <section className="sig-sec" id="what">
           <div className="sig-kicker sig-reveal">WHAT IS SIGNALS?</div>
@@ -549,64 +644,225 @@ export default function SignalsPage() {
             </div>
           </div>
 
-          <button
-            ref={notifyBtnRef}
-            type="button"
-            aria-pressed={notified}
-            onClick={handleNotifyToggle}
-            className={`sig-notify sig-reveal${notified ? ' on' : ''}`}
-          >
-            <svg width="24" height="24" viewBox="0 0 120 120" aria-hidden="true">
-              <g fill="none" strokeWidth="12" strokeLinecap="round">
-                <path d="M44.4 76.4A22 22 0 0 1 75.6 76.4" stroke="currentColor" />
-                <path d="M21.8 53.8A54 54 0 0 1 98.2 53.8" stroke="currentColor" />
-              </g>
-              <circle cx="60" cy="92" r="11" fill="currentColor" />
-            </svg>
-            <span>
-              {notified
-                ? "You're on the list. We'll ping you."
-                : 'Notify me when it opens'}
-            </span>
-          </button>
+          <div className="sig-reveal">
+            <button
+              ref={notifyBtnRef}
+              type="button"
+              aria-pressed={notified}
+              onClick={handleNotifyToggle}
+              className={`sig-notify${notified ? ' on' : ''}`}
+            >
+              <svg width="24" height="24" viewBox="0 0 120 120" aria-hidden="true">
+                <g fill="none" strokeWidth="12" strokeLinecap="round">
+                  <path d="M44.4 76.4A22 22 0 0 1 75.6 76.4" stroke="currentColor" />
+                  <path d="M21.8 53.8A54 54 0 0 1 98.2 53.8" stroke="currentColor" />
+                </g>
+                <circle cx="60" cy="92" r="11" fill="currentColor" />
+              </svg>
+              <span>
+                {notified
+                  ? "You're on the list. We'll ping you."
+                  : 'Notify me when it opens'}
+              </span>
+            </button>
+          </div>
           <p className="sig-small sig-reveal">
             One alert when Signals opens. Nothing else.
           </p>
         </section>
 
+        {/* Bridge for Organisers */}
+        <div className="sig-bridge sig-reveal">
+          <span>AND NOW, FOR ORGANISERS</span>
+        </div>
+
+        {/* Host your event in Signals */}
+        <section className="sig-sec" id="host" style={{ paddingTop: '26px' }}>
+          <div className="sig-kicker sig-reveal">HOST YOUR EVENT IN SIGNALS</div>
+          <h2
+            className="sig-head sig-big sig-reveal"
+            style={{ '--d': '.05s' } as CSSProperties}
+          >
+            Your event. <span style={{ color: 'var(--y)' }}>Your look.</span> Your key.
+          </h2>
+          <p
+            className="sig-lead sig-reveal"
+            style={{ '--d': '.1s' } as CSSProperties}
+          >
+            Your event gets its <strong>own private space</strong> in Signals, with your look and an admin panel. People join with <strong>a secret key only you share</strong>.
+          </p>
+
+          <div style={{ marginTop: '20px' }}>
+            <div
+              className={`sig-plate sig-keydemo${kdIn ? ' takeover in' : ''}`}
+              onClick={handleKeyDemoPlay}
+              aria-label="Demo: entering an event key"
+              role="button"
+              tabIndex={0}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault();
+                  handleKeyDemoPlay();
+                }
+              }}
+            >
+              <div style={{ fontSize: '11px', fontWeight: 800, letterSpacing: '.12em', color: 'var(--y)' }}>
+                ENTER YOUR EVENT KEY
+              </div>
+              <div className="sig-kd-boxes">
+                {/* Group 1: 4 chars */}
+                {[0, 1, 2, 3].map((i) => (
+                  <i key={i} className={kdChars[i] ? 'on' : ''}>
+                    {kdChars[i] || ''}
+                  </i>
+                ))}
+                <b>-</b>
+                {/* Group 2: 4 chars */}
+                {[4, 5, 6, 7].map((i) => (
+                  <i key={i} className={kdChars[i] ? 'on' : ''}>
+                    {kdChars[i] || ''}
+                  </i>
+                ))}
+                <b>-</b>
+                {/* Group 3: 2 chars */}
+                {[8, 9].map((i) => (
+                  <i key={i} className={kdChars[i] ? 'on' : ''}>
+                    {kdChars[i] || ''}
+                  </i>
+                ))}
+              </div>
+              <div className="sig-kd-msg">{kdMsg}</div>
+              <span className="sig-kd-btn">{kdBtnText}</span>
+              <div className="sig-kd-take" aria-hidden="true">
+                <small>YOU&apos;RE IN</small>
+                <div className="ev">YOUR EVENT</div>
+                <div className="by">BY SIGNALS</div>
+              </div>
+            </div>
+          </div>
+          <div style={{ textAlign: 'center', marginTop: '12px' }}>
+            <button
+              type="button"
+              onClick={handleKeyDemoPlay}
+              className="sig-cap2"
+            >
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" />
+                <path d="M3 3v5h5" />
+                <path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16" />
+                <path d="M16 16h5v5" />
+              </svg>
+              <span>Demo. Tap here to replay animation</span>
+            </button>
+          </div>
+
+          <div className="sig-rules">
+            <div className="sig-rl sig-reveal">
+              <i style={{ background: 'var(--pink)' }}>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#000" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                  <rect x="5" y="11" width="14" height="9" rx="2" />
+                  <path d="M8 11V8a4 4 0 0 1 8 0v3" />
+                </svg>
+              </i>
+              <div>
+                <strong>Private by key</strong>
+                <span>Only people with your key can get in.</span>
+              </div>
+            </div>
+
+            <div className="sig-rl sig-reveal" style={{ '--d': '.06s' } as CSSProperties}>
+              <i style={{ background: 'var(--cyan)' }}>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#000" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                  <circle cx="12" cy="12" r="9" />
+                  <path d="M12 7v5l3 2" />
+                </svg>
+              </i>
+              <div>
+                <strong>One event, one time</strong>
+                <span>Opens for your dates, then closes.</span>
+              </div>
+            </div>
+
+            <div className="sig-rl sig-reveal" style={{ '--d': '.12s' } as CSSProperties}>
+              <i style={{ background: 'var(--lime)' }}>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#000" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                  <path d="M5 12.5l4.5 4.5L19 7.5" />
+                </svg>
+              </i>
+              <div>
+                <strong>We read your brief first</strong>
+                <span>You send a short brief. We set it up.</span>
+              </div>
+            </div>
+          </div>
+
+          <div className="sig-cta sig-reveal">
+            <h3>Want your event here?</h3>
+            <p>A short brief is enough.</p>
+            <a
+              href="mailto:vinayakkbhatt@gmail.com?subject=Host%20my%20event%20in%20Signals&body=Hi%2C%20I%20want%20to%20host%20my%20event%20in%20Signals.%0A%0AEvent%20name%3A%0ACollege%20/%20club%3A%0ADates%20%28start%20and%20end%29%3A%0AHow%20many%20people%20%28roughly%29%3A%0AFeatures%20I%20need%20%28schedule%2C%20alerts%2C%20voting%2C%20treasure%20hunt%2C%20registrations%2C%20stage%20screen%2C%20QR%20tools%29%3A%0AOur%20logo%20and%20colours%20%28send%20the%20logo%20as%20an%20attachment%29%3A%0AMy%20name%20and%20phone%3A%0A"
+              id="briefBtn"
+            >
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <rect x="3" y="5" width="18" height="14" rx="2" />
+                <path d="M3 7l9 6 9-6" />
+              </svg>
+              Send my event brief
+            </a>
+          </div>
+        </section>
+
         {/* 6. Developer card */}
         <section className="sig-sec" id="maker">
-          <div className="sig-me sig-reveal">
-            <div className="sig-av2" aria-hidden="true">
-              VB
+          <div className="sig-me">
+            <div className="sig-av2 overflow-hidden" aria-hidden="true">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src="/vinayak.jpg"
+                alt="Vinayak Bhat"
+                className="size-full object-cover rounded-full"
+              />
             </div>
             <div className="sig-info">
               <span className="sig-role">DEVELOPER</span>
               <strong>Vinayak Bhat</strong>
               <a
                 className="sig-mail"
-                href="mailto:vinayakkbhatt@gmail.com?subject=Signals%20app"
+                href="https://vinayakbhatpf.vercel.app/"
+                target="_blank"
+                rel="noopener noreferrer"
               >
-                vinayakkbhatt@gmail.com
+                https://vinayakbhatpf.vercel.app/
               </a>
             </div>
             <a
               className="sig-go"
-              href="mailto:vinayakkbhatt@gmail.com?subject=Signals%20app"
-              aria-label="Email Vinayak"
+              href="https://vinayakbhatpf.vercel.app/"
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="View Vinayak's Portfolio"
             >
-              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                <rect x="3" y="5" width="18" height="14" rx="2" />
-                <path d="M3 7l9 6 9-6" />
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <path d="M5 12h14" />
+                <path d="M12 5l7 7-7 7" />
               </svg>
             </a>
           </div>
-          <p className="sig-me-note sig-reveal">
-            Got an idea or want to help build it? Write to me.
+          <p className="sig-me-note">
+            Got an idea, or want your event here? View my portfolio or reach out.
           </p>
         </section>
 
-        <footer className="sig-foot">Signals · coming soon</footer>
+        <footer className="sig-foot">
+          Signals · coming soon ·{' '}
+          <Link href="/privacy" className="underline hover:text-[#FFD60A]">
+            Privacy
+          </Link>{' '}
+          ·{' '}
+          <Link href="/terms" className="underline hover:text-[#FFD60A]">
+            Terms
+          </Link>
+        </footer>
       </main>
     </div>
   );

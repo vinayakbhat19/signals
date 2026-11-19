@@ -14,10 +14,10 @@ import {
   Megaphone,
   RefreshCw,
   Trophy,
-  Vote,
   WifiOff,
 } from 'lucide-react';
 import { AccountAvatar } from '@/components/account-avatar';
+import { FiestaIntro } from '@/components/fiesta-intro';
 import { CATEGORY_DOT_COLOR, CATEGORY_LABELS } from '@/components/category-chip';
 import { EventsTicker } from '@/components/events-ticker';
 import {
@@ -27,7 +27,7 @@ import {
 } from '@/components/mascots';
 import { useLiveFeed } from '@/lib/live-store';
 import { useAuth } from '@/lib/use-auth';
-import { formatTime, isLive, isUpNext, minutesUntil } from '@/lib/time';
+import { formatDay, formatTime, isLive, isUpNext, minutesUntil } from '@/lib/time';
 import { cn } from '@/lib/utils';
 
 const FEST_START_FALLBACK_ISO = '2026-11-25T00:00:00+05:30';
@@ -138,7 +138,9 @@ export default function HomePage() {
         : null;
 
   return (
-    <div className="space-y-6">
+    <>
+      <FiestaIntro />
+      <div className="space-y-6">
       {/* Mobile Fiesta'26 Halftone Header */}
       <header className="halftone-band -mx-4 flex items-center justify-between border-b border-[#3B2758] px-4 py-3 lg:hidden">
         <Link href="/" className="flex items-center gap-2.5">
@@ -201,7 +203,7 @@ export default function HomePage() {
           className="flex items-center gap-2 rounded-2xl border border-[#FF9F43]/60 bg-[#FF9F43]/15 px-3.5 py-2.5 text-xs font-bold text-[#FF9F43]"
         >
           <AlertTriangle className="size-4 shrink-0" />
-          Votes and stamps are temporarily paused. Schedule browsing is live!
+          Stamps are temporarily paused. Schedule browsing is live!
         </div>
       )}
 
@@ -249,32 +251,24 @@ export default function HomePage() {
         </Link>
       )}
 
-      {/* Open Polls Banner when Live */}
-      {feed.polls.length > 0 && (
-        <Link
-          href={
-            feed.polls.length === 1
-              ? `/vote/?id=${feed.polls[0].event_id}`
-              : '/vote/'
-          }
-          className="flex items-center justify-between gap-3 rounded-[22px] bg-[#FF4FD8] px-4 py-3.5 text-[#12091E] shadow-[5px_5px_0_#FFD60A]"
-        >
-          <div className="flex items-center gap-3">
-            <Vote className="size-6 shrink-0 stroke-[2.4]" />
-            <div>
-              <p className="text-[11px] font-extrabold uppercase tracking-wider">
-                AUDIENCE VOTING LIVE
-              </p>
-              <p className="font-heading text-lg font-extrabold leading-tight">
-                {feed.polls.length === 1
-                  ? feed.polls[0].title || 'Vote now!'
-                  : `${feed.polls.length} competitions open for voting`}
-              </p>
-            </div>
+      {/* Treasure Hunt Leaderboard Callout */}
+      <Link
+        href="/hunt/leaderboard/"
+        className="flex items-center justify-between gap-3 rounded-[22px] bg-[#9B6CFF] px-4 py-3.5 text-[#12091E] shadow-[5px_5px_0_#FFD60A] transition-transform active:translate-y-0.5"
+      >
+        <div className="flex items-center gap-3">
+          <Trophy className="size-6 shrink-0 stroke-[2.4]" />
+          <div>
+            <p className="text-[11px] font-extrabold uppercase tracking-wider">
+              CAMPUS TREASURE HUNT LIVE
+            </p>
+            <p className="font-heading text-lg font-extrabold leading-tight">
+              10 Hidden Clues · Live Leaderboard
+            </p>
           </div>
-          <ChevronRight className="size-5 shrink-0" />
-        </Link>
-      )}
+        </div>
+        <ChevronRight className="size-5 shrink-0" />
+      </Link>
 
       {/* Countdown (before 25 Nov) OR Happening now (once countdown finishes) */}
       {festCountdown.active && !featuredLive ? (
@@ -465,8 +459,8 @@ export default function HomePage() {
                     <span className="block truncate text-[16px] font-bold text-[#F4F2FA]">
                       {event.title}
                     </span>
-                    <span className="block truncate text-[13px] text-[#9C97B0]">
-                      {formatTime(event.starts_at)} ·{' '}
+                    <span className="block truncate text-[13px] text-[#CFCBDD]">
+                      <span className="font-black text-[#FFD60A]">{formatDay(event.starts_at)}</span> · {formatTime(event.starts_at)} ·{' '}
                       {event.venue_name ?? 'Venue TBA'}
                       {changedIds.has(event.id) && (
                         <span className="font-extrabold text-[#FFE14D]">
@@ -574,44 +568,50 @@ export default function HomePage() {
         </Link>
       </section>
 
-      {/* Signals — compact footer teaser at the very bottom of Home */}
-      <section aria-label="About Signals" className="pt-2">
-        <div className="flex items-center gap-3 rounded-[20px] border border-[#3B2758] bg-[#0B0714] px-4 py-3">
-          <span
-            aria-hidden="true"
-            className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-black border border-[#3B2758]"
-          >
-            <svg width="26" height="26" viewBox="0 0 120 120" aria-hidden="true">
-              <g fill="none" strokeWidth="10" strokeLinecap="round">
-                <path d="M21.8 53.8A54 54 0 0 1 98.2 53.8" stroke="#9B6CFF" />
-                <path d="M33.1 65.1A38 38 0 0 1 86.9 65.1" stroke="#FF4FD8" />
-                <path d="M44.4 76.4A22 22 0 0 1 75.6 76.4" stroke="#FFD60A" />
-              </g>
-              <circle cx="60" cy="92" r="9" fill="#22D3EE" />
-            </svg>
+      {/* Signals — clean unboxed footer signature with Terms and Privacy fitted in middle */}
+      <footer aria-label="Powered by Signals" className="pt-6 pb-2 flex flex-wrap items-center justify-center gap-x-2.5 gap-y-1.5 text-xs text-[#9C97B0]">
+        <div className="flex items-center gap-1.5">
+          <svg width="18" height="18" viewBox="0 0 120 120" aria-hidden="true" className="inline-block shrink-0">
+            <g fill="none" strokeWidth="12" strokeLinecap="round">
+              <path d="M21.8 53.8A54 54 0 0 1 98.2 53.8" stroke="#9B6CFF" />
+              <path d="M33.1 65.1A38 38 0 0 1 86.9 65.1" stroke="#FF4FD8" />
+              <path d="M44.4 76.4A22 22 0 0 1 75.6 76.4" stroke="#FFD60A" />
+            </g>
+            <circle cx="60" cy="92" r="10" fill="#22D3EE" />
+          </svg>
+          <span className="font-semibold text-[#BDB8CF]">
+            Powered by <strong className="font-extrabold text-[#F4F2FA]">Signals</strong>
           </span>
-          <div className="min-w-0 flex-1">
-            <div className="flex items-center gap-1.5">
-              <strong className="text-sm font-extrabold text-[#F4F2FA]">
-                Signals
-              </strong>
-              <span className="rounded-full bg-[#FFD60A] px-1.5 py-0.5 text-[9px] font-extrabold uppercase tracking-[0.08em] text-[#0B0A12]">
-                COMING SOON
-              </span>
-            </div>
-            <p className="text-xs text-[#9C97B0] leading-snug">
-              Our upcoming campus app — find teammates, builders &amp; clubs
-              without sharing phone numbers.
-            </p>
-          </div>
           <Link
             href="/signals/"
-            className="shrink-0 rounded-xl bg-[#FFD60A] px-3 py-2 text-xs font-extrabold text-[#0B0A12] hover:bg-[#FFE14D]"
+            className="inline-flex items-center gap-1 rounded-full border border-[#FFD60A]/40 bg-[#FFD60A]/10 px-2 py-0.5 text-[11px] font-extrabold text-[#FFD60A] hover:bg-[#FFD60A] hover:text-[#12091E] transition-colors ml-1"
           >
             Open →
           </Link>
         </div>
-      </section>
+        <span className="text-[#3B2758]">·</span>
+        <Link
+          href="/terms/"
+          className="text-[#9C97B0] hover:text-[#F4F2FA] transition-colors hover:underline text-[11px]"
+        >
+          Terms of Service
+        </Link>
+        <span className="text-[#3B2758]">·</span>
+        <Link
+          href="/privacy/"
+          className="text-[#9C97B0] hover:text-[#F4F2FA] transition-colors hover:underline text-[11px]"
+        >
+          Privacy Policy
+        </Link>
+        <span className="text-[#3B2758]">·</span>
+        <Link
+          href="/?intro=1"
+          className="text-[#9C97B0] hover:text-[#FFD60A] transition-colors hover:underline text-[11px]"
+        >
+          Replay Intro
+        </Link>
+      </footer>
     </div>
+    </>
   );
 }

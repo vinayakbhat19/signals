@@ -3,7 +3,7 @@
 import { Suspense, useState } from 'react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { CalendarSearch, ExternalLink, QrCode, Search, Share2, X } from 'lucide-react';
+import { Calendar, CalendarSearch, Clock, ExternalLink, QrCode, Search, Share2, X } from 'lucide-react';
 import { CATEGORY_LABELS, CATEGORY_STYLES } from '@/components/category-chip';
 import { EventCover } from '@/components/event-cover';
 import { EventShareModal } from '@/components/event-share-modal';
@@ -265,10 +265,19 @@ function EventsInner() {
       {grouped.length > 0 ? (
         <div className="space-y-6 pt-1">
           {grouped.map((group) => (
-            <section key={group.dayKey} className="space-y-2.5">
-              <h2 className="px-1 text-xs font-extrabold uppercase tracking-[0.1em] text-[#9C97B0]">
-                {group.label} · FEST DAY
-              </h2>
+            <section key={group.dayKey} className="space-y-3 pt-2">
+              <div className="flex items-center gap-3">
+                <div className="flex items-center gap-2.5 rounded-2xl border-2 border-[#FFD60A]/40 bg-gradient-to-r from-[#2A1840] to-[#1F1230] px-4 py-2 shadow-sm">
+                  <Calendar className="size-5 text-[#FFD60A] stroke-[2.5]" />
+                  <h2 className="font-heading text-lg sm:text-xl font-black uppercase tracking-wide text-[#FFD60A]">
+                    {group.label}
+                  </h2>
+                  <span className="rounded-lg bg-[#FFD60A]/15 px-2 py-0.5 text-[11px] font-black uppercase tracking-wider text-[#FFE866] border border-[#FFD60A]/30">
+                    Fest Day
+                  </span>
+                </div>
+                <div className="h-0.5 flex-1 bg-gradient-to-r from-[#3B2758] to-transparent" />
+              </div>
               <div className="grid gap-2.5 md:grid-cols-2">
                 {group.events.map((event) => {
                   const eventLive = isLive(event, now);
@@ -341,10 +350,20 @@ function EventsInner() {
                           >
                             {event.title}
                           </h3>
-                          <span className="truncate text-xs text-[#CFCBDD]">
-                            {formatRange(event.starts_at, event.ends_at)} ·{' '}
-                            {event.venue_name ?? 'Venue TBA'}
-                          </span>
+                          <div className="flex flex-wrap items-center gap-1.5 pt-0.5">
+                            <span className="inline-flex items-center gap-1.5 rounded-lg border-2 border-[#FFD60A]/50 bg-[#FFD60A]/20 px-2.5 py-1 text-xs sm:text-[13px] font-black tracking-tight text-[#FFD60A] shadow-sm">
+                              <Calendar className="size-3.5 text-[#FFD60A] shrink-0 stroke-[2.5]" />
+                              {formatDay(event.starts_at)}
+                            </span>
+                            <span className="inline-flex items-center gap-1 text-xs sm:text-[13px] font-bold text-[#F4F2FA]">
+                              <Clock className="size-3.5 text-[#FFD60A]/70 shrink-0" />
+                              {formatRange(event.starts_at, event.ends_at)}
+                            </span>
+                            <span className="text-[#9C97B0] text-xs">·</span>
+                            <span className="truncate text-xs font-semibold text-[#CFCBDD]">
+                              {event.venue_name ?? 'Campus Venue (TBA)'}
+                            </span>
+                          </div>
                         </div>
                       </Link>
 

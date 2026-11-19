@@ -5,8 +5,10 @@ import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import {
   ArrowLeft,
+  Calendar,
   CalendarPlus,
   ChevronRight,
+  Clock,
   ExternalLink,
   MapPin,
   Share2,
@@ -199,19 +201,33 @@ function EventDetailInner() {
           >
             {event.title}
           </h1>
-          <p className="text-[15px] font-semibold text-[#CFCBDD]">
-            {dayStr} · {rangeStr} ·{' '}
+          {/* Prominent Date & Time Badges */}
+          <div className="flex flex-wrap items-center gap-2.5 pt-1.5 pb-0.5">
+            <div className="inline-flex items-center gap-2 rounded-2xl border-2 border-[#FFD60A]/50 bg-[#FFD60A]/15 px-4 py-2 shadow-sm">
+              <Calendar className="size-5 text-[#FFD60A] stroke-[2.5]" />
+              <span className="font-heading text-lg sm:text-xl font-black uppercase tracking-tight text-[#FFD60A]">
+                {dayStr}
+              </span>
+            </div>
+            <div className="inline-flex items-center gap-2 rounded-2xl border border-[#3B2758] bg-[#1F1230] px-3.5 py-2 text-sm sm:text-base font-extrabold text-[#F4F2FA]">
+              <Clock className="size-4 text-[#CFCBDD]" />
+              <span>{rangeStr} IST</span>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2 text-sm sm:text-[15px] font-semibold text-[#CFCBDD]">
+            <MapPin className="size-4 shrink-0 text-[#FF4FD8]" />
             {venue ? (
               <Link
                 href={`/venue/?id=${venue.id}`}
-                className="text-[#FFD60A] underline underline-offset-4"
+                className="text-[#FFE866] underline underline-offset-4 font-bold hover:text-[#FFD60A]"
               >
                 {venue.name}
               </Link>
             ) : (
-              <span>{event.venue_name || 'Venue TBA'}</span>
+              <span className="font-bold text-[#F4F2FA]">{event.venue_name || 'Campus Venue (TBA)'}</span>
             )}
-          </p>
+          </div>
         </div>
 
         {/* Hosted by */}

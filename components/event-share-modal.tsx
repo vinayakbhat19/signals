@@ -3,7 +3,9 @@
 import { useEffect, useRef, useState } from 'react';
 import QRCode from 'qrcode';
 import {
+  Calendar,
   Check,
+  Clock,
   Copy,
   Download,
   MapPin,
@@ -184,18 +186,22 @@ export function EventShareModal({
     }
 
     // 8. Event Date, Time & Venue
-    const metaY = Math.max(titleY + 12, 335);
-    ctx.fillStyle = '#CFCBDD';
-    ctx.font = 'bold 20px sans-serif';
+    const metaY = Math.max(titleY + 16, 335);
+    ctx.fillStyle = '#FFD60A';
+    ctx.font = '900 24px sans-serif';
     ctx.textAlign = 'center';
-    ctx.fillText(`${dayStr} · ${rangeStr} IST`, 360, metaY);
+    ctx.fillText(`📅  ${dayStr.toUpperCase()}`, 360, metaY);
+
+    ctx.fillStyle = '#FFFFFF';
+    ctx.font = 'bold 20px sans-serif';
+    ctx.fillText(`${rangeStr} IST`, 360, metaY + 32);
 
     ctx.fillStyle = '#FFE866';
-    ctx.font = 'bold 20px sans-serif';
-    ctx.fillText(`📍 ${displayVenue}`, 360, metaY + 34);
+    ctx.font = 'bold 19px sans-serif';
+    ctx.fillText(`📍 ${displayVenue}`, 360, metaY + 64);
 
     // 9. QR Code Box (white card)
-    const qrBoxY = metaY + 68;
+    const qrBoxY = metaY + 76;
     const qrBoxSize = 300;
     const qrBoxX = (720 - qrBoxSize) / 2;
 
@@ -413,12 +419,19 @@ export function EventShareModal({
             {event.title}
           </h3>
 
-          {/* Time & Venue */}
-          <div className="mt-1.5 space-y-0.5 text-xs text-[#CFCBDD]">
-            <p className="font-semibold text-[#E5E0F5]">
-              {dayStr} · {rangeStr} IST
-            </p>
-            <p className="flex items-center justify-center gap-1 font-bold text-[#FFE866]">
+          {/* Date, Time & Venue */}
+          <div className="mt-2 space-y-1.5">
+            <div className="flex flex-wrap items-center justify-center gap-1.5">
+              <span className="inline-flex items-center gap-1 rounded-lg border border-[#FFD60A]/40 bg-[#FFD60A]/15 px-2.5 py-0.5 text-xs font-black text-[#FFE866]">
+                <Calendar className="size-3 text-[#FFD60A]" />
+                {dayStr}
+              </span>
+              <span className="inline-flex items-center gap-1 rounded-lg border border-white/10 bg-white/5 px-2 py-0.5 text-xs font-bold text-[#F4F2FA]">
+                <Clock className="size-3 text-[#CFCBDD]" />
+                {rangeStr} IST
+              </span>
+            </div>
+            <p className="flex items-center justify-center gap-1 text-xs font-bold text-[#FFE866]">
               <MapPin className="size-3 shrink-0" />
               <span className="truncate max-w-[280px]">{displayVenue}</span>
             </p>

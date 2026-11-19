@@ -74,9 +74,14 @@ function VenueInner() {
             <p className="font-heading text-base font-extrabold text-[#F4F2FA]">
               {ev.title}
             </p>
-            <p className="text-xs text-[#BDB8CF]">
-              {formatDay(ev.starts_at)} · {formatRange(ev.starts_at, ev.ends_at)}
-            </p>
+            <div className="flex flex-wrap items-center gap-2 pt-1">
+              <span className="inline-flex items-center rounded-md border border-[#FFD60A]/40 bg-[#FFD60A]/15 px-2 py-0.5 text-xs font-black text-[#FFE866]">
+                {formatDay(ev.starts_at)}
+              </span>
+              <span className="text-xs font-bold text-[#F4F2FA]">
+                {formatRange(ev.starts_at, ev.ends_at)}
+              </span>
+            </div>
           </Link>
         ))}
       </div>
