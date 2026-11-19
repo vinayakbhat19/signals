@@ -29,13 +29,14 @@ Sample names and numbers in the designs are placeholders.
 
 | ID | Screen | Route | Who | Main data | Buttons and links go to |
 | --- | --- | --- | --- | --- | --- |
+| 00 | **Intro** (first screen, about 3.8 s, skippable) | `/` on every fresh launch (reopened page, Home Screen app, first launch after clearing data); never on a refresh | Everyone | none | Fiesta'26 logo lands while the Signals letters are still arranging, the letters circle over it, then arrange under it as "BY Signals"; black turns Fiesta purple → then 01 (first visit) or 10 · Skip |
 | 01 | Welcome (first open) | `/welcome` | Everyone, first visit | — | Create account → 03 · Log in → 07 · Just look around → 10 · Scan a QR → 20 |
 | 02 | Cookie notice (sheet) | over 01/10 | Everyone, first visit | localStorage choice | Got it → closes · Privacy policy |
-| 03 | Create account | `/signup` | Signed out | `auth.signUp` (name, email, password) | Create account → 04 · Google → 10 · Log in → 07 |
-| 04 | Check your email | `/signup/check-email` | Just signed up | — | Open email app · Resend (60 s) · Change email → 03 |
-| 05 | You're in | `/auth/callback?next=/verified` | After clicking the link | `profiles.college_verified` | Add to Home Screen → 06 · Go to the fest → 10 |
+| 03 | Create account | `/signup` | Signed out | `auth.signUp` (name, email, password) | Create account → 04 · Log in → 07 |
+| 04 | Enter your code | `/signup/verify` | After sign-up | `auth.verifyOtp` (6 digits), `auth.resend` | Verify and continue → 05 · Send a new code (60 s) · Change email → 03 |
+| 05 | You're in | `/verified` | After entering the correct code | the new session | Add to Home Screen → 06 · Go to the fest → 10 |
 | 06 | Add to Home Screen | sheet / `/install` | Browser visitors | `beforeinstallprompt`, display-mode | Add to Home Screen (Android) · iPhone steps · Maybe later |
-| 07 | Log in | `/login` | Signed out | `auth.signInWithPassword`, Google | Log in → previous page or 10 · Forgot password → `/reset` · Create account → 03 |
+| 07 | Log in | `/login` | Signed out | `auth.signInWithPassword` | Log in → previous page or 10 · Forgot password → `/reset` · Create account → 03 |
 | 10 | Home | `/` | Everyone | `rpc app_status` + `rpc live_feed` (now, next, **latest event changes + urgent notices**, open polls), my hunt summary | **Important updates alert (top) → 15** · Live card → 30 or 12 · Up next → 12 · Hunt card → 22 · Avatar → 14 · Add bar → 06 |
 | 15 | Updates and notices | `/updates` | Everyone | `event_changes` + announcements | Change → 12 · tabs All / Changes / Notices |
 | 11 | Events | `/events` | Everyone | events + venue + host + cover, poll/stamp flags | Card → 12 (or 30 when voting) · Scan → 20 · Tabs All/Live/Soon/Done · Search |
@@ -57,9 +58,10 @@ Sample names and numbers in the designs are placeholders.
 | 44 | QR generator | `/admin/qr` | Organiser | events, venues, polls, stamp points | Print · PNG · Copy link · All events |
 | 45 | QR poster (A4) | `/admin/qr/print` | Organiser | — | Print |
 | 46 | Hunt stickers | `/admin/hunt/qr` | Volunteer, host, organiser | `rpc list_stamp_qrs` | Print · Print all 10 · Back |
+| 09 | New password | `/reset` | Signed out | `resetPasswordForEmail`, `verifyOtp` (recovery), `updateUser` | Save and log in → 10 · Send a new code |
 | 08 | Alerts and camera | `/account/permissions` | Everyone | Notification and camera state, push subscription | Turn on alerts · Not now · Try scanning → 20 · Enter a code · Back → 14 |
 | 47 | Staff accounts | `/admin/staff` | **Admin only** | `profiles`, `event_hosts`; staff Worker (`/staff/create`, `/staff/reset-password`, `/staff/remove`) | Host/Volunteer · event · name · email · password (Generate) · Create account · Reset password · Remove access |
-| 51 | Signals: coming soon | `/signals` | Everyone | static | Notify me (push topic `signals`) · Back to the fest → 10 |
+| 51 | Signals: coming soon | `/signals` | Everyone | static, long scrolling page: opening animation (letters crash, fall, join, frame; COMING SOON; logo built), what it is, how it works, developer card (`SIGNALS_TEASER.md`, `design/prototype/`) | Notify me (push topic `signals`) · Say hello (mailto) · Back to the fest → 10 |
 | 52 | Host home | `/host` | Host, admin, organiser | my events from `event_hosts` | Time and venue → 50 · Voting on/off → 54 · People → 42 · hunt stickers → 46 |
 | 53 | Volunteer desk | `/volunteer` | Volunteer, admin | — | Hunt stickers → 46 · Winners → 49 · Test a sticker → 20 |
 | 54 | Host voting | `/host/voting/?id=` | Host of that event, admin, organiser | `polls`, `contestants`, `poll_results`; `host_set_voting`, `host_save_contestant` | ON/OFF · results visibility · open/close · add/edit teams |
@@ -81,7 +83,6 @@ flowchart LR
   W --> H[10 Home]
   W --> SC[20 Scanner]
   SU -->|email + password| CE[04 Check your email]
-  SU -->|Google| H
   CE -->|click link in email| V[05 You're verified]
   V --> I[06 Add to Home Screen]
   V --> H
@@ -209,11 +210,10 @@ app/
   vote/page.tsx                      30 Audience vote         (/vote/?id=<eventId>); no id = vote hub
   install/page.tsx                   06 Add to Home Screen (also a sheet)
   signup/page.tsx                    03
-  signup/check-email/page.tsx        04
+  signup/verify/page.tsx             04   Enter the 6-digit code
   login/page.tsx                     07
   reset/page.tsx, reset/new/page.tsx
   verified/page.tsx                  05
-  auth/callback/page.tsx             finishes sign-in in the browser
   account/page.tsx                   14
   screen/vote/page.tsx               31 (no nav)              (/screen/vote/?id=<eventId>)
   admin/page.tsx                     40

@@ -7,7 +7,15 @@ Everything needed to build **Fest Live** (the live fest guide plus the Signals "
 | `PRE_TEST_CHECKLIST.md` | **The gates before any student test** (sign-in, security, failure drills, load, alerts, hosts, mode switch) | Run with Prompt TEST.1 |
 | `SECURITY.md` | Sign-in, roles, headers, uploads, secrets, privacy, 15 security checks | Read before Track SEC |
 | `RESILIENCE.md` | Failure matrix (what if X fails), rate limits with fallbacks, degradation levels, load tests | Read before Track R.4 |
-| `PERMISSIONS_NOTIFICATIONS.md` | Push alerts, camera, Google sign-in in in-app browsers | Read before Track N |
+| `AUTH_EMAIL_OTP.md` | **Sign-in: email + password with a 6-digit code (no Google)**: flows, Supabase settings, and the email-quota plan |
+| `brand/signals/` | The **Signals logo pack**: mark, stacked and horizontal logos (colour, white, black), app icons, favicons, brand sheet |
+| `INSTALL_APP.md` | The "Add to Home Screen" button: what works on Android and iPhone, the manifest, the code |
+| `SECURITY_CHECKLIST.md` | **The security checklist to pass before the student test**: 3 automatic tests (attack test, privilege audit, live smoke test) and the manual items |
+| `security/` | `run_security_tests.sh`, `attack_test.sql` (102 attacks as signed-out, student, volunteer and host), `privilege_audit.sql`, `smoke_test.sh` (against the live site), `_headers.example` (site security headers) |
+| `BREVO_SETUP.md` | Free Brevo email for the sign-up codes, and its Gmail-sender weak spot |
+| `GOOGLE_SIGNIN_OPTIONAL.md` | Google sign-in as an extra button, with the exact Google Cloud branding values (app name Signals) |
+| `legal/privacy.html`, `legal/terms.html` | Ready Privacy Policy and Terms of Service pages for Signals (hosted at /privacy and /terms; Prompt LEGAL.1) |
+| `PERMISSIONS_NOTIFICATIONS.md` | Push alerts, camera | Read before Track N |
 | `HOSTS_AND_AFTER_FEST.md` | Host management, and the automatic switch back to the Signals app on 28 Nov | Read before HOST.1 and END.1 |
 | `BRAND.md` + `brand/` | **Official Fiesta'26 look:** logo, banner, app icons, colours, fonts | Copy `brand/` to `public/brand/`; attach with the first UI prompt |
 | `FORMS_CHECK.md` | What the Linktree form previews show: confirmed times/venues and forms that look unfinished | Send to the committee |
@@ -16,7 +24,7 @@ Everything needed to build **Fest Live** (the live fest guide plus the Signals "
 | `PRD.md` | Product requirements: goals, features, pages, data, limits | Read first; the agent reads it every phase |
 | `PROJECT_RULES.md` | Rules for the coding agent: stack, caching, security, UI, how to report | Add as an Antigravity rule; copy into the project |
 | `PROMPTS.md` | Copy-paste prompts, phase by phase, each with "You check" steps | 19–26 Nov, one prompt at a time |
-| `LAUNCH_CHECKLIST.md` | Accounts, Google sign-in setup, student test, go-live, fest-day runbook | Phase 0 (today) and 23–26 Nov |
+| `LAUNCH_CHECKLIST.md` | Accounts, email-code sign-in setup, student test, go-live, fest-day runbook | Phase 0 (today) and 23–26 Nov |
 | `supabase/schema.sql` | Database tables, triggers and security rules (tested on Postgres 16) | Run once in the Supabase SQL editor |
 | `SPORTS_AND_RELIABILITY.md` | Part B: how the app stays fast and keeps working if the database fails (caching, rate limits, emergency mode, backups, load test, costs). Part A (football) is for later | Read Part B before Track R |
 | `supabase/schema_sports.sql` | LATER: football tables, automatic score and points table, scorer role (tested on Postgres 16) | Not for the first launch |
@@ -36,7 +44,7 @@ Everything needed to build **Fest Live** (the live fest guide plus the Signals "
 
 ## Order
 1. Fill in the placeholders: `{{FEST_NAME}}`, `{{COLLEGE_NAME}}`, `{{BRAND_COLOR}}` (there is no college domain).
-2. `LAUNCH_CHECKLIST.md` → Phase 0 (committee, GitHub, Supabase, Google sign-in).
+2. `LAUNCH_CHECKLIST.md` → Phase 0 (committee, GitHub, Supabase, email-code sign-in).
 3. Read **PRD section 0**: the first launch is the **fest only** (schedule, announcements, results, audience voting; Stamp Hunt as a bonus). Football, Signals and stars come later.
 4. `PROMPTS.md` → Phase 1 → Track R → Phases 2, 3 → **Track A (A.1–A.4)** → Track V → Prompt 4.3 → Phases 5, 6 → Track H (H.0–H.2). Attach the matching `design/png` screens to every prompt. Check each step on your phone before the next.
 
@@ -46,6 +54,8 @@ Everything needed to build **Fest Live** (the live fest guide plus the Signals "
 | `PEAK_LOAD.md` | When the load comes (registration, voting, competitions), what breaks first, the rules, measured results, fest-week scaling checklist |
 | `supabase/bootstrap_admin.sql` | Run once with your own email: you become the main admin |
 | `workers/staff/` | The staff Worker (creates host/volunteer accounts with email + password, resets, removes; tested offline with `node workers/staff/test.mjs`) |
+| `design/prototype/fiesta-intro.html` | **The first-screen intro animation**: the Fiesta'26 logo lands while the Signals letters are still arranging, the letters circle over it, then arrange under it as "BY Signals"; black turns purple (about 3.8 s, Prompt INTRO.1) |
+| `SIGNALS_TEASER.md` | The animated "Signals: coming soon" page: animation order and timings, copy, developer card, and what still has to be built before launch. Open `design/prototype/signals-coming-soon.html` to see it move |
 | `HOSTING_CLOUDFLARE.md` | **Read first for building.** Free hosting: static site on Cloudflare Pages + Supabase free plan + one tiny Worker for push. Limits, rules for the coding agent, step by step |
 | `ADDRESS_AND_PEOPLE.md` | Free pages.dev address, sign-in without a domain, who can do what (hosts and volunteers by email) |
 | `loadtest/` | k6 scripts for 2,000 readers, sign-ins, 1,200 votes in a minute, registration rush (run on staging only) |
@@ -123,4 +133,4 @@ Installed in launch order on a local Postgres 16 with Supabase-style permissions
 - the archive/purge refuses in fest mode and for students, and in campus mode keeps vote totals, deletes votes, push subscriptions and participants' contact details.
 Also tested: the admin email in `staff_invites` makes that sign-in the admin (others stay students, students can't promote themselves); a host turns voting on and off for THEIR event only (needs a team first, bad links, bad visibility and bad times refused, hosts see live counts even when results are hidden, other roles refused); the staff Worker's 7 offline tests (admin-only, origin check, weak passwords, duplicates, reset, remove, no password in the audit log).
 Also tested for static hosting: `app_status()` carries a version and the polling interval; the version goes up on every event, venue, notice, change, poll or result change and the bump does not fill the audit log; `live_feed()` returns the public feed (about 4 KB for 6 events, no private columns) and works signed out; organisers can change `poll_seconds`, students can't; browser push subscribe (signed-in only, bad endpoints and keys refused, topics cleaned, 5 devices per person, remove works, tables unreadable by clients); `delete_my_account()` removes the user and refuses organisers.
-Not tested here (needs real services or phones): Google/Email sign-in, MFA, the Cloudflare Worker, Web Push delivery, camera, headers. They are covered by `PRE_TEST_CHECKLIST.md`.
+Not tested here (needs real services or phones): email-code sign-in, MFA, the Cloudflare Worker, Web Push delivery, camera, headers. They are covered by `PRE_TEST_CHECKLIST.md`.

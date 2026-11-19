@@ -7,6 +7,7 @@ import { ArrowLeft, Loader2, Printer, QrCode, RotateCw, ShieldAlert } from 'luci
 import { toast } from 'sonner';
 import { createClient } from '@/lib/supabase/client';
 import { useAuth } from '@/lib/use-auth';
+import { getSiteOrigin } from '@/lib/site-url';
 
 interface StampQrItem {
   point_id: string;
@@ -36,9 +37,7 @@ export default function StaffStickersPage() {
     }
     const list = data as StampQrItem[];
     setItems(list);
-    const origin = (
-      process.env.NEXT_PUBLIC_SITE_URL || window.location.origin
-    ).replace(/\/$/, '');
+    const origin = getSiteOrigin();
     const entries = await Promise.all(
       list.map(async (item) => {
         const url = `${origin}${item.path}`;

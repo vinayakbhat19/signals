@@ -82,6 +82,51 @@ export default function WelcomePage() {
               Scan a QR
             </Link>
           </div>
+
+          {/* Clean unboxed Powered by Signals line with Terms and Privacy fitted in middle */}
+          <footer className="pt-3 flex flex-wrap items-center justify-center gap-x-2.5 gap-y-1.5 text-xs text-[#9C97B0]">
+            <div className="flex items-center gap-1.5">
+              <svg width="16" height="16" viewBox="0 0 120 120" aria-hidden="true" className="inline-block shrink-0">
+                <g fill="none" strokeWidth="12" strokeLinecap="round">
+                  <path d="M21.8 53.8A54 54 0 0 1 98.2 53.8" stroke="#9B6CFF" />
+                  <path d="M33.1 65.1A38 38 0 0 1 86.9 65.1" stroke="#FF4FD8" />
+                  <path d="M44.4 76.4A22 22 0 0 1 75.6 76.4" stroke="#FFD60A" />
+                </g>
+                <circle cx="60" cy="92" r="10" fill="#22D3EE" />
+              </svg>
+              <span className="font-semibold text-[#BDB8CF]">
+                Powered by <strong className="font-extrabold text-[#F4F2FA]">Signals</strong>
+              </span>
+              <Link
+                href="/signals/"
+                onClick={markSeen}
+                className="inline-flex items-center gap-1 rounded-full border border-[#FFD60A]/40 bg-[#FFD60A]/10 px-2 py-0.5 text-[11px] font-extrabold text-[#FFD60A] hover:bg-[#FFD60A] hover:text-[#12091E] transition-colors ml-1"
+              >
+                Open →
+              </Link>
+            </div>
+            <span className="text-[#3B2758]">·</span>
+            <Link
+              href="/terms/"
+              className="text-[#9C97B0] hover:text-[#F4F2FA] transition-colors hover:underline text-[11px]"
+            >
+              Terms of Service
+            </Link>
+            <span className="text-[#3B2758]">·</span>
+            <Link
+              href="/privacy/"
+              className="text-[#9C97B0] hover:text-[#F4F2FA] transition-colors hover:underline text-[11px]"
+            >
+              Privacy Policy
+            </Link>
+            <span className="text-[#3B2758]">·</span>
+            <Link
+              href="/?intro=1"
+              className="text-[#9C97B0] hover:text-[#FFD60A] transition-colors hover:underline text-[11px]"
+            >
+              Replay Intro
+            </Link>
+          </footer>
         </div>
       </div>
     </div>

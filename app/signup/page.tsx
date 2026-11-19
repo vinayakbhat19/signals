@@ -227,7 +227,15 @@ export default function SignUpPage() {
               className="mt-0.5 size-4 accent-[#FFD60A]"
             />
             <span>
-              I agree to play fair in the Treasure Hunt and Audience Voting.
+              I agree to play fair in the Treasure Hunt and Audience Voting (see{' '}
+              <Link href="/terms/" className="text-[#FFD60A] underline underline-offset-2">
+                Terms
+              </Link>{' '}
+              &amp;{' '}
+              <Link href="/privacy/" className="text-[#FFD60A] underline underline-offset-2">
+                Privacy
+              </Link>
+              ).
             </span>
           </label>
           <button

@@ -43,11 +43,9 @@ Alert wording examples:
 | Fallbacks | 1) "Take a photo of the QR" using `<input type="file" accept="image/*" capture="environment">`, decoded in the browser; 2) "Enter a code" |
 | iPhone note | An installed iPhone web app may ask for the camera again each time it opens. Mention it in the help text |
 
-## Continue with Google
-
-- Provider configured as in `SECURITY.md` section 1; the button sends `prompt=select_account` so students can pick the right account.
-- **In-app browsers block it** (Instagram, WhatsApp, Facebook, Snapchat, LinkedIn, Telegram: error `disallowed_useragent`). Detect them from the user agent and show "Open in Chrome or Safari", a Copy link button, and the email + password form.
-- Anyone can sign in with Google or an email and vote; nothing is verified.
+## Sign-in (no Google)
+Sign-in is email + password with a 6-digit code to verify the email (`AUTH_EMAIL_OTP.md`). Because the code is typed on the app page, it works inside Instagram, WhatsApp and every other in-app browser, so no special warning sheet is needed.
+- Anyone can sign up with an email and vote; nothing else is verified.
 
 ## Where permissions are offered in the flow
 - After email confirmation (screen 05): "Get alerts for delays and changes" link → screen 08.

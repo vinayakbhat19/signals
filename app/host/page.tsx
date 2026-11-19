@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { CalendarCog, Loader2, QrCode, ShieldAlert, Users, Vote } from 'lucide-react';
+import { CalendarCog, Loader2, QrCode, ShieldAlert, Users } from 'lucide-react';
 import { useLiveFeed } from '@/lib/live-store';
 import { useAuth } from '@/lib/use-auth';
 
@@ -49,7 +49,7 @@ export default function HostHomePage() {
             MY HOSTED EVENTS
           </h1>
           <p className="text-xs text-[#9C97B0]">
-            Update time/venue/registration window, control audience voting, and
+            Update time/venue/registration window, check line-up, and
             manage participants.
           </p>
         </div>
@@ -77,20 +77,13 @@ export default function HostHomePage() {
                 {ev.venue_name || 'Venue TBA'} · Status: {ev.status}
               </p>
             </div>
-            <div className="grid grid-cols-3 gap-2">
+            <div className="grid grid-cols-2 gap-2">
               <Link
                 href={`/host/event/?id=${ev.id}`}
                 className="flex h-10 items-center justify-center gap-1.5 rounded-xl bg-[#FFD60A] text-xs font-extrabold text-[#12091E]"
               >
                 <CalendarCog className="size-3.5" />
                 Edit Event
-              </Link>
-              <Link
-                href={`/host/voting/?id=${ev.id}`}
-                className="flex h-10 items-center justify-center gap-1.5 rounded-xl border border-[#FF4FD8]/60 bg-[#12091E] text-xs font-bold text-[#FF4FD8]"
-              >
-                <Vote className="size-3.5" />
-                Voting
               </Link>
               <Link
                 href={`/host/participants/?id=${ev.id}`}

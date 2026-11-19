@@ -11,14 +11,14 @@ Students vote for their favourite performer or team in selected competitions (so
 | Contestants | Name, subtitle (college, department or team members), optional photo, order | — |
 | Opens / closes | A time, or "when switched on" and "when switched off" | Opens when switched on |
 | Show results | **Live** · **After voting closes** · **Hidden** (organisers only, e.g. when votes are part of the judges' score) | Live |
-| Who can vote | **Anyone signed in** (Google or email). No verification, no code, no QR | Anyone signed in |
+| Who can vote | **Anyone signed in** (email + password, code-verified). No verification, no code, no QR | Anyone signed in |
 
 **No QR for voting.** The **Vote button is on the event page**. A student opens the event, taps **Vote**, picks a team or person and is done. If they are signed out the app asks them to sign in and then brings them straight back to the vote. (The database still has optional switches for "verified only" and "venue code"; they are off and the app does not show them.)
 
 **Voting is only for outdoor competitions** (the auditorium has no signal). Hosts and organisers switch it on for the competitions that need it.
 
 ## Rules for voters (show on the voting screen)
-- Sign in with Google to vote (browsing the app never needs sign-in).
+- Sign in with your email to vote (browsing the app never needs sign-in).
 - One vote per person per competition.
 - You can change your vote up to 3 times while voting is open, then it locks.
 - Votes are private: nobody sees who you voted for.

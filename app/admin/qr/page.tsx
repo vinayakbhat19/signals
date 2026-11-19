@@ -4,10 +4,11 @@ import { useEffect, useState } from 'react';
 import QRCode from 'qrcode';
 import { Printer } from 'lucide-react';
 import { useLiveFeed } from '@/lib/live-store';
+import { getSiteOrigin } from '@/lib/site-url';
 
 export default function AdminQrPostersPage() {
   const { feed } = useLiveFeed();
-  const [target, setTarget] = useState<'home' | 'hunt' | 'event' | 'vote'>('home');
+  const [target, setTarget] = useState<'home' | 'hunt' | 'event' | 'leaderboard'>('home');
   const [selectedEventId, setSelectedEventId] = useState('');
   const [qrDataUrl, setQrDataUrl] = useState('');
 
@@ -19,27 +20,27 @@ export default function AdminQrPostersPage() {
       ? '/'
       : target === 'hunt'
         ? '/hunt/'
-        : target === 'event'
-          ? `/event/?id=${evId}`
-          : `/vote/?id=${evId}`;
+        : target === 'leaderboard'
+          ? '/hunt/leaderboard/'
+          : `/event/?id=${evId}`;
 
   const headline =
     target === 'home'
       ? "FIESTA'26 LIVE GUIDE"
       : target === 'hunt'
         ? "FIESTA'26 TREASURE HUNT"
-        : target === 'event'
-          ? selectedEvent?.title || 'EVENT'
-          : `VOTE: ${selectedEvent?.title || 'LIVE POLL'}`;
+        : target === 'leaderboard'
+          ? "FIESTA'26 HUNT LEADERBOARD"
+          : selectedEvent?.title || 'EVENT';
+
+  const origin = getSiteOrigin();
+  const effectiveUrl = `${origin}${relativePath}`;
 
   useEffect(() => {
-    const origin = (
-      process.env.NEXT_PUBLIC_SITE_URL || window.location.origin
-    ).replace(/\/$/, '');
-    QRCode.toDataURL(`${origin}${relativePath}`, { width: 420, margin: 2 })
+    QRCode.toDataURL(effectiveUrl, { width: 420, margin: 2 })
       .then(setQrDataUrl)
       .catch(() => {});
-  }, [relativePath]);
+  }, [effectiveUrl]);
 
   return (
     <div className="mx-auto max-w-2xl space-y-5">
@@ -57,7 +58,7 @@ export default function AdminQrPostersPage() {
         </div>
 
         <div className="grid grid-cols-4 gap-2">
-          {(['home', 'hunt', 'event', 'vote'] as const).map((t) => (
+          {(['home', 'hunt', 'event', 'leaderboard'] as const).map((t) => (
             <button
               key={t}
               type="button"
@@ -73,7 +74,7 @@ export default function AdminQrPostersPage() {
           ))}
         </div>
 
-        {(target === 'event' || target === 'vote') && (
+        {target === 'event' && (
           <select
             value={evId}
             onChange={(e) => setSelectedEventId(e.target.value)}
@@ -102,6 +103,9 @@ export default function AdminQrPostersPage() {
             className="mx-auto size-72 rounded-2xl border-4 border-[#12091E] p-2"
           />
         )}
+        <p className="font-mono text-xs font-bold text-[#5A4B75] break-all">
+          {effectiveUrl}
+        </p>
         <p className="text-sm font-extrabold">
           Point your phone camera here to open immediately!
         </p>

@@ -11,7 +11,7 @@ A game for fest day: about **10 hidden places** on campus. Each place has a **QR
 - The QR opens the app at `/s/?t=<place id>.<code>` (the code is a long random string, so nobody can guess a QR they haven't seen).
 
 ## Rules for players (put these on the Hunt page and the posters)
-1. Sign in (Google or email) to play. Browsing needs no sign-in.
+1. Sign in with your email to play. Browsing needs no sign-in.
 2. Read a clue, find the place, scan the QR sticker there. Tap "Need a hint?" if you're stuck.
 3. **+10** per place, **+20** for finding all 10.
 4. One stamp per place per person. You can scan places in any order.

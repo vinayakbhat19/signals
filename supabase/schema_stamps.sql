@@ -166,7 +166,7 @@ per_user as (
   from public.stamps s join public.stamp_points sp on sp.id = s.point_id and sp.active
   group by s.user_id
 )
-select u.user_id,
+select (u.user_id = auth.uid()) as is_me,      -- no user ids are exposed; the app highlights "my row" with this
        trim(split_part(coalesce(p.full_name, 'Student'), ' ', 1) || ' ' ||
             coalesce(nullif(left(split_part(coalesce(p.full_name, ''), ' ', 2), 1), '') || '.', '')) as display_name,
        u.stamps,

@@ -62,7 +62,7 @@ begin
     coalesce(new.raw_user_meta_data ->> 'full_name', new.raw_user_meta_data ->> 'name'),
     new.raw_user_meta_data ->> 'avatar_url',
     new.email,
-    -- Verified only once the email is confirmed (Google sign-ins arrive confirmed;
+    -- Verified only once the email is confirmed (codes confirm the email;
     -- email/password sign-ups are confirmed by the link Supabase emails them).
     coalesce(domain, '') <> '' and new.email_confirmed_at is not null
       and lower(split_part(coalesce(new.email, ''), '@', 2)) = lower(domain),

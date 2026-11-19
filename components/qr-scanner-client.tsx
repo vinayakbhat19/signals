@@ -79,11 +79,11 @@ function parseFestQr(raw: string): ParsedQrTarget {
     if ((path === '/vote' || path === '/vote/') && url.searchParams.get('id')) {
       return {
         kind: 'vote',
-        label: 'FOUND · AUDIENCE VOTE',
-        title: 'Live Audience Poll',
-        subtitle: 'Tap below to cast your vote',
-        ctaLabel: 'Open vote',
-        href: `/vote/?id=${encodeURIComponent(url.searchParams.get('id')!)}`,
+        label: 'NOTICE · VOTING CANCELLED',
+        title: 'Audience Voting Cancelled',
+        subtitle: 'Voting was cancelled by organizers. Join the Treasure Hunt!',
+        ctaLabel: 'View Hunt Leaderboard',
+        href: `/hunt/leaderboard/`,
         rawUrl: trimmed,
       };
     }

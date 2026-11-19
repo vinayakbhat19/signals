@@ -327,12 +327,6 @@ export default function AdminDashboardPage() {
                 >
                   Full Edit
                 </Link>
-                <Link
-                  href={`/host/voting/?id=${ev.id}`}
-                  className="inline-flex h-8 items-center rounded-lg border border-[#FF4FD8]/50 px-2.5 text-[11px] font-bold text-[#FF4FD8]"
-                >
-                  Voting
-                </Link>
               </div>
             </div>
           ))}

@@ -5,7 +5,7 @@
   "scripts": {
     "dev": "next dev",
     "build:schedule": "node scripts/generate-schedule-snapshot.mjs",
-    "build": "node scripts/generate-schedule-snapshot.mjs && next build",
+    "build": "node scripts/generate-schedule-snapshot.mjs && node scripts/build-css.mjs && next build --webpack",
     "start": "next start",
     "lint": "eslint",
     "test": "vitest run"

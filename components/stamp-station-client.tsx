@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState } from 'react';
 import QRCode from 'qrcode';
 import { WifiOff } from 'lucide-react';
 import { formatTime } from '@/lib/time';
+import { getSiteOrigin } from '@/lib/site-url';
 
 interface StationState {
   code: string;
@@ -54,7 +55,8 @@ export function StampStationClient({
 
   // Generate crisp QR data URL whenever rotating code updates
   useEffect(() => {
-    const targetUrl = `${siteUrl}/stamp/${pointId}?c=${encodeURIComponent(state.code)}`;
+    const origin = siteUrl && !siteUrl.includes('localhost') ? siteUrl.replace(/\/$/, '') : getSiteOrigin();
+    const targetUrl = `${origin}/stamp/${pointId}?c=${encodeURIComponent(state.code)}`;
     void QRCode.toDataURL(targetUrl, {
       width: 512,
       margin: 1,

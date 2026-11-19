@@ -12,7 +12,7 @@ Read this file and `PRD.md` (especially section 0, the launch scope) before ever
 ## Folder layout
 ```
 app/                  static pages (no [id] folders; ids come from the query string)
-  event/ vote/ s/ venue/ lineup/ hunt/ events/ account/ admin/ host/ auth/callback/ ...
+  event/ vote/ s/ venue/ lineup/ hunt/ events/ account/ admin/ host/ signup/ login/ reset/ ...
 components/           UI components (components/ui = shadcn)
 lib/supabase.ts       the one browser client
 lib/data/             data-access functions (calls to rpc / views; one file per area)
@@ -56,7 +56,7 @@ supabase/             schema.sql ... schema_ops.sql, seed (already written; do n
 - "Now" on the client comes from `server_time` in `app_status` plus elapsed time, so wrong phone clocks don't break "Happening now."
 
 ## UI
-- Follow the attached design screenshots and **BRAND.md** (official Fiesta'26 look: logo from `brand/`, background #0B0A12, cards #1F1230, borders #3B2758, text #F4F2FA, accent Fiesta yellow #FFD60A, Fiesta pink #FF4FD8, purple halftone header #32194A; big titles in Bungee, headings Bricolage Grotesque 800, body Inter; mascots as inline SVG with CSS animations, off under prefers-reduced-motion). Dark mode only. App name: **Fiesta'26 Live**.
+- Follow the attached design screenshots and **BRAND.md** (official Fiesta'26 look: logo from `brand/`, background #000000 (true black), cards #1F1230, borders #3B2758, text #F4F2FA, accent Fiesta yellow #FFD60A, Fiesta pink #FF4FD8, purple halftone header #32194A; big titles in Bungee, headings Bricolage Grotesque 800, body Inter; mascots as inline SVG with CSS animations, off under prefers-reduced-motion). Dark mode only. App name: **Fiesta'26 Live**.
 - Mobile first: design at 390 px wide, then check 768 px and 1280 px.
 - Bottom tab bar on mobile: Home, Events, SCAN (raised centre button), Vote, Hunt. My account opens from the avatar on Home. Follow `APP_FLOW.md` for every route and link.
 - Category colours: tech cyan, cultural pink, sports lime, workshop orange, talk violet, fun yellow, official grey.

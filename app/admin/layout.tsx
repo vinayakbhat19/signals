@@ -10,7 +10,6 @@ import {
   QrCode,
   ShieldAlert,
   Users,
-  Vote,
 } from 'lucide-react';
 import { useAuth } from '@/lib/use-auth';
 
@@ -19,7 +18,6 @@ const ADMIN_TABS = [
   { href: '/admin/import/', label: 'Import CSV', icon: FileSpreadsheet },
   { href: '/admin/hosts/', label: 'Hosts & Staff', icon: Users },
   { href: '/admin/hunt/', label: 'Treasure Hunt', icon: Compass },
-  { href: '/admin/voting/', label: 'Voting', icon: Vote },
   { href: '/admin/qr/', label: 'QR Posters', icon: QrCode },
   { href: '/admin/safety/', label: 'Safety', icon: ShieldAlert },
   { href: '/admin/stats/', label: 'Stats', icon: BarChart3 },

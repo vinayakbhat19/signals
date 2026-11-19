@@ -1,206 +1,104 @@
 'use client';
 
-import { Suspense, useCallback, useEffect, useState } from 'react';
-import { useSearchParams } from 'next/navigation';
+import { Suspense, useEffect, useState } from 'react';
 import QRCode from 'qrcode';
-import { createClient } from '@/lib/supabase/client';
-import { useLiveFeed } from '@/lib/live-store';
-
-interface PollResultRow {
-  contestant_id: string;
-  name: string;
-  subtitle: string | null;
-  sort: number;
-  votes: number | null;
-  percent: number | null;
-}
-
-interface PublicPoll {
-  id: string;
-  event_id: string;
-  title: string | null;
-  enabled: boolean;
-  results_visibility: 'live' | 'after_close' | 'hidden';
-}
+import { Compass, Trophy } from 'lucide-react';
+import { getSiteOrigin } from '@/lib/site-url';
 
 function StageVoteScreenInner() {
-  const params = useSearchParams();
-  const eventId = params.get('id') ?? '';
-  const { feed } = useLiveFeed();
-  const [poll, setPoll] = useState<PublicPoll | null>(null);
-  const [rows, setRows] = useState<PollResultRow[]>([]);
   const [qrDataUrl, setQrDataUrl] = useState<string>('');
-  const [voteUrl, setVoteUrl] = useState<string>('');
-
-  const event = feed.events.find((e) => e.id === eventId) ?? null;
-
-  const load = useCallback(async () => {
-    if (!eventId) return;
-    const supabase = createClient();
-    const { data: pollData } = await supabase
-      .from('polls')
-      .select('id, event_id, title, enabled, results_visibility')
-      .eq('event_id', eventId)
-      .maybeSingle();
-
-    if (!pollData) {
-      setPoll(null);
-      return;
-    }
-
-    const p = pollData as PublicPoll;
-    setPoll(p);
-
-    const { data: resRows } = await supabase
-      .from('poll_results')
-      .select('contestant_id, name, subtitle, sort, votes, percent')
-      .eq('poll_id', p.id)
-      .order('votes', { ascending: false, nullsFirst: false })
-      .order('sort', { ascending: true });
-
-    setRows((resRows ?? []) as PollResultRow[]);
-  }, [eventId]);
+  const [targetUrl, setTargetUrl] = useState<string>('');
 
   useEffect(() => {
-    const raf = window.requestAnimationFrame(() => void load());
-    const timer = window.setInterval(() => {
-      if (!document.hidden) void load();
-    }, 5_000);
-    return () => {
-      window.cancelAnimationFrame(raf);
-      window.clearInterval(timer);
-    };
-  }, [load]);
-
-  useEffect(() => {
-    if (!eventId) return;
-    const origin =
-      process.env.NEXT_PUBLIC_SITE_URL ||
-      (typeof window !== 'undefined' ? window.location.origin : '');
-    const target = `${origin.replace(/\/$/, '')}/vote/?id=${encodeURIComponent(eventId)}`;
-    const raf = window.requestAnimationFrame(() => {
-      setVoteUrl(target);
-      void QRCode.toDataURL(target, {
-        width: 320,
-        margin: 2,
-        color: { dark: '#100A1C', light: '#FFFFFF' },
-      }).then(setQrDataUrl);
-    });
-    return () => window.cancelAnimationFrame(raf);
-  }, [eventId]);
-
-  const totalVotes = rows.reduce((sum, r) => sum + (r.votes ?? 0), 0);
+    const origin = getSiteOrigin();
+    const url = `${origin}/hunt/leaderboard/`;
+    setTargetUrl(url);
+    void QRCode.toDataURL(url, {
+      width: 360,
+      margin: 2,
+      color: { dark: '#12091E', light: '#FFFFFF' },
+    }).then(setQrDataUrl);
+  }, []);
 
   return (
-    <div className="min-h-screen bg-[#100A1C] text-[#F5F2FB] p-8 md:p-12 flex flex-col justify-between">
+    <div className="min-h-screen bg-[#100A1C] text-[#F5F2FB] p-8 md:p-14 flex flex-col justify-between">
       <header className="flex flex-wrap items-center justify-between gap-4 border-b border-white/10 pb-6">
         <div>
           <p className="text-xs font-extrabold uppercase tracking-[0.18em] text-[#FFDC14]">
-            FIESTA&apos;26 · SDMCET DHARWAD · LIVE AUDIENCE VOTE
+            FIESTA&apos;26 · SDMCET DHARWAD · FESTIVAL NOTICE
           </p>
           <h1 className="mt-1 text-3xl md:text-5xl font-black tracking-tight">
-            {poll?.title || event?.title || 'Audience Voting'}
+            Audience Voting Notice
           </h1>
         </div>
         <div className="rounded-full bg-[#E83295]/20 border border-[#E83295]/50 px-5 py-2 text-sm font-black uppercase tracking-wider text-[#FFDC14]">
-          {poll?.enabled ? `LIVE · ${totalVotes} votes` : 'VOTING CLOSED'}
+          VOTING CANCELLED
         </div>
       </header>
 
-      <div className="my-8 grid grid-cols-1 lg:grid-cols-[1fr_340px] gap-8 items-center flex-1">
-        <div className="space-y-4">
-          {!eventId ? (
-            <p className="text-lg text-[#C9C1D9]">
-              Open this stage screen with <code>?id=&lt;eventId&gt;</code>.
+      <div className="my-12 grid grid-cols-1 lg:grid-cols-[1fr_360px] gap-10 items-center flex-1">
+        <div className="space-y-6">
+          <div className="rounded-3xl border border-white/10 bg-[#1F1534] p-8 space-y-4">
+            <span className="inline-flex items-center gap-2 rounded-xl bg-[#FF4FD8]/20 px-3.5 py-1.5 text-sm font-extrabold text-[#FF4FD8]">
+              <Trophy className="size-4" />
+              OFFICIAL FESTIVAL UPDATE
+            </span>
+            <h2 className="text-3xl md:text-4xl font-black text-[#F4F2FA]">
+              Audience voting has been cancelled by event organizers.
+            </h2>
+            <p className="text-lg text-[#C9C1D9] leading-relaxed">
+              All competitions and stage performances are judged directly by the
+              official jury panel.
             </p>
-          ) : rows.length === 0 ? (
-            <p className="text-lg text-[#C9C1D9]">
-              Waiting for contestants to be added for this poll…
+          </div>
+
+          <div className="rounded-3xl border border-[#9B6CFF]/40 bg-[#9B6CFF]/10 p-6 space-y-2">
+            <p className="text-sm font-extrabold uppercase tracking-wider text-[#FFDC14] flex items-center gap-2">
+              <Compass className="size-4 text-[#FFDC14]" />
+              Join the Campus Treasure Hunt!
             </p>
-          ) : (
-            rows.slice(0, 8).map((row, idx) => {
-              const pct = Math.max(0, Math.min(100, Math.round(row.percent ?? 0)));
-              const isLeader = idx === 0 && (row.votes ?? 0) > 0;
-              return (
-                <div
-                  key={row.contestant_id}
-                  className="rounded-2xl border border-white/10 bg-[#1F1534] p-4"
-                >
-                  <div className="flex items-baseline justify-between gap-4">
-                    <div>
-                      <span className="mr-3 text-xl font-black text-[#FFDC14]">
-                        #{idx + 1}
-                      </span>
-                      <span className="text-xl md:text-2xl font-extrabold">
-                        {row.name}
-                      </span>
-                      {row.subtitle ? (
-                        <span className="ml-2 text-sm text-[#C9C1D9]">
-                          · {row.subtitle}
-                        </span>
-                      ) : null}
-                    </div>
-                    <div className="text-right font-mono">
-                      <span className="text-2xl font-black text-[#FFDC14]">
-                        {poll?.results_visibility === 'hidden' ? '—' : `${pct}%`}
-                      </span>
-                      {row.votes !== null && poll?.results_visibility !== 'hidden' ? (
-                        <span className="ml-2 text-sm text-[#C9C1D9]">
-                          ({row.votes})
-                        </span>
-                      ) : null}
-                    </div>
-                  </div>
-                  <div className="mt-3 h-3 w-full overflow-hidden rounded-full bg-white/10">
-                    <div
-                      className={
-                        isLeader
-                          ? 'h-full rounded-full bg-gradient-to-r from-[#FFDC14] to-[#E83295] transition-all duration-500'
-                          : 'h-full rounded-full bg-[#36B5E8] transition-all duration-500'
-                      }
-                      style={{
-                        width:
-                          poll?.results_visibility === 'hidden'
-                            ? '0%'
-                            : `${pct}%`,
-                      }}
-                    />
-                  </div>
-                </div>
-              );
-            })
-          )}
+            <p className="text-base text-[#F4F2FA]">
+              10 hidden spots are scattered across SDMCET. Scan the QR code to
+              view the live Leaderboard, solve clues, and win prizes!
+            </p>
+          </div>
         </div>
 
-        <aside className="rounded-3xl border border-white/15 bg-[#1F1534] p-6 text-center flex flex-col items-center">
-          <p className="text-xs font-extrabold uppercase tracking-[0.16em] text-[#FFDC14]">
-            SCAN TO VOTE NOW
+        {/* QR Code Card */}
+        <div className="rounded-3xl border-2 border-[#FFDC14] bg-[#1F1534] p-6 text-center space-y-4 shadow-[6px_6px_0_#E83295]">
+          <p className="text-xs font-black uppercase tracking-widest text-[#FFDC14]">
+            SCAN FOR HUNT LEADERBOARD
           </p>
           {qrDataUrl ? (
             // eslint-disable-next-line @next/next/no-img-element
             <img
               src={qrDataUrl}
-              alt="Scan to vote QR"
-              className="mt-4 h-64 w-64 rounded-2xl bg-white p-2"
+              alt="QR Code for Hunt Leaderboard"
+              className="mx-auto size-64 rounded-2xl bg-white p-2.5 shadow-md"
             />
           ) : (
-            <div className="mt-4 h-64 w-64 rounded-2xl bg-white/10 animate-pulse" />
+            <div className="mx-auto size-64 rounded-2xl bg-white/10 animate-pulse" />
           )}
-          {voteUrl ? (
-            <p className="mt-4 text-xs text-[#C9C1D9] break-all">{voteUrl}</p>
-          ) : null}
-        </aside>
+          <p className="font-mono text-xs font-bold text-[#FFDC14] break-all">
+            {targetUrl}
+          </p>
+        </div>
       </div>
+
+      <footer className="border-t border-white/10 pt-4 text-xs text-[#9C97B0] flex justify-between items-center">
+        <span>Fiesta&apos;26 · Powered by Signals</span>
+        <span>SDMCET Dharwad</span>
+      </footer>
     </div>
   );
 }
 
-export default function StageVoteScreenPage() {
+export default function StageVoteScreen() {
   return (
     <Suspense
       fallback={
-        <div className="min-h-screen bg-[#100A1C] text-[#F5F2FB] flex items-center justify-center text-sm">
-          Loading stage screen…
+        <div className="min-h-screen bg-[#100A1C] text-[#F5F2FB] flex items-center justify-center font-bold">
+          Loading Notice…
         </div>
       }
     >

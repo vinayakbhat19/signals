@@ -5,8 +5,9 @@ Every gate must pass **on the preview deployment** (not production). Mark each w
 Legend: 🤖 the agent can check it · 📱 needs a person with a phone · 👥 needs the committee.
 
 ## A. Sign-in
-- [ ] 🤖 Google sign-in works; wrong redirect URL is refused; "access denied" shows a friendly page.
-- [ ] 📱 Google sign-in inside the **Instagram in-app browser** shows the "Open in Chrome/Safari" sheet.
+- [ ] 🤖 Sign-up sends a 6-digit code; the right code signs the person in; a wrong or old code shows a friendly error; resend works after 60 s; password login and "Forgot password" (code + new password) work.
+- [ ] 📱 Sign-up and the code entry work inside the **Instagram and WhatsApp in-app browsers**.
+- [ ] 📱 Daily email quota: the SMTP provider's count and the "Too many sign-ups today" message are tested; the plan for opening sign-up early (`AUTH_EMAIL_OTP.md` section 3) is running.
 - [ ] 🤖 Email sign-up: no Verified badge until the link is clicked; Gmail never gets the badge.
 - [ ] 🤖 Wrong password 11 times in a minute → 429 with a friendly wait message; the error text never says whether the email exists.
 - [ ] 🤖 Password reset works end to end; resend limited to 1 per minute.
@@ -15,6 +16,7 @@ Legend: 🤖 the agent can check it · 📱 needs a person with a phone · 👥 
 - [ ] 🤖 Sign out ends the session on that device; delete my account removes the profile, stamps and votes.
 
 ## B. Security
+- [ ] 🤖 **`SECURITY_CHECKLIST.md` passes completely**: `security/run_security_tests.sh` (PASS 102, no FAIL), the privilege audit sections, and `security/smoke_test.sh` against the live site (0 failed).
 - [ ] 🤖 All 15 checks in `SECURITY.md` section 9.
 - [ ] 🤖 Security headers present; CSP enforced without console errors on every screen.
 - [ ] 🤖 Service-role key and VAPID private key are not in the repository or the `out/` folder (they exist only as Worker secrets).

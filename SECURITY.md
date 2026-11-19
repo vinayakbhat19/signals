@@ -1,3 +1,5 @@
+> **To pass before the test: `SECURITY_CHECKLIST.md`** (it replaces the older checks below where they differ; tests are in `security/`).
+
 # Security guide: Fiesta'26 Live
 
 What we protect: students' names and emails, host registration lists (emails and phone numbers), votes (private), organiser access. What we don't collect: location, contacts, Aadhaar, payment details.
@@ -10,12 +12,12 @@ Rule of thumb: **the database enforces every rule; the app is just the front doo
 
 | Way in | How it works | Notes |
 | --- | --- | --- |
-| **Continue with Google** | Supabase Auth, Google OAuth, PKCE code flow in the browser (`supabase-js`) | Fastest for students. Google confirms the email |
+| **Email + password, verified by a 6-digit code** | Supabase Auth in the browser: `signUp`, `verifyOtp`, `signInWithPassword` (see `AUTH_EMAIL_OTP.md`) | No Google. The code proves the person controls the email |
 | **Email + password** | Supabase Auth with **Confirm email ON** | Verified badge only after the confirmation link is clicked |
-| **Organisers and admins** | Google sign-in + **TOTP two-factor (MFA)** | Enrol at `/account/security`; admin pages require the second factor once enrolled |
+| **Organisers and admins** | Email + password + **TOTP two-factor (MFA)** | Enrol at `/account/security`; admin pages require the second factor once enrolled |
 
 Configuration checklist (Supabase dashboard unless noted):
-- [ ] Authentication → Providers → Google: enabled with your own OAuth client; Google consent screen **In production**; scopes only `openid email profile`.
+- [ ] Authentication → Providers: **only Email** is enabled (Confirm email ON, codes in the templates). Google and all other providers are off.
 - [ ] Authentication → URL Configuration: Site URL = the production URL; Redirect URLs = only `https://<your-app>/**` and `http://localhost:3000/**`. No wildcards for other domains.
 - [ ] Email: Confirm email ON; minimum password length 8; custom SMTP (the built-in sender is for testing only).
 - [ ] Authentication → Rate Limits: keep sign-up, sign-in, token refresh and email limits **at or below** the defaults; lower the email-send limit to what you need.
@@ -23,7 +25,7 @@ Configuration checklist (Supabase dashboard unless noted):
 - [ ] Sessions: access token (JWT) expiry 1 hour, refresh-token rotation on (defaults).
 - [ ] Sessions live in the browser's localStorage (static site, no server). Protect them with the strict CSP in `public/_headers` (no inline scripts, no third-party scripts except Turnstile and Cloudflare analytics) and never log tokens.
 
-**Google blocks sign-in inside in-app browsers** (Instagram, WhatsApp, Facebook, Snapchat, LinkedIn, Telegram) with the error `disallowed_useragent`. Students who scan a QR from a story or a chat will hit this. The app must detect those browsers and show: "Open in Chrome or Safari to continue with Google", with a Copy link button and email + password as the alternative.
+**No Google, so no in-app-browser problem.** The code is typed on the app page, so it works the same in Instagram, WhatsApp, Chrome and Safari.
 
 **Never reveal whether an email has an account** (same message for "wrong password" and "no such user"; same "check your email" message for reset).
 
@@ -83,7 +85,7 @@ Also: all headers go in `public/_headers` (Cloudflare Pages), every input goes t
 
 ## 8. Privacy (India: DPDP Act 2023 and Rules 2025; main duties apply from May 2027, but build for them now)
 
-- Collect only: name, email, avatar (Google), department (optional). No location, contacts or Aadhaar.
+- Collect only: name, email, department (optional). No location, contacts or Aadhaar.
 - **Consent and notice:** a plain-language notice at sign-up; separate, optional consent for alerts (push) and camera.
 - **Retention:** after the fest the organiser runs **Archive and purge** (`archive_and_purge_fest`): individual votes, push subscriptions and participants' emails/phones are deleted; only aggregate results and the Stamp Hunt leaderboard stay.
 - **User rights:** My account → edit profile, hide from the leaderboard, delete my account and data.

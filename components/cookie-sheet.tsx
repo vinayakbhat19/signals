@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import Link from 'next/link';
 import { Cookie, ShieldCheck } from 'lucide-react';
 
 const COOKIE_PREF_KEY = 'fiesta26:cookie-choice';
@@ -103,6 +104,24 @@ export function CookieSheet() {
               className="mt-1 size-5 accent-[#FFD60A]"
             />
           </label>
+        </div>
+
+        <div className="flex items-center justify-between px-1 text-[11px] text-[#9C97B0]">
+          <Link
+            href="/privacy"
+            onClick={() => setOpen(false)}
+            className="underline underline-offset-2 hover:text-[#FFD60A]"
+          >
+            Privacy Policy
+          </Link>
+          <span>·</span>
+          <Link
+            href="/terms"
+            onClick={() => setOpen(false)}
+            className="underline underline-offset-2 hover:text-[#FFD60A]"
+          >
+            Terms of Service
+          </Link>
         </div>
 
         <button

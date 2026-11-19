@@ -6,7 +6,7 @@
 
 | # | Peak | When | What 2,000 people do | What gets hit |
 | --- | --- | --- | --- | --- |
-| P1 | **Gate rush** | Morning of 25 Nov, and before big events | Scan the poster QR, open the app, **sign up or sign in** (about 2,000 accounts in 15-30 min) | Static files (free, unlimited), Supabase Auth, confirmation emails, Google OAuth |
+| P1 | **Gate rush** | Morning of 25 Nov, and before big events | Scan the poster QR, open the app, **sign up or sign in** (about 2,000 accounts in 15-30 min) | Static files (free, unlimited), Supabase Auth, **the 6-digit code emails** |
 | P2 | **Registration opening** | When a host opens a form and announces it | Open the event page and tap **Register**. The forms are Google Forms, so the form load is Google's | Static files, one `live_feed` call |
 | P3 | **Competition on** | Every competition start and every delay | Open Events / Updates / line-up; delay alerts reach about 800+ devices at once | `app_status`, `live_feed`, push Worker |
 | P4 | **Voting** | After each outdoor performance | Open the event page, tap **Vote** (no QR scan), vote within about a minute (**1,000+ votes in 60 s**), then watch the results | `cast_vote`, `poll_results` every 10 s |
@@ -35,7 +35,7 @@ Local Postgres 16 on a 4-core machine, using the real `cast_vote` and the **earl
 | 1 | **Supabase egress (5 GB a month)** | Every call and every image sent from Supabase counts. 2,000 phones polling hard would burn it | Phones call only the tiny `app_status` (every `poll_seconds`, default 30, jittered) and fetch `live_feed` only when the **version** changes. Images are 15 KB thumbnails with a one-year cache; known covers live in the website files (Cloudflare, free). The **Polling slider** in the Safety panel slows everyone down without a redeploy. Rough estimate (not measured): about 3 GB over the fest |
 | 2 | **Supabase free compute and connection limits** | Small shared CPU; the number of requests per second it sustains is not published | The calls are tiny and mostly indexed reads. **Run the load test on a staging project first.** If it struggles: raise `poll_seconds`, cut `poll_results` to every 20 s, stagger announcements |
 | 3 | **Supabase Auth limits** | Auth rate limits are per IP and the campus shares one IP | Sign-in runs **from the browser** (the user's own IP). Raise the Auth rate limits in the dashboard (some may be locked on the free plan: check); session lifetime about 4 h so there are few refreshes. Test with the `signin` scenario |
-| 4 | **Confirmation emails** | A custom sender on a single address allows only a few hundred a day | **Google sign-in is the main button.** Email + password is the fallback. Keep Confirm email ON |
+| 4 | **Sign-up code emails** | Each sign-up sends one email. A free sender allows only about 300 (Brevo) to 500 (Gmail) a day, and Supabase starts at about 30 an hour. **2,000 people cannot all sign up in the first morning** | **Open sign-up days before the fest** (about 300 a day over 7 days), long sessions so each person gets one email in the whole fest, password login afterwards (no email), a friendly "try again tomorrow" message, and browsing/clues that need no account. See `AUTH_EMAIL_OTP.md` section 3 |
 | 5 | **Project paused / no backups on the free plan** | Free projects pause after a week of inactivity; there are no automatic backups | Use the project every few days; export on 24 Nov; nightly GitHub Action backup |
 | 6 | **Realtime / websockets** | Connection limits on small plans | **Not used.** Polling only |
 | 7 | **Cloudflare Worker free limits** | 100,000 requests a day, small CPU time | The only Worker is the push sender: a few hundred runs a day. Everything else is static files |
@@ -60,7 +60,7 @@ Local Postgres 16 on a 4-core machine, using the real `cast_vote` and the **earl
 
 | Peak | What the system does | What you do |
 | --- | --- | --- |
-| P1 Gate rush | Static app, Google sign-in first, sign-in from the browser, Turnstile | Raise Auth limits **before** 25 Nov; volunteers at the gate say "Continue with Google"; keep the in-app-browser help visible |
+| P1 Gate rush | Static app, accounts created **in the days before**, password login (no email), Turnstile | Open sign-up now; raise Auth limits and the SMTP quota **before** 25 Nov; at the gate tell people "log in with your email and password"; anyone new still gets a code if the daily quota is left |
 | P2 Registration | Event pages are static; Register button state from the host's window | Host opens the Google Form and sets the window together; avoid announcing two registrations in the same minute |
 | P3 Competition on | Change alerts automatic; phones refresh at their next check; push in batches | Delay with one tap; expect a wave of refreshes within one poll |
 | P4 Voting | Event page -> Vote button -> `cast_vote`; results every 10 s | Open voting 2 minutes after the performance ends; warm the pages before |
@@ -68,7 +68,7 @@ Local Postgres 16 on a 4-core machine, using the real `cast_vote` and the **earl
 | P6 Results | Leaderboard and archive | - |
 
 ## 6. Fest-week checklist (free; do on 23 Nov, undo on 28 Nov)
-- [ ] Supabase: project used recently (not paused); Auth rate limits raised as far as the free plan allows; session lifetime about 4 h; custom SMTP sender working (limits known); Google sign-in as the main button; usage page bookmarked (egress, API requests, database size).
+- [ ] Supabase: project used recently (not paused); Auth rate limits raised as far as the free plan allows; session lifetime about 4 h; custom SMTP sender working (limits known); sign-up opened early so the daily email quota is spread out; usage page bookmarked (egress, API requests, database size).
 - [ ] Cloudflare: Pages project deployed from `main`, address final; `public/_headers` active; Turnstile widget created; the push Worker deployed with its cron and secrets; previous deployment known for rollback.
 - [ ] `poll_seconds` at 30; know where the slider is.
 - [ ] Cache warming script ready.

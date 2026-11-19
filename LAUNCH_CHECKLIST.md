@@ -6,7 +6,7 @@
 - [ ] Meet the fest committee head. Agree that the app is the official live schedule, and that **2 organisers** will post updates on fest day (in shifts).
 - [ ] Ask for the **full schedule in a Google Sheet by 21 Nov** using `templates/schedule_template.csv` (columns must match). Share the template with them.
 - [ ] Get the fest name, logo (square PNG, at least 512×512) and brand colour.
-- [ ] Get names and Google emails of the organisers who will post updates.
+- [ ] Get names and emails of the organisers who will post updates.
 
 ### 0.1b Free web address and people (do today, before anything is printed)
 - [ ] Pick the Cloudflare Pages project name (it becomes `https://<name>.pages.dev`). Follow `ADDRESS_AND_PEOPLE.md` Part 1 and `HOSTING_CLOUDFLARE.md`. **Print hunt stickers and posters only after the address is final.**
@@ -24,15 +24,13 @@
 - [ ] Run `supabase/seed.sql` the same way (sample data for building; deleted on 24 Nov).
 - [ ] Project Settings → API (or "API keys"): copy the **Project URL**, the **anon / publishable key** and the **service_role / secret key**. Keep the secret key private: never paste it in chat, WhatsApp or GitHub. It goes **only** into the push Worker as a secret; never into the website or Cloudflare Pages variables.
 
-### 0.4 Google sign-in (the step people get wrong)
-- [ ] Go to console.cloud.google.com → create a project `fest-live`.
-- [ ] **Google Auth Platform / OAuth consent screen:** User type **External**; app name = fest name; support email = yours; scopes: only the defaults (email, profile, openid).
-- [ ] **Publish the app ("In production").** In "Testing" mode only listed test users can sign in. With only the default scopes, publishing needs no Google review.
-- [ ] **Credentials → Create credentials → OAuth client ID → Web application.** Authorized redirect URI: `https://<your-project-ref>.supabase.co/auth/v1/callback` (shown in Supabase → Authentication → Providers → Google).
-- [ ] Copy the Client ID and Client secret into Supabase → Authentication → Providers → **Google** → Enable → Save.
-- [ ] Supabase → Authentication → **URL Configuration**:
-  - Site URL: `http://localhost:3000` for now (change to the pages.dev address on 24 Nov)
-  - Redirect URLs: `http://localhost:3000/**` and later `https://<name>.pages.dev/**`
+### 0.4 Sign-in by email + code (no Google). Details: `AUTH_EMAIL_OTP.md`
+- [ ] Supabase → Authentication → Providers → **Email**: enabled, **Confirm email ON**. **Do not enable Google** or any other provider.
+- [ ] Authentication → Emails → **Templates**: "Confirm signup" and "Reset password" show the 6-digit code `{{ .Token }}` instead of a link (text in `AUTH_EMAIL_OTP.md`).
+- [ ] **Brevo (free) or a Gmail app password** as the custom SMTP sender (see 0.4b). Send yourself a test sign-up and read the code.
+- [ ] Authentication → **Rate Limits**: raise the emails-per-hour limit and the per-IP sign-up/sign-in/verification limits as far as the plan allows.
+- [ ] Sessions: long refresh-token life, so each student gets only **one** email in the whole fest.
+- [ ] **Open sign-up now** (WhatsApp groups, Instagram, posters): "Create your account before the fest". The free sender can only send a few hundred codes a day, so sign-ups must be spread over the days before 25 Nov.
 
 ### 0.4b Email sign-up (email + password accounts)
 - [ ] Supabase → Authentication → Providers → **Email**: enabled, **Confirm email: ON**, minimum password length 8.
@@ -127,7 +125,7 @@
 | Problem | Do this |
 | --- | --- |
 | A page shows an error | If the last deploy caused it, roll back to the previous deployment in Cloudflare Pages (Deployments → Rollback) |
-| Sign-in fails | Check Supabase redirect URLs and the Google provider; browsing still works, so post an announcement |
+| Codes not arriving / "too many sign-ups" | Check the SMTP provider's daily count and Supabase's email rate limit; browsing still works; people who already have an account log in with their password (no email); post an announcement |
 | Data wrong or stale | Phones refresh at their next check (about 30 s); the organiser re-saves the event; check the event's status and times |
 | Supabase down | Phones keep showing the last data in "Backup mode". Edit `public/emergency.json` on GitHub for banners and delays, and post in the fest WhatsApp group until it's back |
 | Spam Signals | Admin → Signals → Hide; it auto-hides after 3 reports |

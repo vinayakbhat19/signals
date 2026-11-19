@@ -31,7 +31,7 @@ Set up the project "fest-live" in this folder:
 2. Make it a STATIC EXPORT: next.config with output 'export', images { unoptimized: true }, trailingSlash true. `npm run build` must produce out/. No API routes, middleware, server actions, cookies() or [id] route folders anywhere (see PROJECT_RULES.md).
 3. Install: @supabase/supabase-js swr zod papaparse qrcode date-fns date-fns-tz lucide-react, and dev types for papaparse and qrcode. NOT @supabase/ssr, NOT any Vercel or Upstash package.
 4. Create .env.local.example with NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY, NEXT_PUBLIC_SITE_URL, NEXT_PUBLIC_FEST_NAME="{{FEST_NAME}}", NEXT_PUBLIC_COLLEGE_NAME="{{COLLEGE_NAME}}", NEXT_PUBLIC_VAPID_PUBLIC_KEY, NEXT_PUBLIC_TURNSTILE_SITE_KEY. There is NO service-role key in the website. Make sure .env.local is in .gitignore. (I will fill .env.local myself.)
-5. lib/supabase.ts: ONE browser client (createClient with persistSession true, autoRefreshToken true, detectSessionInUrl false; the callback page finishes the login itself).
+5. lib/supabase.ts: ONE browser client (createClient with persistSession true, autoRefreshToken true, detectSessionInUrl false; the login is finished by entering the 6-digit code, not by a link).
 6. Generate TypeScript types for the tables in supabase/schema.sql into lib/types.ts (hand-written is fine; match the columns exactly; the signals type must NOT include contact).
 7. lib/time.ts with Asia/Kolkata helpers: formatTime (e.g. "4:30 PM"), formatDay ("Wed, 25 Nov"), formatRange, isLive(event, now), isUpNext, minutesUntil, toIstDateKey (YYYY-MM-DD in IST), istToUtc(dateKey, "HH:MM"). Add unit tests for these with vitest (install vitest), including an event crossing midnight IST and a UTC machine.
 8. public/_headers with the security and cache headers from HOSTING_CLOUDFLARE.md section 3 (rules 9). Do not run supabase/schema.sql; I have already run it.
@@ -105,17 +105,19 @@ Then give me step-by-step instructions to push to GitHub and create the Cloudfla
 
 ## Phase 3: Sign-in and organiser panel (21 Nov)
 
-### Prompt 3.1: Google sign-in
+### Prompt 3.1: Email + code sign-in (no Google)
 ```
-Read PROJECT_RULES.md and PRD F9. Static site: the whole login runs in the browser.
-1. /login page with "Continue with Google" (supabase.auth.signInWithOAuth, provider google, options.redirectTo = NEXT_PUBLIC_SITE_URL + /auth/callback/?next=<page>). Explain in one line why we ask and that browsing needs no login.
-2. /auth/callback/ (a static page): finish the sign-in in the browser (exchangeCodeForSession with the code in the address), then go to "next" (only allow relative paths starting with "/"); friendly page for errors.
-3. lib/auth.ts (browser): useUser(), useProfile() (id, full_name, avatar_url, role) from supabase.auth + profiles; a <RequireRole role="organiser|volunteer|host"> wrapper that calls the database (profiles.role, rpc('can_make_qr'), is_event_host) and shows an empty "Not allowed" page otherwise. The wrapper is for convenience only: the database policies and functions are the real protection.
-4. Header avatar menu: name, role label only if volunteer/host/organiser, Sign out.
-5. Show the "Organiser panel" link in More only for organiser/admin.
-Test sign-in and sign-out on localhost. Then tell me exactly which redirect URLs must be in Supabase (localhost and pages.dev). Run lint and build; report.
+Read AUTH_EMAIL_OTP.md, PROJECT_RULES.md and PRD F9. Static site: everything runs in the browser. Google sign-in is an OPTIONAL extra button (read GOOGLE_SIGNIN_OPTIONAL.md); the main path is email + code.
+1. /signup (design 03): full name, email, password (min 8 with a letter and a number, strength meter, show/hide), terms box, Turnstile token, "Create account": supabase.auth.signUp({ email, password, options: { data: { full_name }, captchaToken } }). Then go to /signup/verify.
+2. /signup/verify (design 04): six single-digit boxes (auto-advance, paste a whole code, numeric keyboard, autocomplete="one-time-code"), "Verify and continue": supabase.auth.verifyOtp({ email, token, type: 'signup' }). On success the user is signed in: go to /verified (design 05), then "next" (relative paths only). "Send a new code in 0:42" (60 s countdown) calls supabase.auth.resend({ type: 'signup', email }). "Change it" returns to /signup. Friendly messages for a wrong code, an expired code and "too many sign-ups today, try again tomorrow" (the email quota); never show raw errors.
+3. /login (design 07): email + password with signInWithPassword (no email is sent), "Keep me signed in", clear errors. If the account exists but is not verified, send them to /signup/verify with a new code.
+4. /reset (design 09): the email field and "Forgot password?" call resetPasswordForEmail(email) (do not reveal whether the email exists), then the code boxes + new password: verifyOtp({ email, token, type: 'recovery' }) then updateUser({ password }), then log in.
+5. lib/auth.ts (browser): useUser(), useProfile() (id, full_name, avatar_url, role) from supabase.auth + profiles; a <RequireRole role="organiser|volunteer|host|admin"> wrapper that calls the database (profiles.role, rpc('can_make_qr'), is_event_host) and shows an empty "Not allowed" page otherwise. The wrapper is only a convenience: the database policies and functions are the real protection.
+6. Header avatar menu: name, a role label only for staff, Sign out.
+7. "Continue with Google" button above the email form on /signup and /login (signInWithOAuth provider google, queryParams { prompt: 'select_account' }, redirectTo NEXT_PUBLIC_SITE_URL + /auth/callback/?next=<relative path>) and the static page /auth/callback/ that calls exchangeCodeForSession and goes to "next". In Instagram, WhatsApp, Facebook, Snapchat, LinkedIn and Telegram in-app browsers Google refuses to sign in: detect them and show an "Open in Chrome or Safari" sheet with a Copy link button and the email form beside it.
+Test: sign up with a real email, receive the code, verify, log out, log in with the password, run "Forgot password"; try a wrong code and an old code. Run lint and build; report.
 ```
-**You check:** sign in with your Google account (there are no verification badges). Then in Supabase → Table editor → profiles, set your `role` to `admin`.
+**You check:** sign up with your own email, then in Supabase → Table editor → profiles confirm your row exists. To become admin follow `supabase/bootstrap_admin.sql`.
 
 ### Prompt 3.2: Organiser panel
 ```
@@ -164,7 +166,7 @@ Read PROJECT_RULES.md (especially the Security section) and PRD F11 and F14. Bui
 4. /signals/mine (requireUser): two tabs. "My signals": each with its responses (name, note, contact) and Accept / Decline buttons, plus "Mark filled" and "Delete". "My responses": each signal I responded to with status; when accepted, show the poster's contact from rpc('get_signal_contact').
 5. Report button on each card (requireUser): optional reason; insert into reports; toast "Thanks, organisers will review."
 6. Admin Signals tab: reported signals first with report counts and reasons; "Hide" (status hidden) and "Restore".
-7. Test with two Google accounts (or one normal and one incognito window): post, respond, accept, check that the contact appears only after acceptance, report, hide. Also confirm in the browser network tab that the signals list response never includes "contact".
+7. Test with two accounts (or one normal and one incognito window): post, respond, accept, check that the contact appears only after acceptance, report, hide. Also confirm in the browser network tab that the signals list response never includes "contact".
 Run lint and build; report.
 ```
 **You check:** do the two-account test yourself with a friend.
@@ -190,7 +192,7 @@ Act as a security reviewer for this app. Read PROJECT_RULES.md and supabase/sche
 1. Every /admin page uses <RequireRole> and every write is refused by the database for non-organisers (test each write with curl using a student token).
 2. No code selects * from signals or exposes contact; check network responses of /signals and the live_feed call.
 3. The service role key appears NOWHERE in the website code or the out/ folder (search both for it); it exists only as a Worker secret.
-4. The auth callback page only redirects to relative paths.
+4. The login redirect after verifying a code only goes to relative paths ("next").
 5. All forms are validated with zod in the browser, and the database refuses over-long or invalid values (test with curl).
 6. No dangerouslySetInnerHTML; user text is rendered as text.
 7. As anon, try inserting into events and signals with the anon key using curl against Supabase REST; both must fail. Show the commands and responses.
@@ -323,8 +325,8 @@ Before starting: run `supabase/storage.sql`. In Supabase → Authentication → 
 Scope: follow PRD section 0. Read PROJECT_RULES.md. Match the attached designs "1 Welcome", "2 Cookie notice", "3 Create account", "4 Log in", "My account".
 1. /welcome: shown on the first visit only (localStorage flag in try/catch); buttons Create account, Log in, Just look around, and "Scan a QR" (opens /scan).
 2. Cookie notice: a bottom sheet on the first visit. The app sets no cookies; the sign-in session and settings are kept in the phone's localStorage. Explain that in one line, with an optional "Preferences" switch for dismissed banners and last tab. Store the choice in localStorage; re-open it from My account. Cloudflare Web Analytics is cookie-free, so no analytics consent is needed; say so in the privacy page.
-3. /signup: full name, email, password (min 8 chars with a number; strength meter; show/hide), terms checkbox, "Continue with Google". supabase.auth.signUp with options.data.full_name and emailRedirectTo NEXT_PUBLIC_SITE_URL/auth/callback?next=/account. After submit show "Check your email" with a resend button (rate-limited 1 per 60 s). Show NO college-email hint. The email field is just "Email". After submit say "Check your email".
-4. /login: email + password, Google, "Keep me signed in" (default on), clear error messages, "Forgot password?" → /reset (resetPasswordForEmail) → /reset/new (updateUser password).
+3. /signup, /signup/verify, /login and /reset exactly as in Prompt 3.1 (email + password + 6-digit code, no Google). Show NO college-email hint. The email field is just "Email".
+4. /login: email + password, "Keep me signed in" (default on), clear error messages, "Forgot password?" → /reset (code + new password).
 5. /account/ (<RequireRole> signed-in): profile card (initials or photo, name, email, role (only for staff)), stats (stamps, hunt rank, votes cast; hide the hunt parts if the hunt isn't built), edit name/department (zod), change password, "Hide me from the leaderboard", Cookies and privacy, Install the app, Help, Sign out, Delete my account (rpc('delete_my_account')).
 6. The avatar on Home and the "More" tab open /account (or /welcome when signed out).
 7. Validate every form with zod on the server; rate-limit signup, login and reset per email (5 per 10 min) with a high IP flood guard only.
@@ -334,6 +336,7 @@ Test: sign up with a Gmail address (plain student account, no badge), wrong pass
 ### Prompt A.2: Install banner, scanner and QR generator
 ```
 Read PROJECT_RULES.md. Match the attached designs "Home" (install bar), "5 Install the web app", "QR scanner" and "Organiser: QR generator".
+0. Read INSTALL_APP.md and copy the working install code from deploy-now/index.html. public/manifest.webmanifest (name, short_name, start_url /, display standalone, black theme, icons 192/512 plus maskable), public/sw.js, apple-touch-icon and the iOS meta tags are required.
 1. Install bar: shown at the bottom (above the tab bar) on every visit while the site runs in a browser tab (not when window.matchMedia('(display-mode: standalone)') matches or navigator.standalone is true). "Install" uses the saved beforeinstallprompt event on Android/desktop Chrome; on iOS Safari it opens the sheet with the Share → Add to Home Screen steps. "×" hides it for the current session only.
 2. /scan: camera QR scanner. Use the native BarcodeDetector when available, otherwise the "qr-scanner" npm package (ask before adding it). Rear camera, torch toggle if supported, a sweeping scan line, and a result sheet that recognises our own URLs: /s/?t=... → "Collect stamp", /event/?id=... → "Open event", /hunt/ → "Open the hunt"; any other URL shows the address and asks before opening. A clear message when camera permission is denied, with steps to allow it.
 3. /admin/qr generator (replaces the simple QR page): type (App home, Event page, Venue, Hunt place (uses rpc list_stamp_qrs; same sticker as /admin/hunt/qr), Custom link). There is no separate vote QR: the Vote button is on the event page, pick the item, live preview card with title/time/venue and optional cover, mascot logo in the middle (use error-correction level H so the logo doesn't break scanning), size presets (sticker, A5 standee, A4 poster) with print CSS, PNG download, copy link, "All events" batch print, and a scan count per code from the ?src= parameter (count page views with that src in a small qr_scans table or from Vercel Analytics; your choice, write it in DECISIONS.md).
@@ -377,17 +380,16 @@ Test: delay an event by 15 min, move another to a new venue, cancel and restore 
 
 ## Track SEC: Sign-in and security (after Track A)
 
-### Prompt SEC.1: Sign-in, sessions and roles
+### Prompt SEC.1: Sign-in security, sessions and roles
 ```
-Read SECURITY.md sections 1-3, PERMISSIONS_NOTIFICATIONS.md ("Continue with Google"), HOSTING_CLOUDFLARE.md and PROJECT_RULES.md. Match PNGs 03, 04, 05, 07.
-1. Google: signInWithOAuth provider google with queryParams { prompt: 'select_account' }, redirectTo NEXT_PUBLIC_SITE_URL/auth/callback/?next=<relative path>; the callback page finishes the sign-in in the browser and only accepts same-origin relative paths in `next`. Friendly page for access_denied.
-2. In-app browser detection (Instagram, Facebook "FBAN|FBAV", WhatsApp, Line, Snapchat, LinkedIn, Telegram): Google blocks sign-in there ("disallowed_useragent"). Show a sheet "Open in Chrome or Safari to continue with Google" with a Copy link button and the email + password form as the alternative.
-3. Email sign-up and login as in A.1, plus Cloudflare Turnstile on sign-up and reset (token passed to Supabase as options.captchaToken); generic errors that never reveal whether an email exists; password min 8 with a number and a strength meter; resend confirmation 1 per 60 s.
-4. Sessions: supabase-js stores the session in localStorage in the browser (there is no server to hold cookies). Mitigate with the strict CSP in public/_headers (no inline scripts, no third-party scripts except Turnstile and Cloudflare analytics); "Sign out" and "Sign out on all devices" (signOut({ scope: 'global' })) on My account.
-5. Roles: <RequireRole> and useRole() read profiles.role / is_event_host() / can_make_qr() from the database, never from client-editable data. Unauthorised visits show an empty "Not allowed" page. The database policies are the real guard.
-6. Organisers and admins: /account/security to enrol TOTP MFA (QR code + 6-digit confirm); admin pages require the aal2 level once enrolled.
-7. Limits: sign-up, login and password reset are limited by Supabase Auth's own settings (raise them in the dashboard for the fest, see PEAK_LOAD.md); resend 1 per 60 s per email in the UI. Never add low per-IP limits (hundreds of students share one campus IP).
-Test: Gmail sign-up (confirmation needed; plain student account), 11 wrong passwords for one email, Instagram in-app browser (sheet appears), /admin as a student ("Not allowed" and writes refused). Report with evidence.
+Read SECURITY.md sections 1-3, AUTH_EMAIL_OTP.md, HOSTING_CLOUDFLARE.md and PROJECT_RULES.md. Match PNGs 03, 04, 05, 07, 09. Sign-in itself is built in Prompt 3.1 (email + password + 6-digit code, no Google).
+1. Cloudflare Turnstile on sign-up and password reset (token passed to Supabase as options.captchaToken); generic errors that never reveal whether an email exists; password min 8 with a letter and a number; resend a code only once a minute per email in the UI.
+2. Sessions: supabase-js stores the session in localStorage in the browser (there is no server to hold cookies). Keep people signed in for days (refresh tokens) so each student receives ONE email in the whole fest. Mitigate the localStorage risk with the strict CSP in public/_headers (no inline scripts, no third-party scripts except Turnstile and Cloudflare analytics); "Sign out" and "Sign out on all devices" (signOut({ scope: 'global' })) on My account.
+3. Roles: <RequireRole> and useRole() read profiles.role / is_event_host() / can_make_qr() from the database, never from client-editable data. Unauthorised visits show an empty "Not allowed" page. The database policies are the real guard.
+4. Organisers and admins: /account/security to enrol TOTP MFA (QR code + 6-digit confirm); admin pages require the aal2 level once enrolled.
+5. Limits: sign-up, login, code verification and password reset are limited by Supabase Auth's own settings (raise them in the dashboard for the fest, see AUTH_EMAIL_OTP.md and PEAK_LOAD.md). Never add low per-IP limits in the app (hundreds of students share one campus IP).
+6. Email quota handling: map Supabase's over-limit errors (email rate limit exceeded, over_email_send_rate_limit) to "Too many sign-ups today. Please try again tomorrow, your account takes 20 seconds." Browsing, events, notices and the hunt clues must keep working with no account.
+Test: sign-up sends a code and the right code signs in; 11 wrong passwords for one email; wrong and expired codes; /admin as a student ("Not allowed" and writes refused); simulate the email quota error and check the message. Report with evidence.
 ```
 
 ### Prompt SEC.2: Hardening, uploads, secrets
@@ -560,21 +562,56 @@ Read VOTING.md, supabase/schema_ops.sql (host_set_voting, host_save_contestant) 
 Test: as a host, add 3 teams, switch voting on, vote from a student account, see the live count, switch off (votes refused); a host of another event is refused; a volunteer cannot reach /host or /admin.
 ```
 
-### Prompt SOON.1: Black background and "Signals: coming soon"
+### Prompt SOON.1: Black theme and the animated "Signals: coming soon" page
 ```
-Read BRAND.md and match PNGs 10 (Home) and 51 (Signals coming soon).
-1. Theme: the page background is the Signals black #0B0A12 everywhere (cards, borders, accent colours and mascots stay the Fiesta ones). Set it as the --bg token; the PWA theme_color and background_color use it too. No purple-tinted page backgrounds.
-2. Home: under the Treasure Hunt card add the "Signals · COMING SOON · Our campus app. Find your people." card (dashed purple border) linking to /signals/.
-3. /signals/ (static page, screen 51): the teaser exactly as designed: mascot, "COMING SOON", the tagline "Find your people. Build, play, team up.", the four Signal types (Need a teammate, Want to build, Open to connect, Open to work), "How it works" (post, people tap I'm in, you accept; contact shared only after you accept; Signals expire), "Opens on campus right after Fiesta'26, from 28 Nov 2026", a "Back to the fest" button and a "Notify me" button that subscribes the device to the push topic `signals` (rpc save_push_subscription with p_topics ['signals']; signed-in only; use the permission flow from N.1) and can be switched off.
-4. In campus mode (after 28 Nov) this page is replaced by the real Signals board; until then it is the only Signals page.
-Check at 390 px. Run lint and build; report.
+Read SIGNALS_TEASER.md and BRAND.md. Match PNGs 10 (Home) and 51, and port design/prototype/signals-coming-soon.html EXACTLY (it is the source of truth for layout, colours, copy and animation timings).
+1. Theme: the page background is pure black #000000 everywhere, with no gradients, glows or blue tint (cards, borders, accent colours and mascots stay the Fiesta ones). Use it as the --bg token, in the PWA theme_color and background_color too.
+2. Home: under the Treasure Hunt card the dashed purple "Signals · COMING SOON · Our campus app. Find your people." card (with the Signals logo from brand/signals-logo.svg) links to /signals/.
+3. /signals/ (a static page): port the prototype section by section. Opening order: the letters S I G N A L S shoot in fast from both sides, collide in the middle (flash ring, shake), fall and land scattered, hop back and join the word, a yellow frame wipes around it, COMING SOON is stamped, then the logo is built (dot pops, three arcs drawn), ripples, tagline, down arrow (arrow only, no "scroll" text). Then: What is Signals (campus-only, no phone numbers), the RAISE A SIGNAL section (builders for your idea, teammates for any event, clubs finding their team, communities to join, plus the three example Signals with the "interested" count-up), the four Make-it-yours cards (communities, friend groups, meme pages, post anything), how it works, the Notify me button, and the small developer card (Vinayak Bhat, vinayakkbhatt@gmail.com, mailto). NO countdown and NO launch date anywhere. Keep the CSS keyframes and reduced-motion rules; no animation libraries.
+4. "Notify me" and the sticky pill: signed-in users subscribe the device to the push topic `signals` (rpc save_push_subscription with p_topics ['signals'], using the permission flow from N.1) and can switch it off; signed-out users go to /login?next=/signals/.
+5. Check at 360, 390 and 430 px: no horizontal scroll, the opening is centred, no big gap before the next section, and with prefers-reduced-motion everything is visible and still.
+6. In campus mode (after the fest) /signals/ is replaced by the real Signals board.
+Test: record a short screen capture of the opening at 390 px and compare it with design/prototype/frames/. Run lint and build; report.
+```
+
+### Prompt LEGAL.1: Privacy Policy and Terms pages (Signals)
+```
+Read legal/privacy.html and legal/terms.html and GOOGLE_SIGNIN_OPTIONAL.md.
+1. Add two static pages, /privacy and /terms, with the text of those two files (keep the wording; the operator is "Signals", built and run by Vinayak Bhat; Fiesta'26 Live is a temporary mode of Signals). Use the app's black theme and the Signals logo from brand/signals-logo.svg. They must load without signing in.
+2. The sign-up checkbox reads "I agree to the Terms of Service and Privacy Policy" and links to /terms and /privacy. Add both links to My account and to the footer of /signals/.
+3. Do not change the legal text without asking me.
+Test: open both pages signed out at 390 px, and from the sign-up checkbox. Run lint and build; report.
+```
+
+### Prompt SEC.3: Pass the security checklist
+```
+Read SECURITY_CHECKLIST.md, security/attack_test.sql, security/privilege_audit.sql, security/smoke_test.sh and security/_headers.example.
+1. Make the website pass section A and F of the checklist: public/_headers from security/_headers.example (recompute the script hash if inline scripts change, or move them into files), no select('*') anywhere, columns listed in every query, no emails/phones/tokens in web addresses, no console.log of data in production, no source maps, friendly errors only (a helper that maps every database or network error to a short message and never shows error.message), a React error boundary around every page, rel="noopener noreferrer" on external links, no dangerouslySetInnerHTML.
+2. Every list query has an explicit limit (the leaderboard asks for the top 20 or 50 via is_me, never all rows).
+3. Run `npm audit --omit=dev` and fix high/critical issues; add gitleaks as a pre-commit hook.
+4. Run security/run_security_tests.sh (all PASS), then security/smoke_test.sh against the Cloudflare preview with a staging Supabase project and paste both outputs. Fix every FAIL and run again.
+5. Do the "break the app" session from section H and list what you tried.
+```
+
+### Prompt INTRO.1: The first-screen intro (Fiesta takes over Signals)
+```
+Read design/prototype/fiesta-intro.html (the source of truth for timing, layout and colours; keep its JavaScript that animates the letters with the Web Animations API) and match PNG 00 and design/prototype/frames/intro-*.png.
+The order (about 3.8 seconds, then go on):
+1. 0 to 1.2 s: black screen. The fallen letters S I G N A L S appear and start rearranging into a big word. They are NOT finished when the next step happens.
+2. 0.6 s: the Fiesta'26 logo (brand/fiesta26-logo.png) starts falling from above while the letters are still arranging, and smashes in at 1.2 s: screen shake, flash, rings, confetti.
+3. 1.2 s: the smash flings the letters out, and they ROTATE around and over the Fiesta logo (a ring of letters circling over it). At the same time the black screen slowly turns Fiesta purple (#32194A with the pink halftone), spreading from the impact.
+4. 2.5 to 3.4 s: the circling letters fly down and ARRANGE THEMSELVES under the Fiesta logo, one after another, into the word SIGNALS; "BY" fades in above it and the Signals mark (dot and three arcs) pops in at its left.
+5. Final picture: purple screen, Fiesta'26 logo, "BY", the Signals mark and the word SIGNALS under it. Then go to /welcome (first ever visit) or Home.
+WHEN IT PLAYS (copy shouldPlay() and markSeen() from the prototype exactly): it plays on every FRESH launch: opening the page again after it was closed, opening the installed Home Screen app, and the first launch after the app's data was cleared. It must NOT play on a refresh/reload, the back button, moving around inside the app, or switching away and coming back. Do this with sessionStorage (it survives a reload and is cleared when the tab or the installed app is closed) plus performance.getEntriesByType('navigation')[0].type: 'reload' and 'back_forward' never play it. Set the flag when the intro STARTS. If storage is unavailable, play only when the navigation type is not reload. Play it only when the app is opened on the home address `/` (a QR scan that opens /s/, /event/ or /vote/ goes straight to that page with no intro). When it is not playing, go straight to Welcome or Home with no flash of the intro.
+Other rules: "Skip" button from the start; tapping anywhere after the intro replays it only in the prototype, not in the app. Letters, logo and background are positioned by measuring the screen (recompute on resize). Pure CSS keyframes plus the small Web Animations script; no animation library. With prefers-reduced-motion show only the final picture for one second. In campus mode (after the fest) use the Signals-only version (design/prototype/signals-coming-soon.html opening). Keep it light: under 60 KB without the logo image; preload the logo; the page must still work if the image fails.
+Test at 360, 390 and 430 px, on a slow 3G throttle (the intro must not stall), and with reduced motion on. Run lint and build; report.
 ```
 
 ## Track TEST: Run the gates before we test
 
 ### Prompt TEST.1: Run PRE_TEST_CHECKLIST.md
 ```
-Run PRE_TEST_CHECKLIST.md from top to bottom against the preview deployment. For every item you can check yourself (curl tests, lint, build, unit tests, k6 load tests, kill tests, schema tests): run it, paste the command and its output as evidence, and mark PASS or FAIL. Mark NEEDS A PERSON for anything that needs a phone or the committee. Fix every FAIL that is a code problem and run that check again. End with a table of results and the list of items I must check by hand.
+Run SECURITY_CHECKLIST.md and then PRE_TEST_CHECKLIST.md from top to bottom against the preview deployment. For every item you can check yourself (curl tests, lint, build, unit tests, k6 load tests, kill tests, schema tests): run it, paste the command and its output as evidence, and mark PASS or FAIL. Mark NEEDS A PERSON for anything that needs a phone or the committee. Fix every FAIL that is a code problem and run that check again. End with a table of results and the list of items I must check by hand.
 ```
 
 ## Utility prompts (use any time)

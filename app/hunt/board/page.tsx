@@ -6,6 +6,7 @@ import QRCode from 'qrcode';
 import { Lock, Trophy } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
 import { useAuth } from '@/lib/use-auth';
+import { getSiteOrigin } from '@/lib/site-url';
 
 interface LeaderRow {
   user_id: string;
@@ -21,7 +22,8 @@ export default function HuntTvBoardPage() {
 
   useEffect(() => {
     if (!user) return;
-    const target = `${window.location.origin}/hunt/`;
+    const origin = getSiteOrigin();
+    const target = `${origin}/hunt/`;
     QRCode.toDataURL(target, { width: 180, margin: 1 })
       .then(setQrUrl)
       .catch(() => {});

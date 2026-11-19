@@ -33,8 +33,8 @@ export default function AboutPage() {
             official results without hunting across posters or WhatsApp groups.
           </p>
           <p>
-            Sign in with your email to join the campus <strong>Stamp Hunt</strong>{' '}
-            and cast verified votes during <strong>Live Audience Voting</strong>.
+            Sign in with your email to join the campus <strong>Treasure Hunt</strong>,{' '}
+            solve sequential clues, and climb the live <strong>Leaderboard</strong>.
           </p>
           <p className="text-muted-foreground">
             Built by students for {collegeName} — lightweight, mobile-first, and
@@ -99,6 +99,17 @@ export default function AboutPage() {
             >
               Latest updates
             </Link>
+          </div>
+          <div className="pt-2 flex items-center gap-3 text-xs text-muted-foreground border-t border-[#3B2758]">
+            <Link href="/privacy" className="underline underline-offset-4 hover:text-[#FFD60A]">
+              Privacy Policy
+            </Link>
+            <span>·</span>
+            <Link href="/terms" className="underline underline-offset-4 hover:text-[#FFD60A]">
+              Terms of Service
+            </Link>
+            <span>·</span>
+            <span>Developer: Vinayak Bhat</span>
           </div>
         </CardContent>
       </Card>

@@ -1,6 +1,6 @@
 # Free web address, sign-in and who can do what
 
-No domain is bought. No college email and no ID check. Anyone can sign in with an email or Google and vote. Hosts and volunteers are accounts you create with an email and a password.
+No domain is bought. No college email and no ID check. Anyone can sign up with an email, verify it with a 6-digit code and vote. Hosts and volunteers are accounts you create with an email and a password.
 
 ---
 
@@ -18,12 +18,8 @@ Cloudflare Pages gives every project a free address with HTTPS: **`https://<proj
 
 Later (optional, after the fest): buy a real domain and add it to Cloudflare Pages; the free address keeps working as a backup.
 
-### Sending the confirmation email without our own domain
-Without a domain you can't use services that need a verified domain. Do this:
-- **Make "Continue with Google" the main button** (no email is sent at all). Most phones already have a Google account.
-- For email + password, keep **"Confirm email" ON** in Supabase (this stops anyone signing up with someone else's address, including a host's). Turn on a **custom SMTP sender** that works with a single verified sender address: for example **Brevo** (free plan, verify one sender email) or a **Gmail account with an app password**. Their daily limits are only a few hundred emails a day (check the current numbers), so they can't carry 2,000 sign-ups in one morning. Supabase's built-in sender is far too small.
-- Tell students at the gate: "Tap Continue with Google".
-- If you really need thousands of confirmation emails in one day, you need a domain-based sender. Decide this by 22 Nov.
+### Sending the sign-up codes without our own domain
+See `AUTH_EMAIL_OTP.md` (sections 2 and 3). In short: Confirm email ON, the code in the email template, a custom SMTP sender that verifies a single address (Brevo free: about 300 a day, or a Gmail app password: about 500 a day), raised Supabase email and per-IP limits, long sessions, and **sign-up opened early** so the daily quota covers everyone.
 
 ---
 
@@ -31,7 +27,7 @@ Without a domain you can't use services that need a verified domain. Do this:
 
 | Person | How they become one | What they can do |
 | --- | --- | --- |
-| **Student** (anyone) | Signs up with Google or email | Browse, **vote** (Vote button on the event page), play the **treasure hunt**, see Signals coming soon |
+| **Student** (anyone) | Signs up with email + password and a 6-digit code | Browse, **vote** (Vote button on the event page), play the **treasure hunt**, see Signals coming soon |
 | **Volunteer** | The **admin creates the account** (email + password) on the Staff page | Everything a student can, plus the **Volunteer desk**: print the **hunt QR stickers**, see the **winners list** |
 | **Host** (of one event) | The **admin creates the account** (email + password) and picks the event | The **Host home**: change **time, venue, status and registration window** of their event, turn **voting on or off** and manage the teams or people to vote for, see and upload **participants**, make the hunt stickers. Access ends on 30 Nov |
 | **Admin** (you, the main admin; the admin page is yours alone) | You add your own email once in Supabase (`supabase/bootstrap_admin.sql`) and sign in with it | Everything: the **Admin page** (events, staff accounts, the **10 hunt places and their clues**, safety panel, polling slider, archive after the fest) |
@@ -39,7 +35,7 @@ Without a domain you can't use services that need a verified domain. Do this:
 
 ### How you become the admin (once)
 1. Open `supabase/bootstrap_admin.sql`, replace `YOUR_EMAIL@gmail.com` with your own email, run it in Supabase's SQL Editor (after `schema_ops.sql`).
-2. Sign in to the app with that email (Continue with Google is easiest). Your role becomes `admin` the moment the email is confirmed, and `/admin/` opens.
+2. Sign up in the app with that email and the 6-digit code (then log in with the password). Your role becomes `admin` the moment the email is confirmed, and `/admin/` opens.
 3. Nobody can make themselves admin from the app. Only the SQL Editor can.
 
 ### How you create hosts and volunteers

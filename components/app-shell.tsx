@@ -8,7 +8,7 @@ import {
   Home,
   QrCode,
   Stamp,
-  Vote,
+  Trophy,
 } from 'lucide-react';
 import { AccountAvatar } from '@/components/account-avatar';
 import { AddToHomeBar } from '@/components/add-to-home-bar';
@@ -35,7 +35,7 @@ const DESKTOP_LINKS = [
   { href: '/', label: 'Home' },
   { href: '/events', label: 'Events' },
   { href: '/scan', label: 'Scan' },
-  { href: '/vote', label: 'Vote' },
+  { href: '/hunt/leaderboard', label: 'Leaderboard' },
   { href: '/hunt', label: 'Hunt' },
   { href: '/signals', label: 'Signals' },
   { href: '/venues', label: 'Venues' },
@@ -57,6 +57,12 @@ function isRouteActive(pathname: string, href: string): boolean {
       pathname.startsWith('/events/') ||
       pathname === '/schedule'
     );
+  }
+  if (href === '/hunt') {
+    return pathname === '/hunt' || pathname === '/hunt/';
+  }
+  if (href === '/hunt/leaderboard') {
+    return pathname.startsWith('/hunt/leaderboard');
   }
   return pathname === href || pathname.startsWith(`${href}/`);
 }
@@ -230,17 +236,17 @@ export function AppShell({
         </Link>
 
         <Link
-          href="/vote"
-          aria-current={isRouteActive(pathname, '/vote') ? 'page' : undefined}
+          href="/hunt/leaderboard"
+          aria-current={isRouteActive(pathname, '/hunt/leaderboard') ? 'page' : undefined}
           className={cn(
             'flex flex-col items-center justify-center gap-0.5 rounded-[18px] text-[11px] transition-colors',
-            isRouteActive(pathname, '/vote')
+            isRouteActive(pathname, '/hunt/leaderboard')
               ? 'bg-[#FFD60A] font-extrabold text-[#12091E]'
               : 'font-semibold text-[#9C97B0] hover:text-[#F4F2FA]'
           )}
         >
-          <Vote className="size-[21px]" aria-hidden="true" />
-          <span>Vote</span>
+          <Trophy className="size-[21px]" aria-hidden="true" />
+          <span>Leaderboard</span>
         </Link>
 
         <Link

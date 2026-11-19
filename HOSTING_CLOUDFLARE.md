@@ -21,7 +21,7 @@ There is **no server in between**. The website is a **static export** of Next.js
 | Cloudflare Pages / Workers static assets | Static file requests free and unlimited | The whole website |
 | Cloudflare Workers (free) | 100,000 requests a day; small CPU time; a Next.js server would not fit | Why we use **no** server code. The push Worker needs only a few hundred calls a day |
 | Supabase free | 500 MB database, **5 GB egress a month**, 50,000 monthly users, project **pauses after a week without activity**, no backups | **Egress is the first limit we could hit.** See section 5 |
-| Supabase Auth emails | Only a few hundred a day with a custom sender | Google sign-in is the main button |
+| Supabase Auth emails | Only a few hundred a day with a custom sender (Brevo about 300, Gmail about 500) | Every sign-up sends one code email: open sign-up early (`AUTH_EMAIL_OTP.md`) |
 | GitHub free | Repository, Actions minutes | Code, nightly backup |
 
 ## 3. What this changes in the app (the rules for the coding agent)
@@ -38,7 +38,7 @@ There is **no server in between**. The website is a **static export** of Next.js
 8. **Images:** no image optimizer. Covers are resized **in the browser on upload** into two files: a **thumbnail 240 px wide (about 15 KB WebP)** for lists and a **cover 800 px (about 80 KB WebP)** for the event page, uploaded with unique names and `Cache-Control: public, max-age=31536000, immutable`. The cover images you already have go into `public/covers/` in the repository so Cloudflare serves them for free.
 9. **Security headers** go in `public/_headers` (Cloudflare reads this file): CSP, HSTS, X-Content-Type-Options, Referrer-Policy, Permissions-Policy (`camera=(self)`), `frame-ancestors 'none'`; and cache rules: `/_next/static/*` immutable one year, HTML `max-age=0, must-revalidate`.
 10. **Admin and host pages** are static pages that check the signed-in role by calling the database (`profiles.role`, `is_event_host`, `can_make_qr`); every write still goes through functions and policies that re-check on the server side of the database. A student who opens `/admin/` sees an empty "Not allowed" page and can do nothing.
-11. **Auth callback:** `/auth/callback/` is a static page that finishes the sign-in in the browser (`exchangeCodeForSession`) and then goes to `next` (relative paths only).
+11. **Sign-in is email + password with a 6-digit code** typed on the page (`verifyOtp`); there is no OAuth callback page. See `AUTH_EMAIL_OTP.md`.
 12. **Staff accounts** need the **staff Worker** (`workers/staff/`, code and offline tests included): the admin page calls it with the admin's own login token; it creates the account with the service-role key, sets the role or host row, and refuses everyone who is not `admin`. The website gets its address as `NEXT_PUBLIC_STAFF_API`.
 13. **Push alerts** are the other server code: a small **Cloudflare Worker** with a cron trigger every minute (see `PERMISSIONS_NOTIFICATIONS.md`). The browser subscribes with `rpc('save_push_subscription')`.
 

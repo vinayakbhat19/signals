@@ -201,8 +201,8 @@ export default function PermissionsPage() {
           {[
             { id: 'changes', label: 'Time & room changes' },
             { id: 'urgent', label: 'Urgent notices' },
-            { id: 'vote', label: 'Voting opens' },
             { id: 'hunt', label: 'Treasure Hunt' },
+            { id: 'leaderboard', label: 'Hunt Leaderboard' },
           ].map((item) => {
             const active = topics.includes(item.id);
             return (

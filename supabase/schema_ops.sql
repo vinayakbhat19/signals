@@ -395,11 +395,11 @@ begin
      group by c.poll_id, p.event_id, c.id, c.name
     on conflict (poll_id, contestant_id) do update
       set votes = excluded.votes, percent = excluded.percent, archived_at = now();
-    with d as (delete from public.votes where true returning 1) select count(*) into n_votes from d;
+    with d as (delete from public.votes returning 1) select count(*) into n_votes from d;
   end if;
-  with d as (delete from public.push_subscriptions where true returning 1) select count(*) into n_push from d;
-  delete from public.push_queue where true;
-  delete from public.rate_limits where true;
+  with d as (delete from public.push_subscriptions returning 1) select count(*) into n_push from d;
+  delete from public.push_queue;
+  delete from public.rate_limits;
   with u as (update public.participants set email = null, phone = null
               where email is not null or phone is not null returning 1) select count(*) into n_contacts from u;
   perform public._audit('archive_and_purge', 'fest', jsonb_build_object('votes_deleted', n_votes, 'push_deleted', n_push, 'contacts_cleared', n_contacts));
@@ -893,3 +893,18 @@ revoke execute on function public.host_set_voting(uuid, boolean, text, timestamp
   public.host_save_contestant(uuid, uuid, text, text, text, int, boolean) from public, anon;
 grant execute on function public.host_set_voting(uuid, boolean, text, timestamptz, timestamptz, text, boolean),
   public.host_save_contestant(uuid, uuid, text, text, text, int, boolean) to authenticated;
+
+
+-- ================================================================ hardening (defence in depth; run last)
+-- Row level security and the functions are the real protection. These lines remove everything clients never need,
+-- so a mistake in one policy cannot become a hole.
+--   * clients never TRUNCATE, never create triggers or references (TRUNCATE ignores row level security);
+--   * the signed-out role never writes anything;
+--   * the read-only views cannot be written through (a view runs with its owner's rights);
+--   * time limits so one heavy request cannot hold the database (Supabase's defaults are 3 s and 8 s; set here on purpose).
+revoke truncate, references, trigger on all tables in schema public from anon, authenticated;
+revoke insert, update, delete on all tables in schema public from anon;
+revoke insert, update, delete on public.participants_public, public.poll_results, public.stamp_leaderboard, public.offline_vote_windows
+  from anon, authenticated;
+alter role anon set statement_timeout = '3s';
+alter role authenticated set statement_timeout = '8s';

@@ -54,8 +54,24 @@ function ClaimInner() {
     supabase
       .rpc('claim_stamp', { p_point: pointId, p_code: code })
       .then(({ data, error: rpcErr }) => {
-        if (rpcErr) setError(rpcErr.message);
-        else setResult(data as ClaimResponse);
+        if (rpcErr) {
+          setError(rpcErr.message);
+        } else {
+          const res = data as ClaimResponse;
+          setResult(res);
+          if (res?.ok && user) {
+            try {
+              const key = `fiesta_found_stamps_${user.id}`;
+              const prev = JSON.parse(localStorage.getItem(key) || '[]');
+              if (!prev.includes(pointId)) {
+                prev.push(pointId);
+                localStorage.setItem(key, JSON.stringify(prev));
+              }
+            } catch {
+              // ignore
+            }
+          }
+        }
       });
   }, [authLoading, code, pointId, router, token, user, validToken]);
 

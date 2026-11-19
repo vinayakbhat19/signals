@@ -2,13 +2,13 @@ import type { Metadata, Viewport } from 'next';
 import { AppShell } from '@/components/app-shell';
 import { SwRegister } from '@/components/sw-register';
 import { Toaster } from '@/components/ui/sonner';
-import './globals.css';
+import './globals-compiled.css';
 
 const festName = process.env.NEXT_PUBLIC_FEST_NAME || "Fiesta'26";
 const collegeName =
   process.env.NEXT_PUBLIC_COLLEGE_NAME ||
   'SDM College of Engineering & Technology, Dharwad';
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://fiesta26.pages.dev';
 
 export const viewport: Viewport = {
   themeColor: '#12091E',
@@ -26,8 +26,14 @@ export const metadata: Metadata = {
   },
   description: `Live schedule, venues, audience voting, Treasure Hunt and updates for ${festName} at ${collegeName}.`,
   icons: {
-    icon: '/brand/icon-192.png',
-    apple: '/brand/icon-192.png',
+    icon: [
+      { url: '/brand/signals/icons/favicon-32.png?v=6', sizes: '32x32', type: 'image/png' },
+      { url: '/favicon.ico?v=6', sizes: 'any' },
+      { url: '/brand/signals/signals-app-icon.svg?v=6', type: 'image/svg+xml' },
+      { url: '/brand/signals/icons/signals-icon-192.png?v=6', sizes: '192x192', type: 'image/png' },
+      { url: '/brand/signals/icons/signals-icon-512.png?v=6', sizes: '512x512', type: 'image/png' },
+    ],
+    apple: '/brand/signals/icons/apple-touch-icon.png?v=6',
   },
   appleWebApp: {
     capable: true,
@@ -58,6 +64,11 @@ export default function RootLayout({
   return (
     <html lang="en" className="dark h-full antialiased">
       <head>
+        <link rel="icon" type="image/png" sizes="32x32" href="/brand/signals/icons/favicon-32.png?v=6" />
+        <link rel="icon" href="/favicon.ico?v=6" sizes="any" />
+        <link rel="icon" type="image/png" sizes="192x192" href="/brand/signals/icons/signals-icon-192.png?v=6" />
+        <link rel="icon" type="image/svg+xml" href="/brand/signals/signals-app-icon.svg?v=6" />
+        <link rel="apple-touch-icon" href="/brand/signals/icons/apple-touch-icon.png?v=6" />
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link
           rel="preconnect"

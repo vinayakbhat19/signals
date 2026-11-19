@@ -27,19 +27,19 @@ The first launch is **Fiesta'26** (Fiesta 2026, intra college cultural fest, SDM
 | --- | --- |
 | Home (live now, up next, ticker), fest schedule, event pages, venues, announcements, results | **Football** live scores (`schema_sports.sql`, Track S) |
 | **Audience voting** for selected **outdoor** competitions (`VOTING.md`); switched off for auditorium competitions (no network inside) | **Signals** (F11, F14) and **My schedule / stars** (F10) |
-| **Sign-in and security:** Google, email + password, CAPTCHA, MFA for organisers, headers, audit log (`SECURITY.md`) | |
+| **Sign-in and security:** email + password verified by a 6-digit code (no Google), CAPTCHA, MFA for organisers, headers, audit log (`SECURITY.md`) | |
 | **Phone alerts (push) and camera permission** with explanations (`PERMISSIONS_NOTIFICATIONS.md`) | |
 | **Admin page** (yours alone), **host** and **volunteer** accounts created by the admin with email + password, hosts turn voting on/off, a **Signals: coming soon** teaser, black background like Signals; **Host management** (scope, expiry) and **after-fest mode switch** back to the Signals app on 28 Nov (`HOSTS_AND_AFTER_FEST.md`) | |
 | **Change alerts:** every delay, time change, venue change or cancellation appears automatically at the top of Home and on an Updates page (`schema_changes.sql`) | |
 | Organiser panel, CSV import, **event editor with cover photos and hosts**, **QR generator**, PWA with an **install bar** | Nearby, personal QR connect, communities, workshops |
-| **Accounts:** Google or email + password (email confirmed, check-email and verified screens), cookie notice, My account page, **in-app QR scanner** (raised SCAN button in the bottom bar) | |
+| **Accounts:** email + password verified by a 6-digit code (enter-code and verified screens), cookie notice, My account page, **in-app QR scanner** (raised SCAN button in the bottom bar) | |
 | **Hosts and line-ups:** event hosts upload registrations (CSV/Excel), check people in, export; students see the public line-up | |
 | **Add to Home Screen** (PWA, never an app store) with a bar on every browser visit | |
 | Reliability: caching, fallbacks, emergency mode, rate limits, monitoring (`SPORTS_AND_RELIABILITY.md` part B) | "Here Now" opt-in presence |
 | **Treasure Hunt** (part of the launch): about 10 hidden places with static QR stickers; clues and hints; scan to collect; leaderboard (`STAMP_HUNT.md`) | |
 
 Consequences:
-- **Students never need to sign in to browse.** Accounts (Google, or email + password with a confirmation email) are only needed to vote and play the Treasure Hunt, and for organisers and volunteers. Anyone with an email or Google account can sign in and vote: there is no verification.
+- **Students never need to sign in to browse.** Accounts (email + password with a 6-digit code) are only needed to vote and play the Treasure Hunt, and for organisers and volunteers. Anyone with an email or Google account can sign in and vote: there is no verification.
 - "Schedule" is called **Events** in the app.
 - The full screen list, routes, flows and app structure are in `APP_FLOW.md`; designs are in `design/`.
 - No star buttons, no Signal buttons, no football pages. Bottom bar: **Home · Events · SCAN · Vote · Hunt** (account from the avatar) (show "Results" instead of "Hunt" if the hunt isn't built).
@@ -93,7 +93,7 @@ On fest day, students don't know what's happening, where, and when. The schedule
 | F6 | **Results:** winners and scores per event; "live" flag for ongoing matches | Must |
 | F7 | **Organiser panel:** create, edit and delete events, venues, announcements and results from a phone | Must |
 | F8 | **CSV import** of the schedule (from Google Sheets) | Must |
-| F9 | **Google sign-in** (Supabase Auth); no verification badge: anyone signed in can vote and play | Must |
+| F9 | **Email + password sign-up with a 6-digit code** (Supabase Auth, no Google); no verification badge: anyone signed in can vote and play | Must |
 | F10 | **My schedule:** star/unstar events, personal timeline, clash warning | Should |
 | F11 | **Signals board:** post a Signal (type, text, up to 3 tags, optional event, expiry); "I'm interested"; poster accepts; contacts revealed only after acceptance | Should |
 | F12 | **QR codes:** one for the app, one per event and per venue; printable poster page | Must |
@@ -150,7 +150,7 @@ Native apps, push notifications, chat, nearby/location matching, personal QR con
 - Preview table with row-level errors before "Import." Nothing is saved if any row has an error.
 
 ### F9 Sign-in
-- "Continue with Google." Browsing never needs sign-in; starring and Signals do.
+- Email + password, verified by a code. Browsing never needs sign-in; starring and Signals do.
 - On first sign-in a profile is created. No verification is used.
 - Roles: student (default), organiser, admin. Roles are set only in the Supabase dashboard (or by an admin), never by the user.
 
@@ -189,7 +189,7 @@ Native apps, push notifications, chat, nearby/location matching, personal QR con
 | Freshness | Organiser changes visible to students within 30 s |
 | Time zone | Stored as `timestamptz`; always shown in **Asia/Kolkata** |
 | Security | Row Level Security on every table; organiser actions checked on the server and in the database; Signal contacts protected (see schema) |
-| Privacy | Collect only name, email and avatar from Google; no location; Signal contacts shared only after acceptance; delete-my-data button on `/my` |
+| Privacy | Collect only name and email; no location; Signal contacts shared only after acceptance; delete-my-data button on `/my` |
 | Accessibility | Colour contrast AA, tap targets ≥ 44 px, works with large text |
 | Browsers | Chrome Android, Safari iOS 16+, Samsung Internet |
 | Reliability | If the database is unreachable, public pages keep showing the last cached data |
@@ -199,7 +199,7 @@ Native apps, push notifications, chat, nearby/location matching, personal QR con
 | Layer | Choice |
 | --- | --- |
 | Frontend and server | Next.js (latest stable, App Router), TypeScript, Tailwind CSS, shadcn/ui |
-| Data and auth | Supabase (Postgres, Google OAuth, Row Level Security), `@supabase/supabase-js` in the browser |
+| Data and auth | Supabase (Postgres, email + code Auth, Row Level Security), `@supabase/supabase-js` in the browser |
 | Hosting | Cloudflare Pages (free, static export of Next.js), a tiny Cloudflare Worker for push alerts, Supabase free plan, Cloudflare Web Analytics. See `HOSTING_CLOUDFLARE.md` |
 | Libraries | `swr` (polling), `papaparse` (CSV), `qrcode` (QR), `zod` (validation), `date-fns` + `date-fns-tz` (time zone) |
 | Source control | GitHub (new repository `fest-live`) |
@@ -231,7 +231,7 @@ Tables (full SQL with security in `supabase/schema.sql`):
 | `/signals` | Everyone can read; signed in to post or respond |
 | `/signals/new`, `/signals/mine` | Signed in |
 | `/my` | Signed in |
-| `/login`, `/auth/callback` | Everyone |
+| `/signup`, `/signup/verify`, `/login`, `/reset`, `/privacy`, `/terms`, `/auth/callback` | Everyone |
 | `/admin/*` | Organiser or admin |
 
 ## 11. Timeline
@@ -254,6 +254,6 @@ Tables (full SQL with security in `supabase/schema.sql`):
 | Committee doesn't post updates on the day | Two trained organisers on duty in shifts; update drill on 24 Nov |
 | Schedule arrives late | Build with seed data; CSV import makes loading the real schedule take minutes |
 | Traffic spike | Edge caching; database is read only on revalidation |
-| Google sign-in misconfigured | Set up on day 1; test on a real phone on 23 Nov |
+| Sign-up code emails limited (a few hundred a day) | Open sign-up days early; long sessions; test on a real phone on 23 Nov (`AUTH_EMAIL_OTP.md`) |
 | Spam or abusive Signals | Sign-in required, 3-open limit, reports, organiser hide |
 | Venue Wi-Fi is weak | Small pages, cached data, no heavy images |

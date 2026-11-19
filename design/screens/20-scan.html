@@ -7,7 +7,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Bungee&amp;family=Bricolage+Grotesque:opsz,wght@12..96,500..800&amp;family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
 <style>
-body{margin:0;background:#0B0A12}
+body{margin:0;background:#000000}
 a{color:#FFD60A}a:hover{color:#FFE680}
 @keyframes sweep{0%{transform:translateY(0)}50%{transform:translateY(236px)}100%{transform:translateY(0)}}
 @keyframes rise{from{transform:translateY(40px);opacity:0}to{transform:translateY(0);opacity:1}}
@@ -29,31 +29,31 @@ a{color:#FFD60A}a:hover{color:#FFE680}
   </div>
 
   <header style="position: absolute; left: 14px; right: 14px; top: 14px; display: flex; justify-content: space-between; align-items: center">
-    <a href="10-home.html" aria-label="Close scanner" style="width: 46px; height: 46px; border-radius: 15px; background: rgba(11,10,18,0.75); display: flex; align-items: center; justify-content: center"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#F4F2FA" stroke-width="2.6" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"></path></svg></a>
-    <span style="font-family: 'Bricolage Grotesque', sans-serif; font-size: 20px; font-weight: 800; background: rgba(11,10,18,0.75); padding: 8px 14px; border-radius: 14px">Scan</span>
-    <button aria-label="Turn on torch" aria-pressed="false" style="width: 46px; height: 46px; border-radius: 15px; border: 0; background: rgba(11,10,18,0.75); display: flex; align-items: center; justify-content: center"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#FFE14D" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 3h10l-2 6H9z"></path><path d="M9 9v11a1 1 0 0 0 1 1h4a1 1 0 0 0 1-1V9"></path><path d="M12 13v2"></path></svg></button>
+    <a href="10-home.html" aria-label="Close scanner" style="width: 46px; height: 46px; border-radius: 15px; background: rgba(0,0,0,0.75); display: flex; align-items: center; justify-content: center"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#F4F2FA" stroke-width="2.6" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"></path></svg></a>
+    <span style="font-family: 'Bricolage Grotesque', sans-serif; font-size: 20px; font-weight: 800; background: rgba(0,0,0,0.75); padding: 8px 14px; border-radius: 14px">Scan</span>
+    <button aria-label="Turn on torch" aria-pressed="false" style="width: 46px; height: 46px; border-radius: 15px; border: 0; background: rgba(0,0,0,0.75); display: flex; align-items: center; justify-content: center"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#FFE14D" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 3h10l-2 6H9z"></path><path d="M9 9v11a1 1 0 0 0 1 1h4a1 1 0 0 0 1-1V9"></path><path d="M12 13v2"></path></svg></button>
   </header>
 
   <div style="position: absolute; left: 55px; top: 170px; width: 280px; height: 280px">
     <div style="position: absolute; inset: 30px; background: #F4F2FA; border-radius: 10px" role="img" aria-label="A Stamp Station QR code in view">
-      <div style="position: absolute; left: 12px; top: 12px; width: 50px; height: 50px; border: 10px solid #0B0A12; box-sizing: border-box"></div>
-      <div style="position: absolute; right: 12px; top: 12px; width: 50px; height: 50px; border: 10px solid #0B0A12; box-sizing: border-box"></div>
-      <div style="position: absolute; left: 12px; bottom: 12px; width: 50px; height: 50px; border: 10px solid #0B0A12; box-sizing: border-box"></div>
-      <div style="position: absolute; left: 80px; top: 80px; width: 60px; height: 60px; background: repeating-linear-gradient(90deg, #0B0A12 0 8px, transparent 8px 14px)"></div>
+      <div style="position: absolute; left: 12px; top: 12px; width: 50px; height: 50px; border: 10px solid #000000; box-sizing: border-box"></div>
+      <div style="position: absolute; right: 12px; top: 12px; width: 50px; height: 50px; border: 10px solid #000000; box-sizing: border-box"></div>
+      <div style="position: absolute; left: 12px; bottom: 12px; width: 50px; height: 50px; border: 10px solid #000000; box-sizing: border-box"></div>
+      <div style="position: absolute; left: 80px; top: 80px; width: 60px; height: 60px; background: repeating-linear-gradient(90deg, #000000 0 8px, transparent 8px 14px)"></div>
     </div>
     <svg class="corner" width="280" height="280" viewBox="0 0 280 280" aria-hidden="true" style="position: absolute; inset: 0"><path d="M6 60V18a12 12 0 0 1 12-12h42M220 6h42a12 12 0 0 1 12 12v42M274 220v42a12 12 0 0 1-12 12h-42M60 274H18a12 12 0 0 1-12-12v-42" stroke="#FFD60A" stroke-width="8" fill="none" stroke-linecap="round"></path></svg>
     <div class="sweep" aria-hidden="true" style="position: absolute; left: 20px; right: 20px; top: 20px; height: 4px; border-radius: 2px; background: #FFD60A; box-shadow: 0 0 18px #FFD60A"></div>
   </div>
 
-  <p style="position: absolute; left: 30px; right: 30px; top: 478px; margin: 0; text-align: center; font-size: 15px; font-weight: 600; background: rgba(11,10,18,0.75); padding: 10px 14px; border-radius: 14px">Point at a hunt sticker or an event poster</p>
+  <p style="position: absolute; left: 30px; right: 30px; top: 478px; margin: 0; text-align: center; font-size: 15px; font-weight: 600; background: rgba(0,0,0,0.75); padding: 10px 14px; border-radius: 14px">Point at a hunt sticker or an event poster</p>
 
-  <section class="rise" aria-live="polite" style="position: absolute; left: 0; right: 0; bottom: 0; background: #0B0A12; border-top: 1.5px solid #3B2758; border-radius: 30px 30px 0 0; padding: 18px 18px 26px; display: flex; flex-direction: column; gap: 14px">
+  <section class="rise" aria-live="polite" style="position: absolute; left: 0; right: 0; bottom: 0; background: #000000; border-top: 1.5px solid #3B2758; border-radius: 30px 30px 0 0; padding: 18px 18px 26px; display: flex; flex-direction: column; gap: 14px">
     <span style="align-self: center; width: 44px; height: 5px; border-radius: 3px; background: #4A3466"></span>
     <div style="display: flex; align-items: center; gap: 12px">
-      <span style="width: 50px; height: 50px; border-radius: 16px; background: #9B6CFF; display: flex; align-items: center; justify-content: center; flex: none"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#0B0A12" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 3h6v5l3 3v3H6v-3l3-3z"></path><path d="M5 18h14v3H5z"></path></svg></span>
+      <span style="width: 50px; height: 50px; border-radius: 16px; background: #9B6CFF; display: flex; align-items: center; justify-content: center; flex: none"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#000000" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 3h6v5l3 3v3H6v-3l3-3z"></path><path d="M5 18h14v3H5z"></path></svg></span>
       <div style="display: flex; flex-direction: column; gap: 2px"><span style="font-size: 11px; font-weight: 800; letter-spacing: 0.1em; color: #9B6CFF">FOUND · HUNT PLACE</span><span style="font-size: 18px; font-weight: 800">Library steps</span><span style="font-size: 13px; color: #BDB8CF">Place 4 of 10 · +10 points</span></div>
     </div>
-    <a href="21-stamp-collected.html" style="height: 56px; border-radius: 18px; background: #FFD60A; color: #0B0A12; text-decoration: none; display: flex; align-items: center; justify-content: center; font-size: 17px; font-weight: 800; box-shadow: 5px 5px 0 #FF4FD8">Collect stamp</a>
+    <a href="21-stamp-collected.html" style="height: 56px; border-radius: 18px; background: #FFD60A; color: #000000; text-decoration: none; display: flex; align-items: center; justify-content: center; font-size: 17px; font-weight: 800; box-shadow: 5px 5px 0 #FF4FD8">Collect stamp</a>
     <div style="display: flex; justify-content: space-between; font-size: 13px; font-weight: 600"><a href="#">Need help?</a><a href="08-permissions.html" style="color: #BDB8CF">Camera not working?</a></div>
   </section>
 </div>
