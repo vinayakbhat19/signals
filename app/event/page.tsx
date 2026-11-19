@@ -11,11 +11,11 @@ import {
   MapPin,
   Share2,
   Trophy,
-  Vote,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { CategoryChip } from '@/components/category-chip';
 import { EventCover } from '@/components/event-cover';
+import { EventShareModal } from '@/components/event-share-modal';
 import { useLiveFeed } from '@/lib/live-store';
 import { createClient } from '@/lib/supabase/client';
 import {
@@ -51,12 +51,12 @@ function EventDetailInner() {
     host_coordinator?: string | null;
     results: Result[];
   }>({ results: [] });
+  const [isShareOpen, setIsShareOpen] = useState(false);
 
   const event = feed.events.find((e) => e.id === id) ?? null;
   const venue = event?.venue_id
     ? feed.venues.find((v) => v.id === event.venue_id) ?? null
     : null;
-  const openPoll = feed.polls.find((p) => p.event_id === id) ?? null;
 
   useEffect(() => {
     if (!id) return;
@@ -133,21 +133,6 @@ function EventDetailInner() {
   });
   const googleCalendarUrl = `https://calendar.google.com/calendar/render?${gcalParams.toString()}`;
 
-  async function handleShare() {
-    const shareUrl = window.location.href;
-    const text = `${event?.title} — ${dayStr}, ${rangeStr} IST`;
-    try {
-      if (navigator.share) {
-        await navigator.share({ title: event?.title, text, url: shareUrl });
-      } else {
-        await navigator.clipboard.writeText(shareUrl);
-        toast.success('Event link copied!');
-      }
-    } catch {
-      // ignore
-    }
-  }
-
   const hostName =
     event.host_name || extra.contact_info || "Fiesta'26 Committee";
   const directionsExternal = isSafeHttpUrl(venue?.maps_url);
@@ -171,9 +156,9 @@ function EventDetailInner() {
           </Link>
           <button
             type="button"
-            onClick={() => void handleShare()}
-            aria-label="Share event"
-            className="flex size-11 items-center justify-center rounded-[14px] bg-[#12091E]/90 text-[#F4F2FA] cursor-pointer"
+            onClick={() => setIsShareOpen(true)}
+            aria-label="Share event card"
+            className="flex size-11 items-center justify-center rounded-[14px] bg-[#12091E]/90 text-[#F4F2FA] hover:bg-[#FFD60A] hover:text-[#12091E] active:scale-95 transition-all cursor-pointer shadow-md"
           >
             <Share2 className="size-5" />
           </button>
@@ -275,24 +260,6 @@ function EventDetailInner() {
           </span>
           <ChevronRight className="size-5 shrink-0 text-[#9C97B0]" />
         </Link>
-
-        {/* Direct Vote CTA when Poll is Open */}
-        {openPoll && (
-          <Link
-            href={`/vote/?id=${event.id}`}
-            className="flex items-center gap-3 rounded-[20px] bg-[#FF4FD8] px-4 py-3.5 text-[#12091E] shadow-[5px_5px_0_#FFD60A]"
-          >
-            <Vote className="size-8 shrink-0 stroke-[2.2]" />
-            <div className="space-y-0.5">
-              <span className="block text-base font-extrabold">
-                Vote now for {event.title}
-              </span>
-              <span className="block text-[13px] font-semibold">
-                Tap to cast your live audience vote — open to everyone!
-              </span>
-            </div>
-          </Link>
-        )}
 
         {/* Registration CTA */}
         {soon && !isCancelled && (
@@ -413,6 +380,13 @@ function EventDetailInner() {
           </section>
         )}
       </div>
+
+      <EventShareModal
+        isOpen={isShareOpen}
+        onClose={() => setIsShareOpen(false)}
+        event={event}
+        venueName={venue?.name ?? event.venue_name}
+      />
     </div>
   );
 }

@@ -3,10 +3,11 @@
 import { Suspense, useState } from 'react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { CalendarSearch, ExternalLink, QrCode, Search, X } from 'lucide-react';
+import { CalendarSearch, ExternalLink, QrCode, Search, Share2, X } from 'lucide-react';
 import { CATEGORY_LABELS, CATEGORY_STYLES } from '@/components/category-chip';
 import { EventCover } from '@/components/event-cover';
-import { useLiveFeed } from '@/lib/live-store';
+import { EventShareModal } from '@/components/event-share-modal';
+import { useLiveFeed, type FeedEvent } from '@/lib/live-store';
 import {
   formatDay,
   formatRange,
@@ -53,6 +54,7 @@ function EventsInner() {
   const searchParams = useSearchParams();
   const { feed } = useLiveFeed();
   const [search, setSearch] = useState('');
+  const [shareEvent, setShareEvent] = useState<FeedEvent | null>(null);
 
   const now = new Date(feed.server_time);
   const rawTab = searchParams.get('tab') as StatusTab | null;
@@ -245,7 +247,7 @@ function EventsInner() {
           href={OFFICIAL_REGISTRATION_HUB}
           target="_blank"
           rel="noopener noreferrer"
-          className="flex items-center justify-between gap-3 rounded-[16px] border-[1.5px] border-[#FFD60A]/50 bg-[#1F1230] px-3.5 py-2.5 text-xs hover:border-[#FFD60A]"
+          className="flex items-center justify-between gap-3 rounded-[16px] border-[1.5px] border-[#3B2758] bg-[#1F1230] px-3.5 py-2.5 text-xs hover:border-[#5B3A86] transition-colors"
         >
           <span className="min-w-0 truncate font-bold text-[#F4F2FA]">
             Official Fiesta&apos;26 Registration Hub{' '}
@@ -253,9 +255,9 @@ function EventsInner() {
               · linktr.ee/sdmcetFiesta26
             </span>
           </span>
-          <span className="inline-flex shrink-0 items-center gap-1 rounded-lg bg-[#FFD60A] px-2.5 py-1 text-[11px] font-extrabold uppercase text-[#12091E]">
+          <span className="inline-flex shrink-0 items-center gap-1 rounded-lg border border-[#FFD60A]/40 bg-[#FFD60A]/10 px-2.5 py-1 text-[11px] font-bold uppercase text-[#FFE866] hover:bg-[#FFD60A] hover:text-[#12091E] transition-colors">
             All Forms
-            <ExternalLink className="size-3" />
+            <ExternalLink className="size-3 opacity-75" />
           </span>
         </a>
       </header>
@@ -290,12 +292,12 @@ function EventsInner() {
                     <article
                       key={event.id}
                       className={cn(
-                        'flex flex-col gap-2.5 rounded-[22px] p-2.5',
+                        'group flex flex-col justify-between gap-3 rounded-[22px] p-3 transition-all duration-200',
                         eventLive
                           ? 'border-2 border-[#FF4FD8] bg-[#1F1230]'
                           : isDone
                             ? 'border-[1.5px] border-dashed border-[#3A3549] bg-transparent opacity-80'
-                            : 'border-[1.5px] border-[#3B2758] bg-[#1F1230] hover:border-[#FFD60A]/60'
+                            : 'border-[1.5px] border-[#34224F] bg-[#1F1230] hover:border-[#5B3A86] hover:bg-[#231538]'
                       )}
                     >
                       <Link href={`/event/?id=${event.id}`} className="flex gap-3">
@@ -313,7 +315,7 @@ function EventsInner() {
                               </span>
                             )}
                             {!eventLive && eventSoon && (
-                              <span className="rounded-full bg-[#FFE14D] px-2 py-0.5 text-[10px] font-extrabold text-[#12091E]">
+                              <span className="rounded-full border border-[#FFD60A]/35 bg-[#FFD60A]/10 px-2 py-0.5 text-[10px] font-bold tracking-wide text-[#FFE866]">
                                 {formatShortSoon(event.starts_at, now)}
                               </span>
                             )}
@@ -331,14 +333,14 @@ function EventsInner() {
                               {CATEGORY_LABELS[event.category]}
                             </span>
                           </div>
-                          <span
+                          <h3
                             className={cn(
-                              'truncate text-[16px] font-extrabold leading-snug text-[#F4F2FA]',
+                              'font-heading text-[18px] sm:text-[19px] font-black leading-snug tracking-tight text-white line-clamp-2 group-hover:text-[#FFE866] transition-colors',
                               isCancelled && 'line-through text-[#9C97B0]'
                             )}
                           >
                             {event.title}
-                          </span>
+                          </h3>
                           <span className="truncate text-xs text-[#CFCBDD]">
                             {formatRange(event.starts_at, event.ends_at)} ·{' '}
                             {event.venue_name ?? 'Venue TBA'}
@@ -346,23 +348,41 @@ function EventsInner() {
                         </div>
                       </Link>
 
-                      {eventSoon && !isCancelled && !regClosed && (
-                        regNotOpen && regOpens ? (
-                          <div className="flex min-h-10 items-center justify-center rounded-[14px] border border-[#3B2758] bg-[#12091E] text-xs font-bold text-[#FFD60A]">
-                            Registration opens {formatTime(regOpens)} IST
-                          </div>
+                      <div className="flex items-center gap-2">
+                        {eventSoon && !isCancelled && !regClosed ? (
+                          regNotOpen && regOpens ? (
+                            <div className="flex-1 flex min-h-9 items-center justify-center rounded-xl border border-[#3B2758] bg-[#12091E] px-3 text-xs font-semibold text-[#FFE866]">
+                              Registration opens {formatTime(regOpens)} IST
+                            </div>
+                          ) : (
+                            <a
+                              href={registerHref}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="flex-1 flex h-9 items-center justify-center gap-1.5 rounded-xl border border-[#FFD60A]/35 bg-[#FFD60A]/10 px-4 text-xs font-bold uppercase tracking-[0.06em] text-[#FFE866] hover:bg-[#FFD60A] hover:text-[#12091E] hover:border-[#FFD60A] transition-colors duration-150"
+                            >
+                              <span>Register</span>
+                              <ExternalLink className="size-3.5 opacity-70" />
+                            </a>
+                          )
                         ) : (
-                          <a
-                            href={registerHref}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="flex min-h-11 items-center justify-center gap-1.5 rounded-[14px] bg-[#FFD60A] px-4 text-xs font-extrabold uppercase tracking-[0.06em] text-[#12091E]"
+                          <Link
+                            href={`/event/?id=${event.id}`}
+                            className="flex-1 flex h-9 items-center justify-center gap-1.5 rounded-xl border border-[#3B2758] bg-[#140A22] px-3 text-xs font-bold text-[#CFCBDD] hover:border-[#5B3A86] hover:text-white transition-colors"
                           >
-                            Register
-                            <ExternalLink className="size-3.5" />
-                          </a>
-                        )
-                      )}
+                            <span>View Details</span>
+                          </Link>
+                        )}
+                        <button
+                          type="button"
+                          onClick={() => setShareEvent(event)}
+                          aria-label={`Share ${event.title} card`}
+                          title="Share event card & QR"
+                          className="flex size-9 shrink-0 items-center justify-center rounded-xl border border-[#3B2758] bg-[#140A22] text-[#BDB8CF] hover:border-[#FFD60A]/50 hover:text-[#FFE866] transition-colors cursor-pointer"
+                        >
+                          <Share2 className="size-3.5" />
+                        </button>
+                      </div>
                     </article>
                   );
                 })}
@@ -380,6 +400,15 @@ function EventsInner() {
             Try switching tabs or clearing your search filters.
           </p>
         </div>
+      )}
+
+      {shareEvent && (
+        <EventShareModal
+          isOpen={Boolean(shareEvent)}
+          onClose={() => setShareEvent(null)}
+          event={shareEvent}
+          venueName={shareEvent.venue_name}
+        />
       )}
     </div>
   );

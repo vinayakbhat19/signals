@@ -21,6 +21,7 @@ export function LoginForm({ nextPath, initialError }: LoginFormProps) {
   const [showPassword, setShowPassword] = useState(false);
   const [loadingGoogle, setLoadingGoogle] = useState(false);
   const [loadingEmail, setLoadingEmail] = useState(false);
+  const isFormValid = email.trim().length > 0 && password.length > 0;
   const [errorMsg, setErrorMsg] = useState<string | null>(
     initialError === 'access_denied'
       ? 'Sign-in was cancelled. You can try again anytime or continue browsing.'
@@ -111,7 +112,7 @@ export function LoginForm({ nextPath, initialError }: LoginFormProps) {
               Log in
             </h1>
             <p className="mt-1 text-sm text-[#9C97B0]">
-              Play the Treasure Hunt, cast live votes, and save your progress.
+              Play the Treasure Hunt and save your progress.
             </p>
           </div>
         </div>
@@ -147,7 +148,7 @@ export function LoginForm({ nextPath, initialError }: LoginFormProps) {
         </button>
 
         <p className="text-center text-xs text-[#9C97B0]">
-          Fastest way in — any Google or email account can vote and play.
+          Fastest way in — any Google or email account can join the hunt and play.
         </p>
 
         <div className="flex items-center gap-3 text-xs font-bold uppercase tracking-[0.08em] text-[#9C97B0]">
@@ -195,11 +196,17 @@ export function LoginForm({ nextPath, initialError }: LoginFormProps) {
           </div>
           <button
             type="submit"
-            disabled={loadingEmail || loadingGoogle}
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-[16px] border-[1.5px] border-[#3B2758] bg-[#1F1230] text-sm font-extrabold text-[#F4F2FA] hover:border-[#FFD60A] cursor-pointer"
+            disabled={loadingEmail || loadingGoogle || !isFormValid}
+            className={`flex h-12 w-full items-center justify-center gap-2 rounded-[16px] text-sm font-extrabold transition-all duration-200 ${
+              isFormValid
+                ? 'bg-[#FFD60A] text-[#12091E] border-[1.5px] border-[#FFD60A] shadow-[4px_4px_0_#FF4FD8] hover:bg-[#FFE500] cursor-pointer active:translate-y-0.5'
+                : 'border-[1.5px] border-[#3B2758] bg-[#1F1230] text-[#9C97B0]/60 opacity-60 cursor-not-allowed'
+            }`}
           >
-            {loadingEmail && <Loader2 className="size-4 animate-spin" />}
-            Log in with email
+            {loadingEmail && (
+              <Loader2 className={`size-4 animate-spin ${isFormValid ? 'text-[#12091E]' : 'text-[#F4F2FA]'}`} />
+            )}
+            Log in
           </button>
         </form>
       </div>
